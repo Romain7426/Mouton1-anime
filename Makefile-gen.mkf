@@ -1,0 +1,383 @@
+#!gmake -r -R -S -j 1 --warn-undefined-variables -f 
+SHELL:= /bin/sh
+.SHELLFLAGS: -u -e  
+#MAKEFLAGS:= $(MAKEFLAGS) --warn-undefined-variables 
+#MAKEFLAGS:= $(filter-out  --warn-undefined-variables,$(MAKEFLAGS)) 
+.SUFFIXES: 
+.SILENT:
+.NOTPARALLEL:
+.EXPORT_ALL_VARIABLES:
+.SECONDARY:
+.PRECIOUS:
+.ONESHELL:
+
+
+
+#CMD_TO_GET_DEPS_FUN = function get_deps { cat $$1 | c-file-local-include-list | line-prefix-add src/ | newline2space ; } 
+
+#CMD_TO_GET_DEPS_ITER = LIST=$(1) LEN=`length $$LIST`; $(CMD_TO_GET_DEPS_FUN);  while true; do NEWLIST=""; for ddd in $$LIST; do NEWLIST=$$NEWLIST" "`get_deps $$ddd`; done; NEWLIST=`remove-doublon $$NEWLIST`; NEWLEN=`length $$NEWLIST`; if test $$LEN = $$NEWLEN; then break; fi; LIST=$$LIST" "$$NEWLIST LEN=$$NEWLEN; done; echo $$LIST
+
+#CMD_TO_GET_DEPS_CLOS = LIST="" CURRENT_LIST=$(1); $(CMD_TO_GET_DEPS_FUN);  while true; do NEWLIST=""; for ddd in $$CURRENT_LIST; do NEWLIST=$$NEWLIST" "\`get_deps $$ddd\`; done; NEWLIST=\`remove-doublon $$NEWLIST\`; CURRENT_LIST=\`list-diff $$NEWLIST @ $$LIST\`; LIST=$$LIST" "$$CURRENT_LIST; if test \`length $$CURRENT_LIST\` = 0; then break; fi; done; echo $$LIST
+
+
+
+.PHONY: default
+default: 
+default: Makefile
+default: build.sh
+
+
+.PHONY: clean
+clean:
+	rm -f Makefile build.sh
+
+
+#PROJECT_NAME := $(shell ./tools/bin/filename_without_path $$PWD)
+PROJECT_NAME := anime
+#SUBDIRS:=$(shell cd src; ldir | newline2space)
+#SUBLIBS:=$(SUBDIRS)
+SUBLIBS:=
+SUBLIBS_A:=$(patsubst %,lib%.a,$(SUBLIBS))
+SUBLIBS_A:=$(patsubst liblib%,lib%,$(SUBLIBS_A))
+#UNAME:=$(shell uname)
+#UNAME_M:=$(shell uname -m)
+#PROJECT_TOOLS := $(shell echo $$PROJECT_TOOLS)
+#GCC_VERSION_MAJOR := $(shell tools/bin/gcc-version-major)
+
+#$(error $(SUBLIBS_A))
+
+# DEBUG OPT INLINE GC PROF
+#   DEBUG  [yes/no] -> mode de compilation du programme
+#   OPT    [yes/no] -> optimise-t-on le programme? 
+#   INLINE [yes/no] -> optimise-t-on le programme? 
+#   GC     [yes/no] -> gc'ed-t-on le code? 
+#   PROF   [yes/no] -> profile-t-on le code? 
+DEBUG := yes
+OPT := no
+INLINE := no
+GC := no
+PROF := no
+
+SYSTEME := $(shell uname)
+ENDIAN := $(shell ./tools/bin/endianness-detect)
+ARCH := $(shell arch)
+MACHINE := $(shell machine)
+HARDWARE := $(shell uname -m)
+
+UNAME_LIST := FreeBSD NetBSD OpenBSD Darwin Linux MINGW32_NT-6.1 MINGW32_NT-5.1 windows DOS
+OS_LIST := freebsd netbsd openbsd macosx linux windows windows windows dos
+ifneq ($(words $(UNAME_LIST)),$(words $(OS_LIST)))
+  $(error The number of elements in the UNAME_LIST is not equal to the number of elements of the OS_LIST)
+endif
+UNAME_IDX := $(shell ./tools/bin/list-match $(SYSTEME) $(UNAME_LIST) $(SYSTEME))
+OS := $(word $(UNAME_IDX), $(OS_LIST) unknown_os)
+
+HW_LIST := i386 amd64 x86_64 i686 386 8086
+INTSIZE_LIST := 32 64 64 32 32 16
+ifneq ($(words $(HW_LIST)),$(words $(INTSIZE_LIST)))
+  $(error The number of elements in the HW_LIST is not equal to the number of elements of the INTSIZE_LIST)
+endif
+HW_IDX := $(shell tools/bin/list-match $(HARDWARE) $(HW_LIST) $(HARDWARE))
+INTSIZE := $(word $(HW_IDX), $(INTSIZE_LIST) unknown_intsize)
+
+$(info OS: $(OS))
+$(info INTSIZE: $(INTSIZE))
+
+CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG 
+
+#CC_FLAGS := $(CC_FLAGS) -D MIN_IS_NOT_PROVIDED
+#CC_FLAGS := $(CC_FLAGS) -D MAX_IS_NOT_PROVIDED
+
+#       -aux-info filename
+#           Output to the given filename prototyped declarations for all functions declared and/or defined in a translation
+#           unit, including those in header files.  This option is silently ignored in any language other than C.
+
+
+# -pedantic -pedantic-errors 
+GCC_FLAGS_FOR_DEBUG := -O0 -Wall -fmessage-length=0 -fdiagnostics-show-location=once -fdiagnostics-show-option -Wnewline-eof -Wfatal-errors -Werror-implicit-function-declaration -fno-exceptions -fstack-check -Werror -W  -Wparentheses -fverbose-asm -fno-omit-frame-pointer -ffreestanding -fno-builtin -fno-builtin-printf -fno-builtin-abs -fno-builtin-strcpy -fno-builtin-strcat -fno-builtin-strlen -fno-builtin-bzero -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-assert -fno-builtin-tolower -fno-builtin-toupper -fno-builtin-log -fno-builtin-alloca -fno-common -fno-exceptions -fno-non-call-exceptions -fno-asynchronous-unwind-tables -fno-inline -fno-inline-functions -fno-inline-functions  -gfull  -feliminate-unused-debug-types  -Wimplicit -Wreturn-type -Wcomment -Wpointer-arith -Wchar-subscripts -Wimplicit-int -Werror-implicit-function-declaration -Wmain -Wmissing-braces -Wmultichar -Wsequence-point -Wreturn-type  -Wstrict-prototypes -Wpacked -Wcast-qual -Wcast-align -Wno-system-headers -Winline -Wformat-nonliteral -Wwrite-strings -Wmissing-field-initializers -Wsign-compare  -Wformat-zero-length -Wswitch -Wswitch-enum -Wswitch-default -Wnested-externs -Wunknown-pragmas -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral -Wno-unsequenced -I /usr/X11R6/include  -I ./libs/SDL-1.2.15/destroot/include -I ./src/SDL_image -I ./src/SDL_mixer # -Wmissing-prototypes -Wmissing-declarations 
+
+# unknown: -gstabs+3 -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon 
+# Linker option: -aux-info build/action.aux 
+# unsupported: -fpcc-struct-return -fno-ivopts -fno-inline-functions-called-once 
+# unused: -fno-eliminate-unused-debug-symbols 
+
+
+
+CC_FLAGS := $(CC_FLAGS) $(GCC_FLAGS_FOR_DEBUG)
+
+
+BISON_FLAGS := --report=all,state,look-ahead,itemset --token-table --debug -d #--graph 
+BSD_YACC_FLAGS := -d -t -p yyanime -r -v 
+
+# LIBPROG_CFLAGS := 
+# LIBPROG_CFLAGS := $(LIBPROG_CFLAGS) -D LIBPROG_SYS_$(shell toupper $(OS))  
+# LIBPROG_CFLAGS := $(LIBPROG_CFLAGS) -D LIBPROG_ENDIAN_$(shell toupper $(ENDIAN))  
+# LIBPROG_CFLAGS := $(LIBPROG_CFLAGS) -D LIBPROG_DEBUG_$(shell toupper $(DEBUG))
+# LIBPROG_CFLAGS := $(LIBPROG_CFLAGS) -D LIBPROG_OPT_$(shell toupper $(OPT))
+# LIBPROG_CFLAGS := $(LIBPROG_CFLAGS) -D LIBPROG_INLINE_$(shell toupper $(INLINE))
+# LIBPROG_CFLAGS := $(LIBPROG_CFLAGS) -D LIBPROG_GC_$(shell toupper $(GC))
+# LIBPROG_CFLAGS := $(LIBPROG_CFLAGS) -D LIBPROG_PROF_$(shell toupper $(PROF))
+# LIBPROG_LIBS := build/libprog/libprog.a
+
+#EDITLINE_CFLAGS := $(shell pkg-config libedit --cflags)
+#EDITLINE_LFLAGS := 
+#EDITLINE_LIBS := $(shell pkg-config libedit --libs) -bind_at_load
+#EDITLINE_CFLAGS := -I $(PROJECT_TOOLS)/libedit-20090923-3.0/destroot/include
+#EDITLINE_LIBS :=  $(PROJECT_TOOLS)/libedit-20090923-3.0/destroot/lib/libedit.a -ltermcap
+#EDITLINE_CFLAGS := 
+#EDITLINE_LIBS :=  #build/libedit-20090923-3.0/libedit-20090923-3.0--sys_macosx--endian_little--debug_yes--opt_no--inline_no--gc_no--prof_no.a -ltermcap
+
+
+#CFLAGS := $(GCC_FLAGS) $(LIBPROG_CFLAGS) $(EDITLINE_CFLAGS) -I src/libprog
+#LIBS   := $(LIBPROG_LIBS) $(EDITLINE_LIBS) -lm 
+CFLAGS := $(CC_FLAGS) 
+LIBS   := -lm 
+
+#SVN_REVISION := $(shell svn-revision.sh)
+#GIT_REVISION := $(shell git-revision.sh)
+#DATE := $(shell date "+%Y-%m-%d--%H-%M-%S")
+
+
+PROG := $(PROJECT_NAME)
+SRC_C := $(patsubst src/%.c,%,$(wildcard src/*.c))
+SRC_H := $(patsubst src/%.h,%,$(wildcard src/*.h))
+#SRC_Y := $(patsubst src/%.y,%,$(wildcard src/*.y))
+SRC_Y := $(patsubst src/%.y,%.tab,$(wildcard src/*.y)) $(patsubst src/%.y,%.code,$(wildcard src/*.y))
+SRC_L := $(patsubst src/%.l,%,$(wildcard src/*.l))
+#SRC_CT := $(patsubst src/%.ct,%,$(wildcard src/*.ct))
+#SRC_C := $(sort $(SRC_C) $(SRC_Y)) # removes duplicates
+SRC_C := $(filter-out $(SRC_Y),$(SRC_C)) 
+SRC_C := $(filter-out liste,$(SRC_C)) 
+SRC_H := $(filter-out liste,$(SRC_H)) 
+#OBJ := $(patsubst %,build/$(PROG)$(FLAVOR)--%.o, $(SRC_C) $(SRC_Y))
+OBJ := $(patsubst %,build/%.o, $(SRC_C) $(SRC_Y) $(SRC_L))
+#LIB := build/$(PROG)$(FLAVOR).a
+LIB := build/$(PROG).a
+#BIN := build/$(PROG)$(FLAVOR).exe
+BIN := build/$(PROG).exe
+#BIN_STRIPPED := build/$(PROG)$(FLAVOR)_stripped.exe
+#BIN_STRIPPED := build/$(PROG)_stripped.exe
+#FILES := $(patsubst src/%.c,%, $(SRC))
+
+
+
+
+
+
+
+# FUN_LOCAL_FLAGS := function local_flags { \
+#   case $$1 in  \
+#     parser.c) \
+#       echo -Wno-redundant-decls -Wno-switch-default \
+#       ;; \
+#     coeurs.cpp) \
+#       echo $(if $(filter $(GCC_VERSION_MAJOR),4), -Wno-sequence-point) \
+#       ;; \
+#   esac \
+# }
+
+
+
+
+
+
+.PHONY: build.sh
+build.sh: 
+	echo "#!/bin/sh" > $@
+	echo "" >> $@
+	echo "rm -Rf build 2>&1" >> $@
+	echo "" >> $@
+	echo "mkdir -p build 2>&1" >> $@
+#	$(foreach sublib_i,$(SUBLIBS), \
+	  echo "mkdir -p build/$(sublib_i) 2>&1" >> $@; \
+	)
+	echo "" >> $@
+	echo "" >> $@
+#	$(foreach sublib_i,$(SUBLIBS), \
+	  $(foreach sublib_i_name,$(patsubst liblib%,lib%,lib$(sublib_i).a), \
+	    $(foreach file_c,$(wildcard src/$(sublib_i)/*.c), \
+	    $(foreach file_o,$(patsubst src/%.c,%.o,$(file_c)), \
+	      echo "gcc $(CFLAGS)  `$(FUN_LOCAL_FLAGS) ; local_flags $(file_c)`  -c $(file_c) -o build/$(file_o) 2>&1" >> $@; \
+	    ) \
+	    ) \
+	  ) \
+	  echo "" >> $@; \
+	  echo "" >> $@; \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+#	$(foreach sublib_i,$(SUBLIBS), \
+	  $(foreach sublib_i_name,$(patsubst liblib%,lib%,lib$(sublib_i).a), \
+	  echo "ar -r -c build/$(sublib_i)/$(sublib_i_name)  $(patsubst src/%.c,build/%.o,$(wildcard src/$(sublib_i)/*.c)) 2>&1" >> $@; \
+	  echo "ranlib build/$(sublib_i)/$(sublib_i_name) 2>&1" >> $@; \
+	  echo "" >> $@; \
+	  ) \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	for i in $(SRC_Y); do \
+	  echo "bison $(BISON_FLAGS) src/$$i.y -o src/$$i.c 2>&1" >> $@; \
+	  echo "mv -f parser.c src/$$i.c 2>&1" >> $@; \
+	  echo "mv -f $$i.c src/$$i.c 2>&1" >> $@; \
+	done;
+#	for i in $(SRC_CT); do \
+	  echo "text2cstring src/$$i 2>&1" >> $@; \
+	done;
+	for i in $(SRC_C) $(SRC_Y); do \
+	  echo "cc $(CFLAGS) -c src/$$i.c -o build/$$i.o  2>&1" >> $@; \
+	done;
+#	  echo "cc $(CFLAGS) -c src/$$i.c -o build/$$i.o -aux-info build/$$i.aux 2>&1" >> $@; 
+	echo "ar -r -c $(LIB) $(OBJ) 2>&1" >> $@
+	echo "ranlib $(LIB) 2>&1" >> $@
+	echo "cc -o $(BIN) $(LIBS) $(LIB) 2>&1" >> $@
+	echo "" >> $@
+	echo "rm -f run" >> $@
+	echo "ln -s $(BIN) run" >> $@
+	echo "chmod +x run" >> $@
+	echo "" >> $@
+	chmod +x build.sh
+
+
+
+.PHONY: Makefile
+Makefile: 
+	echo "" > $@
+#	echo "default: Makefile build run $(BIN)" >> $@
+	echo "default: Makefile build $(LIB) " >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "SHELL:= /bin/sh" >> $@
+	echo ".SHELLFLAGS: -u -e  " >> $@
+	echo "#MAKEFLAGS:= $(MAKEFLAGS) --warn-undefined-variables " >> $@
+	echo "#MAKEFLAGS:= $(filter-out  --warn-undefined-variables,$(MAKEFLAGS)) " >> $@
+	echo ".SUFFIXES: " >> $@
+	echo "#.SILENT:" >> $@
+	echo ".NOTPARALLEL:" >> $@
+	echo ".EXPORT_ALL_VARIABLES:" >> $@
+	echo ".SECONDARY:" >> $@
+	echo ".PRECIOUS:" >> $@
+	echo ".ONESHELL:" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "clean:" >> $@
+	echo "	rm -Rf build 2>&1" >> $@
+	echo "" >> $@
+	echo "clean-all: clean" >> $@
+	echo "	rm -Rf destroot rundir *~ .*~ src/*~ src/*.output COPYING_at_start_of_c_files $(patsubst %,src/%.c,$(SRC_Y)) $(patsubst %,src/%.c,$(SRC_L)) 2>&1" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "Makefile: Makefile-gen.mkf" >> $@
+	echo "	@echo \"--- \\\"Makefile-gen.mkf\\\" changed. Please type './configure' (or 'romake -f Makefile-gen.mkf') to update this Makefile ---\"" >> $@
+	echo "	@false" >> $@
+	echo "" >> $@
+	echo "build:" >> $@
+	echo "	mkdir -p build 2>&1 " >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "install: destroot_do" >> $@
+	echo "" >> $@
+	echo "destroot_do:" >> $@
+#	echo "	chmod -Rf a+w destroot" >> $@
+	echo "	rm -Rf destroot" >> $@
+	echo "	mkdir -p destroot" >> $@
+#	echo "	mkdir -p destroot/bin" >> $@
+#	echo "	cp -fp build/*.exe destroot/bin/" >> $@
+	echo "	mkdir -p destroot/lib" >> $@
+	echo "	cp -fp build/*.a destroot/lib/" >> $@
+	echo "	mkdir -p destroot/include" >> $@
+	echo "	cp -fp src/anime.h destroot/include/" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "run: $(BIN)" >> $@
+	echo "	rm -f run" >> $@
+	echo "	ln -s $(BIN) run" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "$(BIN): $(LIB)" >> $@
+	echo "	cc -o $(BIN) $(LIB) $(LIBS) 2>&1" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "$(LIB): $(OBJ)" >> $@
+	echo "	ar -r -c $(LIB) $(OBJ) 2>&1" >> $@
+	echo "	ranlib $(LIB) 2>&1" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	$(foreach file_y,$(patsubst src/%,%,$(wildcard src/*.y)), \
+	  $(foreach file_c,$(patsubst %.y,%.c,$(file_y)), \
+	    $(foreach file_noext,$(patsubst %.y,%,$(file_y)), \
+	      echo "#src/$(file_c): src/$(file_y) " >> $@; \
+	      echo "src/$(file_noext).tab.h src/$(file_noext).tab.c src/$(file_noext).code.c: src/$(file_y) " >> $@; \
+	      echo "#	bison $(BISON_FLAGS) src/$(file_y) -o src/$(file_c) 2>&1" >> $@; \
+	      echo "#	yacc $(BSD_YACC_FLAGS) -o src/$(file_c) src/$(file_y) 2>&1" >> $@; \
+	      echo "	yacc $(BSD_YACC_FLAGS) -b src/$(file_noext) src/$(file_y) 2>&1" >> $@; \
+	      echo "#	mv -f parser.c src/$(file_c) 2>&1 || true " >> $@; \
+	      echo "#	mv -f $(file_c) src/$(file_c) 2>&1 || true" >> $@; \
+	      echo "#	test -e src/$(file_c) 2>&1" >> $@; \
+	      echo "" >> $@; \
+	    ) \
+	  ) \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	$(foreach file_l,$(patsubst src/%,%,$(wildcard src/*.l)), \
+	  $(foreach file_c,$(patsubst %.l,%.c,$(file_l)), \
+	      echo "src/$(file_c): src/$(file_l) " >> $@; \
+	      echo "	flex -Pyyanime -Cfa -p  -o src/$(file_c) src/$(file_l) 2>&1" >> $@; \
+	      echo "	test -e src/$(file_c) 2>&1" >> $@; \
+	      echo "" >> $@; \
+	    ) \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	$(foreach file_c,$(sort $(patsubst src/%,%,$(wildcard src/*.c)) $(patsubst src/%.y,%.tab.c,$(wildcard src/*.y)) $(patsubst src/%.y,%.code.c,$(wildcard src/*.y)) $(patsubst src/%.l,%.c,$(wildcard src/*.l)) $(patsubst src/%.ct,%.c,$(wildcard src/*.ct))), \
+	  $(foreach file_o,$(patsubst %.c,%.o,$(file_c)), \
+	    $(foreach file_aux,$(patsubst %.c,%.aux,$(file_c)), \
+	      echo "build/$(file_o): src/$(file_c) $(wildcard src/*.h)" >> $@; \
+	      echo "	cc $(CFLAGS) -c src/$(file_c) -o build/$(file_o)  2>&1" >> $@; \
+	      echo "" >> $@; \
+	    ) \
+	  ) \
+	)
+#	      echo "	cc $(CFLAGS) -c src/$(file_c) -o build/$(file_o) -aux-info build/$(file_aux) 2>&1" >> $@; 
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
