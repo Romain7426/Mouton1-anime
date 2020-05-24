@@ -1,0 +1,89 @@
+/* Ceci est un commentaire. */
+// Ceci est encore un commentaire.
+# C'est encore un commentaire.
+
+physique {
+ zone de choc := {
+  longueur := .23;
+  largeur := 12.;
+  hauteur := 0.123;
+ };
+ MaSSe := 240.;
+}
+
+gameplay {
+ points de vie := 9999;
+ invinsible := vrai;
+ hostile := vrai;
+ 
+ action voler {
+  menu := vrai;
+  affichage := "Allons discuter du beau temps avec cette charmante personne.";
+  gestionnaire := ;
+ }
+
+ action parler {
+  menu := faux;
+  affichage := "Mais c'est un ennemi. Puis-je lui parler?";
+  gestionnaire := ;
+ }
+
+ evenement event1 {
+  genere par := TOUS ;
+  traitement := ;
+ }
+
+ evenement event2 {
+  genere par := AUCUN ;
+  traitement := ;
+ }
+
+ evenement event0.41 {
+  genere par := ;
+  traitement := ;
+ }
+
+}
+
+
+graphique {
+ membre bras {
+  fils := ;
+  image := "bras.jpeg";
+  largeur := 23.1;
+  hauteur := 245.;
+  angle max y := pi;
+ }
+
+ membre jambe_gauche {
+  fils := ;
+  image := "jambeg.jpg";
+  largeur := .36;
+  hauteur := 0.1546.;
+  angle max y := 56.;
+ }
+
+ membre corps {
+  fils := {qui := bras; x := 23.; y := 56.; z := 0.2; angle y := 1.3;},
+	  {qui := jambe_gauche; x := 0.; y := .0; z:= 0.0; angle y := 00.00;};
+  image := "corps.pcx";
+  largeur := 100.;
+  hauteur := 256.;
+  angle max y := .000000;
+ }
+
+ membres racines := ,,,{qui:=corps;x:=0.;y:=0.;z:=0.;angle y:=0.;},,;
+ #membres racines := ;
+}
+
+
+
+Et tout ce qui se passe après, on s'en fout !!!!!!!
+
+
+
+!!
+
+
+
+
