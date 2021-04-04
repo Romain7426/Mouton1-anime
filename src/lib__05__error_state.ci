@@ -1,0 +1,29 @@
+// --------------------------------------------------------------------------------------------------- 
+// ERROR STATE 
+
+static void error_state_print(const int error_state[], const int error_state_array_size) {
+  for (int i = 0; i < error_state_array_size; i++) {
+    dputs(stderr_d, "error_state["); dputn(stderr_d, i); dputs(stderr_d, "] = "); dputn(stderr_d, error_state[i]); dputc(stderr_d, '\n'); 
+  }; 
+}; 
+
+static void error_state__assign3(int error_state[], const int a1, const int a2, const int a3) {
+  error_state[0] = a1; 
+  error_state[1] = a2; 
+  error_state[2] = a3; 
+}; 
+
+struct error_state_t {
+  int code1; 
+  int code2; 
+  int code3; 
+  const char * msg1; 
+  const char * msg2; 
+  const char * msg3; 
+  str_t str1; 
+  str_t str2; 
+  str_t str3; 
+}; 
+typedef struct error_state_t error_state_t[1]; 
+
+

@@ -1,0 +1,93 @@
+
+// =================================================================================================== 
+// EXCEPTION STACK 
+
+#include <setjmp.h>
+
+enum { EXCEPTION_STACK__SIZE = (3 << 9) }; // 3k 
+static jmp_buf exception_stack__env[EXCEPTION_STACK__SIZE] = {}; 
+static int     exception_stack__nb = 0; 
+enum { EXECPTION_MSG__SIZE = (11 << 9) }; // 3k 
+static char    exception_msg[EXECPTION_MSG__SIZE] = {}; 
+static int     exception_code = 0; 
+
+static void exception__raz(void) {
+  exception_stack__nb = 0; 
+  bzero(exception_msg, sizeof(exception_msg)); 
+  exception_code = 0; 
+};
+
+static void exception_msg__set(const char * msg_given) {
+  const char * msg = (NULL == msg_given) ? "<null>" : msg_given; 
+  bcopy(msg, exception_msg, (1+strlen(msg))*sizeof(char)); 
+}; 
+
+#if 0
+static void exception__raise__old(const int exception_code_given, const char * exception_msg) {
+#if 0
+  dputs(stderr_d, "exception__raise" "\n");
+#endif
+  //assert(0 <= exception_stack__nb); 
+  if (0 >= exception_stack__nb) {
+    dputs(stderr_d, "Uncaught exception: "); 
+    if (NULL != exception_msg) dputs(stderr_d, exception_msg); 
+    abort(); 
+  }; 
+  const int exception_code_local = (0 == exception_code_given) ? 1 : exception_code_given; 
+  exception_msg__set(exception_msg); 
+  exception_stack__nb--; 
+  //const jmp_buf handler = exception_stack__env[exception_stack__nb];
+  //void longjmp(jmp_buf env, int val); 
+  //longjmp(handler, exception_code); 
+  longjmp(exception_stack__env[exception_stack__nb], exception_code_local); 
+};
+#endif 
+
+#if 0
+// This one is broken as the ret address on the stack will have changed when the exception will be raised. 
+// "setjmp" cannot be put inside a function. 
+// Therefore, no other choice than a macro. 
+static int exception__try__broken(void) {
+#if 0
+  dputs(stderr_d, "exception__try" "\n");
+#endif 
+  assert(EXCEPTION_STACK__SIZE > exception_stack__nb); 
+  exception_stack__nb++; 
+  const int exception_code_local = setjmp(exception_stack__env[exception_stack__nb-1]); 
+#if 0
+  dputs(stderr_d, "exception__try_back" "\n");
+  dputs(stderr_d, "exception__code: " );
+  dputs(stderr_d, ((0 == exception_code_local) ? "null" : "not-null"));
+  dputs(stderr_d, "\n" );
+#endif 
+  exception_code = exception_code_local; 
+  return exception_code_local; 
+}; 
+#endif 
+
+static void exception__push(void) {
+  assert(EXCEPTION_STACK__SIZE > exception_stack__nb); 
+  exception_stack__nb++; 
+}; 
+
+static void exception__pop(void) {
+  assert(0 < exception_stack__nb); 
+  exception_stack__nb--; 
+}; 
+
+#define exception__set_anchor_point() (exception_code = setjmp(exception_stack__env[exception_stack__nb-1]))
+
+static void exception__raise(const int exception_code_given, const char * exception_msg) {
+  if (0 >= exception_stack__nb) {
+    dputs(stderr_d, "Exception raised while there is no handler to catch it." "\n"); 
+    dputs(stderr_d, "\t" "Exception code: "); dputn(stderr_d, exception_code_given); dput_eol(stderr_d); 
+    dputs(stderr_d, "\t" "Exception msg : "); dputs(stderr_d, (NULL == exception_msg) ? "<null>" : exception_msg); dput_eol(stderr_d); 
+    abort(); 
+  }; 
+  const int exception_code_adjusted = (0 == exception_code_given) ? 1 : exception_code_given; 
+  exception_msg__set(exception_msg); 
+  longjmp(exception_stack__env[exception_stack__nb-1], exception_code_adjusted); 
+  abort(); // Should not be reached. 
+};
+
+

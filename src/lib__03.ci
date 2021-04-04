@@ -1,0 +1,673 @@
+
+#define BYTELEN(s)   (sizeof(s)) 
+#define ARRAYLEN(s)  (sizeof(s)/sizeof(*s)) 
+#define ARRAY_LEN     ARRAYLEN
+#define ARRAY_SIZE    ARRAYLEN 
+//#define STRLEN(s)  (ARRAYLEN(s)-1) 
+// Beware of a string like "bob\0and\0mary", whose the preprocessor STRLEN will never behave like the compile-one (12 vs 3). 
+// Therefore this one is kind of more accurate. 
+
+static char hexdigit(const int v) { 
+  assert(v >= 0); 
+  assert(v < 16); 
+  return (v < 10) ? (v + '0') : (v - 10 + 'A'); 
+}; 
+ 
+static char * strcopy(const char * cstr) {
+  if (cstr == NULL) return NULL; 
+  const int cstr_len = strlen(cstr); 
+  char * copy_cstr = malloc((cstr_len+1) * (sizeof(char))); 
+  return strcpy(copy_cstr, cstr);
+}; 
+
+
+// =================================================================================================== 
+// CSTRING 
+
+typedef char * cstr_t; 
+
+static int cstring__has_prefix_char1(const char c1, const char * cstr) {
+  if (NULL == cstr) return false; 
+  const int cstr_len = strlen(cstr); 
+  if (0 == cstr_len) return false; 
+  return (c1 == cstr[0]); 
+}; 
+
+static int cstring__has_prefix_char2(const char c1, const char c2, const char * cstr) {
+  if (NULL == cstr) return false; 
+  const int cstr_len = strlen(cstr); 
+  if (2 > cstr_len) return false; 
+  return ((c1 == cstr[0]) && (c2 == cstr[1])); 
+}; 
+
+static int cstring__concat_length(const int cstr_nb, const char * cstr_array[]) {
+  if (0 >= cstr_nb) return 0; 
+  int len_array[cstr_nb]; 
+  for (int i = 0; i < cstr_nb; i++) { len_array[i] = strlen(cstr_array[i]); }; 
+  int catlen = 0; 
+  for (int i = 0; i < cstr_nb; i++) { catlen += len_array[i]; }; 
+  return catlen; 
+}; 
+
+static char * cstring__concat__array__in_the_buffer(const int cstr_nb, const char * cstr_array[], const int buffer_size, char * buffer) {
+  if (0 >= cstr_nb) { assert(buffer_size > 0); *buffer = '\0'; return buffer; }; 
+  int len_array[cstr_nb]; 
+  for (int i = 0; i < cstr_nb; i++) { len_array[i] = strlen(cstr_array[i]); }; 
+  char * ptr = buffer; 
+  int cumulated_len = 0; 
+  for (int i = 0; i < cstr_nb; i++) { 
+    const int avail_size = buffer_size - 1 - cumulated_len; 
+    const int len_to_be_copied = MIN(len_array[i], avail_size); 
+    bcopy(cstr_array[i], ptr, len_to_be_copied); 
+    ptr += len_to_be_copied; 
+  }; 
+  *ptr = '\0'; 
+  return buffer; 
+}; 
+
+extern char * cstring__concat__array__on_the_heap  (const int cstr_nb, const char * cstr_array[]); 
+extern char * cstring__concat__array__on_the_stack (const int cstr_nb, const char * cstr_array[]); 
+extern char * cstring__concat__array__in_the_buffer(const int cstr_nb, const char * cstr_array[], const int buffer_size, char * buffer); 
+#define cstring__concat__array__buffer_size(cstr_nb,cstr_array)  (1+cstring__concat_length((cstr_nb), (cstr_array)))
+#define cstring__concat__array__on_the_heap(cstr_nb,cstr_array)  cstring__concat__array__in_the_buffer((cstr_nb), (cstr_array), cstring__concat__array__buffer_size((cstr_nb),(cstr_array)), malloc(sizeof(char) * cstring__concat__array__buffer_size((cstr_nb),(cstr_array))))
+#define cstring__concat__array__on_the_stack(cstr_nb,cstr_array) cstring__concat__array__in_the_buffer((cstr_nb), (cstr_array), cstring__concat__array__buffer_size((cstr_nb),(cstr_array)), alloca(sizeof(char) * cstring__concat__array__buffer_size((cstr_nb),(cstr_array))))
+#define cstring__concat__array__heap_  cstring__concat__array__on_the_heap 
+#define cstring__concat__array__stack_ cstring__concat__array__on_the_stack
+#define cstring__concat__array         cstring__concat__array__heap_ 
+
+#define cstring__concat__zarray__heap(cstr_zarray)  (cstring__concat__array__heap_ (zcarray_length(cstr_zarray),(cstr_zarray)))
+#define cstring__concat__zarray__stack(cstr_zarray) (cstring__concat__array__stack_(zcarray_length(cstr_zarray),(cstr_zarray)))
+#define cstring__concat__zarray                      cstring__concat__zarray__heap_
+
+#define cstring__concat__array__stack(cstr_array)  cstring__concat__array__on_the_stack(ARRAY_SIZE((cstr_array)),((cstr_array)))
+
+#define strconcat2__stack(cstr1,cstr2) cstring__concat__array__on_the_stack(2,((const char * []) { (cstr1), (cstr2) }))
+#define strconcat3__stack(cstr1,cstr2,cstr3) cstring__concat__array__on_the_stack(3,((const char * []) { (cstr1), (cstr2), (cstr3) }))
+
+//#define strconcat__stack(...) cstring__concat__zarray__stack(((const char * []) { __VA_ARGS__, NULL }))
+#define strconcat__stack(...) cstring__concat__array__on_the_stack(ARRAY_SIZE(((const char * []) { __VA_ARGS__ })),((const char * []) { __VA_ARGS__ }))
+#define strconcat__stack_nb(nb_,array_) cstring__concat__array__on_the_stack((nb_),(array_))
+
+#define strconcat__heap(...) cstring__concat__array__on_the_heap(ARRAY_SIZE(((const char * []) { __VA_ARGS__ })),((const char * []) { __VA_ARGS__ }))
+
+
+
+
+
+static char * cstring__tolower__in_the_buffer(const char * cstr, const int buffer_size, char * buffer) {
+  if (cstr == NULL) return NULL; 
+  const int cstr_len = strlen(cstr); 
+  const int nb = MIN(cstr_len, buffer_size-1); 
+  const char * c = cstr; 
+  char * b = buffer; 
+  for (int i = 0; i < nb; i++) { 
+    *b = tolower(*c); 
+    b++; 
+    c++; 
+  }; 
+  *b = '\0'; 
+  return buffer; 
+}; 
+
+extern char * cstring__tolower(const char * cstr);
+extern char * cstring__tolower__on_the_heap(const char * cstr);
+extern char * cstring__tolower__on_the_stack(const char * cstr);
+extern char * cstring__tolower__in_the_buffer(const char * cstr, const int buffer_size, char * buffer);
+#define cstring__tolower__buffer_size(cstr) (strlen(cstr)+1)
+#define cstring__tolower__on_the_heap(n)  cstring__tolower__in_the_buffer((n), cstring__tolower__buffer_size(n), malloc(sizeof(char) * (cstring__tolower__buffer_size(n))))
+#define cstring__tolower__on_the_stack(n) cstring__tolower__in_the_buffer((n), cstring__tolower__buffer_size(n), alloca(sizeof(char) * (cstring__tolower__buffer_size(n))))
+#define cstring__tolower        cstring__tolower__on_the_heap
+#define cstring__tolower__stack cstring__tolower__on_the_stack
+
+
+
+// =================================================================================================== 
+// BOOL 2 CSTRING 
+
+static const char * bool_2_cstr(const int b) {
+  //return (b) ? "true" : "false"; 
+  switch (b) {
+  case true: return "true"; 
+  case false: return "false"; 
+  case undecided_boolean: return "?"; 
+  };
+  assert(false); 
+  return NULL; 
+}; 
+
+#define bool_string bool_2_cstr 
+#define bool_string__stack bool_2_cstr 
+#define bool_string__heap(b) strcopy(bool_2_cstr(b))
+
+
+// =================================================================================================== 
+// CHAR 2 CSTRING 
+
+static char * char_string__in_the_buffer(const char c_given, const int buffer_size, char buffer[]) {
+  if (1 >= buffer_size) { return NULL; }; 
+  *buffer = c_given; 
+  *(buffer+1) = '\0'; 
+  return buffer; 
+}; 
+
+extern char * char_string(const char c);
+extern char * char_string__on_the_heap(const char c);
+extern char * char_string__on_the_stack(const char c);
+extern char * char_string__in_the_buffer(const char c_given, const int buffer_size, char * buffer);
+#define char_string__buffer_size(n) (2)
+#define char_string__on_the_heap(n)  char_string__in_the_buffer((n), char_string__buffer_size(n), malloc(sizeof(char) * (char_string__buffer_size(n))))
+#define char_string__on_the_stack(n) char_string__in_the_buffer((n), char_string__buffer_size(n), alloca(sizeof(char) * (char_string__buffer_size(n))))
+#define char_string        char_string__on_the_heap
+#define char_string__stack char_string__on_the_stack
+
+
+// =================================================================================================== 
+// FLOAT 2 CSTRING 
+static int float_string__compute_buffer_size(const float x_given) {
+  return snprintf(NULL, 0, "%f", x_given); 
+}; 
+
+static char * float_string__in_the_buffer(const float x_given, const int buffer_size, char buffer[]) {
+  snprintf(buffer, buffer_size, "%f", x_given); 
+  return buffer; 
+}; 
+
+extern char * float_string(const float x);
+extern char * float_string__on_the_heap(const float x);
+extern char * float_string__on_the_stack(const float x);
+extern char * float_string__in_the_buffer(const float x_given, const int buffer_size, char * buffer);
+#define float_string__buffer_size(n) (float_string__compute_buffer_size((n)))
+#define float_string__on_the_heap(n)  float_string__in_the_buffer((n), float_string__buffer_size(n), malloc(sizeof(char) * (float_string__buffer_size(n))))
+#define float_string__on_the_stack(n) float_string__in_the_buffer((n), float_string__buffer_size(n), alloca(sizeof(char) * (float_string__buffer_size(n))))
+#define float_string        float_string__on_the_heap
+#define float_string__stack float_string__on_the_stack
+
+
+// =================================================================================================== 
+// INT 2 CSTRING 
+
+static char * int_string_in_the_buffer(const int n_given, const int buffer_size, char buffer[]) {
+  if (1 >= buffer_size) { return NULL; }; 
+  //if (0 == n_given) { return strcpy(buffer, "0"); }; 
+  if (0 == n_given) { strlcpy(buffer, "0", buffer_size); return buffer; }; 
+  
+  int i = 0;
+  int n = n_given;
+ 
+  if (INT_MIN == n) {
+    // Necessary as "n = -n" raises "illegal instruction" (logically, -n does not have a matching positive integer). 
+    static const char n_string8[] = "-127";
+    static const char n_string16[] = "-65536";
+    static const char n_string32[] = "-2147483648";
+    static const char n_string64[] = "-9223372036854775808";
+    const char * n_string = (8 == INT_BITSIZE ? n_string8 : 16 == INT_BITSIZE ? n_string16 : 32 == INT_BITSIZE ? n_string32 : 64 == INT_BITSIZE ? n_string64 : NULL); 
+    strlcpy(buffer, n_string, buffer_size); 
+    return buffer; 
+  };
+  
+  if (0 > n) {
+    buffer[i] = '-';
+    n = -n;
+    i++;
+  };
+  
+  assert(n > 0);
+  while (n > 0) {
+    const int quotient = n / 10;
+    const int remainder = n % 10;
+    assert(i < buffer_size);
+    buffer[i] = remainder + '0';
+    i++;
+    n = quotient;
+  };
+  
+  assert(i < buffer_size);
+  buffer[i] = '\0';
+  const int nb_chars_computed = i;
+  assert(nb_chars_computed+1 <= buffer_size);
+  
+  char temp[nb_chars_computed+1];
+  //strcpy(temp, buffer);
+  //{ int i = 1; if (0 != (nb_chars_computed >> i)) {} else { dputs(stderr, "LEN >= 0b"); dputc(stderr, '1'); for (int j = 0; j < i; j++) dputc(stderr, '0'); dputc(stderr, '\n');  }; }; 
+  //assert(sizeof(temp) == (unsigned) (nb_chars_computed+1)); 
+  //strlcpy(temp, buffer, sizeof(*temp));
+  //strlcpy(temp, buffer, nb_chars_computed+1);
+  strlcpy(temp, buffer, sizeof(temp));
+  if (n_given < 0) { buffer[0] = '-'; }; 
+  for (int j = ((n_given < 0) ? 1 : 0); j < nb_chars_computed; j++)
+    buffer[j] = temp[nb_chars_computed-(j-((n_given < 0) ? 1 : 0))-1];
+  assert('\0' == buffer[nb_chars_computed]);
+  
+  return buffer;
+};
+
+
+
+
+static char * uint_string_in_the_buffer(const unsigned int n_given, const int buffer_size, char buffer[]) {
+  if (1 >= buffer_size) return NULL; 
+  if (0 == n_given) return strcpy(buffer, "0"); 
+  
+  int i = 0;
+  unsigned int n = n_given;
+  assert(n > 0);
+  while (n > 0) {
+    const int quotient = n / 10;
+    const int remainder = n % 10;
+    assert(i < buffer_size);
+    buffer[i] = remainder + '0';
+    i++;
+    n = quotient;
+  }
+  assert(i < buffer_size);
+  buffer[i] = '\0';
+  const int nb_chars_computed = i;
+  assert(nb_chars_computed+1 <= buffer_size);
+  
+  char temp[nb_chars_computed+1];
+  strcpy(temp, buffer);
+  for (int j = 0; j < nb_chars_computed; j++)
+    buffer[j] = temp[nb_chars_computed-j-1];
+  assert(buffer[nb_chars_computed] == '\0');
+  
+  return buffer;
+}
+
+
+extern char * int_string(const int n);
+extern char * int_string_on_the_heap(const int n);
+extern char * int_string_on_the_stack(const int n);
+extern char * int_string_in_the_buffer(const int n_given, const int buffer_size, char * buffer);
+#define int_string__buffer_size(n) (2+((sizeof((n)) << 3)))
+#define int_string_on_the_heap(n)  int_string_in_the_buffer((n), int_string__buffer_size(n), malloc(sizeof(char) * (int_string__buffer_size(n))))
+#define int_string_on_the_stack(n) int_string_in_the_buffer((n), int_string__buffer_size(n), alloca(sizeof(char) * (int_string__buffer_size(n))))
+#define int_string        int_string_on_the_heap
+#define int_to_str_stack  int_string_on_the_stack
+#define int_to_str__stack int_string_on_the_stack
+#define int_string__stack int_string_on_the_stack
+#define int2cstr__stack   int_string_on_the_stack
+#define int_2_cstr__stack   int_string_on_the_stack
+
+extern char * uint_string(const unsigned int n);
+extern char * uint_string_on_the_heap(const unsigned int n);
+extern char * uint_string_on_the_stack(const unsigned int n);
+extern char * uint_string_in_the_buffer(const unsigned int n, const int buffer_size, char * buffer);
+#define uint_string_buffer_size(n)   ((sizeof((n)) << 3)+1)
+#define uint_string_on_the_heap(n)   uint_string_in_the_buffer((n), uint_string_buffer_size((n)), malloc(uint_string_buffer_size((n))))
+#define uint_string_on_the_stack(n)  uint_string_in_the_buffer((n), uint_string_buffer_size((n)), alloca(uint_string_buffer_size((n))))
+#define uint_string uint_string_on_the_heap
+
+
+static char * int_string_base2_in_the_buffer(const int n_given, const int buffer_size, char * buffer) {
+  if (1 >= buffer_size) return NULL; 
+  if (0 == n_given) return strcpy(buffer, "0"); 
+  
+  int i = 0;
+  int n = n_given;
+  if (n < 0) {
+    buffer[i] = '-';
+    n = -n;
+    i++;
+  }
+
+  const int base = 2; 
+  
+  assert(n > 0);
+  while (n > 0) {
+    const int quotient = n / base; 
+    const int remainder = n % base; 
+    assert(i < buffer_size);
+    buffer[i] = remainder + '0';
+    i++;
+    n = quotient;
+  }
+  assert(i < buffer_size);
+  buffer[i] = '\0';
+  const int nb_chars_computed = i;
+  assert(nb_chars_computed+1 <= buffer_size);
+  
+  char temp[nb_chars_computed+1];
+  strcpy(temp, buffer);
+  if (n_given < 0) buffer[0] = '-';
+  for (int j = ((n_given < 0) ? 1 : 0); j < nb_chars_computed; j++)
+    buffer[j] = temp[nb_chars_computed-(j-((n_given < 0) ? 1 : 0))-1];
+  assert(buffer[nb_chars_computed] == '\0');
+  
+  return buffer;
+}
+
+extern char * int_string_base2(const int n);
+extern char * int_string_base2_on_the_heap(const int n);
+extern char * int_string_base2_on_the_stack(const int n);
+extern char * int_string_base2_in_the_buffer(const int n_given, const int buffer_size, char * buffer);
+#define int_string_base2_size_for_n(n)   ((sizeof((n)) << 3)+1)
+#define int_string_base2_on_the_heap(n)  int_string_base2_in_the_buffer((n), int_string_base2_size_for_n(n), malloc(sizeof(char) * (1+int_string_base2_size_for_n(n))))
+#define int_string_base2_on_the_stack(n) int_string_base2_in_the_buffer((n), int_string_base2_size_for_n(n), alloca(sizeof(char) * (1+int_string_base2_size_for_n(n))))
+#define int_string_base2        int_string_base2_on_the_heap
+#define int_to_str_base2_stack  int_string_base2_on_the_stack
+#define int_to_str_base2__stack int_string_base2_on_the_stack
+
+
+
+static char * int_string_base16_in_the_buffer(const int n_given, const int buffer_size, char * buffer) {
+  if (1 >= buffer_size) return NULL; 
+  if (0 == n_given) return strcpy(buffer, "0"); 
+  
+  int i = 0;
+  int n = n_given;
+  if (n < 0) {
+    buffer[i] = '-';
+    n = -n;
+    i++;
+  }
+
+  const int base = 16; 
+  
+  assert(n > 0);
+  while (n > 0) {
+    const int quotient = n / base; 
+    const int remainder = n % base; 
+    assert(i < buffer_size);
+    buffer[i] = hexdigit(remainder); 
+    i++;
+    n = quotient;
+  }
+  assert(i < buffer_size);
+  buffer[i] = '\0';
+  const int nb_chars_computed = i;
+  assert(nb_chars_computed+1 <= buffer_size);
+  
+  char temp[nb_chars_computed+1];
+  strcpy(temp, buffer);
+  if (n_given < 0) buffer[0] = '-';
+  for (int j = ((n_given < 0) ? 1 : 0); j < nb_chars_computed; j++)
+    buffer[j] = temp[nb_chars_computed-(j-((n_given < 0) ? 1 : 0))-1];
+  assert(buffer[nb_chars_computed] == '\0');
+  
+  return buffer;
+}
+
+extern char * int_string_base16(const int n);
+extern char * int_string_base16_on_the_heap(const int n);
+extern char * int_string_base16_on_the_stack(const int n);
+extern char * int_string_base16_in_the_buffer(const int n_given, const int buffer_size, char * buffer);
+#define int_string_base16_size_for_n(n)   ((sizeof((n)) << 1)+1)
+#define int_string_base16_on_the_heap(n)  int_string_base16_in_the_buffer((n), int_string_base16_size_for_n(n), malloc(sizeof(char) * (1+int_string_base16_size_for_n(n))))
+#define int_string_base16_on_the_stack(n) int_string_base16_in_the_buffer((n), int_string_base16_size_for_n(n), alloca(sizeof(char) * (1+int_string_base16_size_for_n(n))))
+#define int_string_base16        int_string_base16_on_the_heap
+#define int_to_str_base16_stack  int_string_base16_on_the_stack
+#define int_to_str_base16__stack int_string_base16_on_the_stack
+
+
+
+static char * char_cstring__in_the_buffer(const char c, const int buffer_size, char * buffer) { 
+  char temp_buffer[3] = { '\\', 0, 0}; 
+  switch (c) {
+  default: temp_buffer[0] = c; temp_buffer[1] = '\0'; break; 
+  case '\0': temp_buffer[1] = '0'; break; 
+  case '\a': temp_buffer[1] = 'a'; break; 
+  case '\b': temp_buffer[1] = 'b'; break; 
+  case '\t': temp_buffer[1] = 't'; break; 
+  case '\n': temp_buffer[1] = 'n'; break; 
+  case '\v': temp_buffer[1] = 'v'; break; 
+  case '\f': temp_buffer[1] = 'f'; break; 
+  case '\r': temp_buffer[1] = 'r'; break; 
+  case '\e': temp_buffer[1] = 'e'; break; 
+  case '\\': temp_buffer[1] = '\\'; break; 
+  case '\'': temp_buffer[1] = '\''; break; 
+  } 
+  
+  assert(buffer != NULL); 
+  if (buffer_size == 0) return buffer; 
+  bzero(buffer, buffer_size); 
+  if (buffer_size == 1) return buffer; 
+  buffer[0] = temp_buffer[0]; 
+  if (buffer_size == 2) return buffer; 
+  buffer[1] = temp_buffer[1]; 
+  return buffer;
+}
+
+static char * char_cstring(const char c);
+static char * char_cstring__on_the_heap(const char c);
+static char * char_cstring__on_the_stack(const char c);
+static char * char_cstring__in_the_buffer(const char c, const int buffer_size, char * buffer);
+#define char_cstring__on_the_heap(c)  char_cstring__in_the_buffer((c), 3, malloc(3))
+#define char_cstring__on_the_stack(c) char_cstring__in_the_buffer((c), 3, alloca(3))
+#define char_cstring char_cstring__on_the_heap
+
+
+#define number_2_string(byte) ( (int_string_on_the_stack((int)byte)))
+
+
+static char encoded_char_2_special_char(const char encoded_char) {
+  char c; 
+  switch (encoded_char) {
+  case '0': c = '\0'; break; 
+  case 'a': c = '\a'; break; 
+  case 'b': c = '\b'; break; 
+  case 't': c = '\t'; break; 
+  case 'n': c = '\n'; break; 
+  case 'v': c = '\v'; break; 
+  case 'f': c = '\f'; break; 
+  case 'r': c = '\r'; break; 
+  case 'e': c = '\e'; break; 
+  default: c = encoded_char; break; 
+  }
+  return c; 
+}
+
+
+// =================================================================================================== 
+// DPUTS 
+
+// man3 strnlen 
+// man 3 dputs 
+// man 3 fwrite 
+// int dputs(const char *restrict s, const intrestrict stream); 
+static int dputs3(const int out_stream, const char * s1, const char * s2, const char * s3) {
+  const char * s1_adjusted = NULL == s1 ? "" : s1; 
+  const char * s2_adjusted = NULL == s2 ? "" : s2; 
+  const char * s3_adjusted = NULL == s3 ? "" : s3; 
+#if 1 
+  const int len1 = strlen(s1); 
+  const int len2 = strlen(s2); 
+  const int len3 = strlen(s3); 
+#endif 
+  int written = 0; 
+  written += write(out_stream, s1_adjusted, len1); 
+  written += write(out_stream, s2_adjusted, len2); 
+  written += write(out_stream, s3_adjusted, len3); 
+  return written;
+}; 
+
+static int dputs5(const int out_stream, const char * s1, const char * s2, const char * s3, const char * s4, const char * s5) {
+  int written = 0; 
+  if ((NULL != s1) && ('\0' != *s1)) written += write(out_stream, s1, strlen(s1)); 
+  if ((NULL != s2) && ('\0' != *s2)) written += write(out_stream, s2, strlen(s2)); 
+  if ((NULL != s3) && ('\0' != *s3)) written += write(out_stream, s3, strlen(s3)); 
+  if ((NULL != s4) && ('\0' != *s4)) written += write(out_stream, s4, strlen(s4)); 
+  if ((NULL != s5) && ('\0' != *s5)) written += write(out_stream, s5, strlen(s5)); 
+  return written;
+}; 
+
+static int dputs_array__(const int out_stream, const int nb, const char * cstr_array[]) { 
+  int written = 0; 
+  for (int i = 0; i < nb; i++) { 
+    const char * cstr = cstr_array[i]; 
+    if ((NULL != cstr) && ('\0' != *cstr)) written += write(out_stream, cstr, strlen(cstr)); 
+  }; 
+  return written; 
+}; 
+ 
+#if 1 
+#define dputs_array(out_stream,...) (dputs_array__((out_stream),ARRAY_SIZE(((const char * []) { __VA_ARGS__ } )), ((const char * []) { __VA_ARGS__ } )))
+#endif 
+
+static int dputs7(const int out_stream, const char * s1, const char * s2, const char * s3, const char * s4, const char * s5, const char * s6, const char * s7) { 
+#if defined(__clang__)
+  const char * cstr_array[] = ((const char * []) { s1, s2, s3, s4, s5, s6, s7 } ); 
+  const int cstr_array_len = ARRAY_SIZE(cstr_array); 
+  return dputs_array__(out_stream, cstr_array_len, cstr_array); 
+#else 
+  return dputs_array__(out_stream, 7, ((const char * []) { s1, s2, s3, s4, s5, s6, s7 } ));
+#endif 
+};
+
+static int dputs8(const int out_stream, const char * s1, const char * s2, const char * s3, const char * s4, const char * s5, const char * s6, const char * s7, const char * s8) { 
+  return dputs_array__(out_stream, 8, ((const char * []) { s1, s2, s3, s4, s5, s6, s7, s8 } ));
+};
+
+
+static int dputsl(const int out_stream, const char * s, const size_t size) { 
+  if (s == NULL) return 0; 
+  //char buff[size]; 
+  //strlcpy(buff, s, size); 
+  //dputs(buff, out_stream); 
+  //return fwrite(s, 1, strnlen(s, size), out_stream); 
+  return write(out_stream, s, strnlen(s, size)); 
+}; 
+
+static int dputb(const int out_stream, const char buf[], const int size) { 
+  //return fwrite(buf, 1, size, out_stream); 
+  return write(out_stream, buf, size); 
+}; 
+
+static void dput_eol(const int out_stream) {
+  const char c = '\n'; 
+   write(out_stream, &c, 1); 
+}; 
+
+static void dputc_rep(const int out_stream, const int rep_n, const int c) {
+  if (rep_n <= 0) return; 
+  char tab[1+rep_n]; 
+  memset(tab, c, rep_n); 
+  tab[rep_n] = '\0'; 
+  //dputs(tab, out_stream); 
+  dputs(out_stream, tab); 
+}; 
+
+static void dput_spaces(const int out_stream, const int nb_spaces) {
+  dputc_rep(out_stream, nb_spaces, ' '); 
+}; 
+
+static int dputn(const int out_stream, const int n) { 
+  return dputs(out_stream, int_string_on_the_stack(n)); 
+}; 
+
+static int dputc_str(const int out_stream, const char c) { 
+  return dputs(out_stream, char_string__on_the_stack(c)); 
+}; 
+
+static int dputf(const int out_stream, const double x) { 
+#if 1
+  return dputs(out_stream, float_string__on_the_stack(x)); 
+#else 
+  char * str; 
+  asprintf(&str, "%f", x); 
+  const int retval = dputs(out_stream, str); 
+  free(str); 
+  return retval; 
+#endif 
+}; 
+
+
+// =================================================================================================== 
+// FILE 
+
+static int file_exists_huh(const char * file_name) {
+  return (0 == access(file_name, F_OK)); 
+};
+
+static int file_exists_huh__stat(const char * file_name) {
+  return false;
+#if 0
+  int ret; 
+  struct stat sb;
+  ret = stat(file_name, &sb); 
+  return (0 == ret);
+#endif 
+};
+
+static int file_size_get(const char * file_name) { 
+  int handle; 
+  handle = open(file_name, O_RDONLY | O_NONBLOCK); 
+  if (-1 == handle) return -1; 
+  off_t pos; 
+  pos = lseek(handle, 0, SEEK_END); 
+  close(handle); 
+  return pos; 
+};
+
+static int64_t file_size_get__stat(const char * file_name) { 
+  return -1; 
+#if 0
+  int ret; 
+  struct stat sb;
+  ret = stat(file_name, &sb); 
+  //assert(0 == ret);
+  if (0 != ret) return -1; 
+  return ((int64_t) sb.st_size);
+#endif 
+};
+
+
+// =================================================================================================== 
+// UTILS 
+
+static int int_member_array_nb(const int n, const int size, const int int_array[]) {
+  for (int i = 0; i < size; i++) {
+    if (n == int_array[i]) return true; 
+  }; 
+  return false; 
+}; 
+
+#define int_member_array(n,int_array) (int_member_array_nb(((n)),(ARRAY_SIZE((int_array))),((int_array))))
+
+#define int_member_huh(n,...) int_member_array((n), ((const int []) { __VA_ARGS__ })) 
+
+static int char_member_zarray(const char c, const char zarray[]) { 
+  do {
+    if (*zarray == '\0') return false; 
+    if (*zarray == c) return true; 
+    zarray++; 
+    continue; 
+  } while (true); 
+}; 
+  
+static char char_printable_filter(const int v) {
+  if (('0' <= v) && ('9' >= v)) return v; 
+  if (('a' <= v) && ('z' >= v)) return v; 
+  if (('A' <= v) && ('Z' >= v)) return v; 
+  if ('_' == v) return v; 
+  if ('!' == v) return v; 
+  return '.'; 
+}; 
+
+
+static void char_array__print(const int filedes, const int nb, const char char_array[]) {
+  dputs(filedes, "[ "); 
+  for (int i = 0; i < nb; i++) {
+    dputn(filedes, (int) char_array[i]); 
+    if ((i+1) != nb) dputs(filedes, ", "); 
+  }; 
+  dputs(filedes, " ]"); 
+}; 
+
+
+static void int_array__print(const int filedes, const int nb, const int int_array[]) {
+  dputs(filedes, "[ "); 
+  for (int i = 0; i < nb; i++) {
+    dputn(filedes, int_array[i]); 
+    if ((i+1) != nb) dputs(filedes, ", "); 
+  }; 
+  dputs(filedes, " ]"); 
+}; 
+
+
+static void assert_log(int a) {
+}; 
+
+
+
+
+

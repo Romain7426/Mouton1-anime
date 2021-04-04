@@ -1,0 +1,200 @@
+// =================================================================================================== 
+// STRING STACK 
+// My big table of strings 
+// 
+// - Property: a string is zero-ended and cannot have a zero inside. 
+// - One table big array to store the values (400k) [we do not need such a big table] 
+//    + One adjacent array to store in the position in the big array 
+//    + One adjacent array to store the length 
+//    + One adjacent array to store the recognized type 
+// - Many small tables: 
+//    + the index table of indexes in the big table 
+//    + the array of types 
+//    + starting: filename, offset, line, column 
+// 
+
+typedef int str_t; 
+
+enum { STRING__SRCVAL_ARRAY__SIZE = (1 << 17) };  // 128k // Roughly, the size will be 70% of the source file. Which means that we can read 500k files. 
+
+static char string__srcval_array[STRING__SRCVAL_ARRAY__SIZE] = { '\0' }; 
+static int  string__srcval_array_nb = 1; 
+
+static str_t string__push(const char * cstr) { 
+  if (NULL == cstr) { return -1; }; 
+  const int len = strlen(cstr); 
+  if (STRING__SRCVAL_ARRAY__SIZE < (len + string__srcval_array_nb)) { return -3; }; 
+  
+  const int pos = string__srcval_array_nb; 
+  
+  //memcpy(lexer_token__srcval_array, token_value, len); 
+  bcopy(cstr, string__srcval_array + string__srcval_array_nb, len);
+  string__srcval_array_nb += 1+len; 
+  
+  return pos; 
+}; 
+
+static str_t string__lookup(const char * cstr) { 
+  if (NULL == cstr) { return -1; }; 
+  const int len = strlen(cstr); 
+  if (0 == len) { return 0; }; 
+  int curpos = 0; 
+  int curlen = -1; 
+  for (;;) {
+    curpos += (1+curlen); 
+    if (curpos >= string__srcval_array_nb) { return -2; }; 
+    const char * curstr = string__srcval_array + curpos; 
+    curlen = strlen(curstr); 
+    if (curlen != len) continue; 
+    if (0 != bcmp(cstr, curstr, len)) continue; 
+    return curpos; 
+  }; 
+  assert(false); 
+}; 
+
+static str_t string__push_or_lookup(const char * cstr) { 
+  if (NULL == cstr) { return -1; }; 
+  const int len = strlen(cstr); 
+  if (0 == len) { return 0; }; 
+  const int pos1 = string__lookup(cstr); 
+  if (pos1 >= 0) return pos1; 
+  return string__push(cstr); 
+}; 
+
+static str_t cstr2str(const char * cstr) {
+  return string__push_or_lookup(cstr);
+}; 
+
+static int dput_str(const int filedes, const str_t str) {
+  return dputs(filedes, string__srcval_array + str); 
+}; 
+
+static int string__length(const str_t str) {
+  return strlen(string__srcval_array + str); 
+}; 
+
+static int string__equal_huh(const str_t str1, const str_t str2) {
+  return (str1 == str2); 
+}; 
+
+static const char * string__const_char_array(const str_t str) {
+  return (string__srcval_array + str); 
+}; 
+
+static const char * string__get(const str_t str) {
+  return (string__srcval_array + str); 
+}; 
+
+static char * string__char_array__in_the_buffer(const str_t str, const int buffer_size, char buffer[]) {
+  strlcpy(buffer, string__srcval_array + str, buffer_size); 
+  return buffer; 
+}; 
+
+extern char * string__char_array(const str_t str);
+extern char * string__char_array_on_the_heap(const str_t str);
+extern char * string__char_array_on_the_stack(const str_t str);
+extern char * string__char_array_in_the_buffer(const str_t str_given, const int buffer_size, char * buffer);
+#define string__char_array_size_for_str(str) (1+(string__length(str)))
+#define string__char_array_on_the_heap(str)  string__char_array_in_the_buffer((str), string__char_array_size_for_str(str), malloc(sizeof(char) * (string__char_array_size_for_str(str))))
+#define string__char_array_on_the_stack(str) string__char_array_in_the_buffer((str), string__char_array_size_for_str(str), alloca(sizeof(char) * (string__char_array_size_for_str(str))))
+#define string__char_array         string__char_array_on_the_heap
+#define string__char_array__stack  string__char_array_on_the_stack
+
+static int string__concat2(const str_t str1, const str_t str2) {
+  const int len1 = string__length(str1); 
+  const int len2 = string__length(str2); 
+  const int catlen = len1 + len2; 
+  char buffer[1 + catlen]; 
+  bcopy(string__const_char_array(str1), buffer, len1); 
+  bcopy(string__const_char_array(str2), buffer+len1, len2); 
+  buffer[catlen] = '\0'; 
+  return string__push_or_lookup(buffer); 
+}; 
+
+static int string__concat3(const str_t str1, const str_t str2, const str_t str3) {
+  const int len1 = string__length(str1); 
+  const int len2 = string__length(str2); 
+  const int len3 = string__length(str3); 
+  const int catlen = len1 + len2 + len3; 
+  char buffer[1 + catlen]; 
+  char * ptr = buffer; 
+  bcopy(string__const_char_array(str1), ptr, len1); ptr += len1; 
+  bcopy(string__const_char_array(str2), ptr, len2); ptr += len2; 
+  bcopy(string__const_char_array(str3), ptr, len3); ptr += len3; 
+  *ptr = '\0'; 
+  return string__push_or_lookup(buffer); 
+}; 
+
+static int string__concat4(const str_t str1, const str_t str2, const str_t str3, const str_t str4) {
+  const int len1 = string__length(str1); 
+  const int len2 = string__length(str2); 
+  const int len3 = string__length(str3); 
+  const int len4 = string__length(str4); 
+  const int catlen = len1 + len2 + len3 + len4; 
+  char buffer[1 + catlen]; 
+  char * ptr = buffer; 
+  bcopy(string__const_char_array(str1), ptr, len1); ptr += len1; 
+  bcopy(string__const_char_array(str2), ptr, len2); ptr += len2; 
+  bcopy(string__const_char_array(str3), ptr, len3); ptr += len3; 
+  bcopy(string__const_char_array(str4), ptr, len4); ptr += len4; 
+  *ptr = '\0'; 
+  return string__push_or_lookup(buffer); 
+}; 
+
+static str_t string__concat__array(const int str_nb, const str_t str_array[]) {
+  if (0 >= str_nb) return 0; 
+  int len_array[str_nb]; 
+  for (int i = 0; i < str_nb; i++) { len_array[i] = string__length(str_array[i]); }; 
+  int catlen = 0; 
+  for (int i = 0; i < str_nb; i++) { catlen += len_array[i]; }; 
+  char buffer[1 + catlen]; 
+  char * ptr = buffer; 
+  for (int i = 0; i < str_nb; i++) { bcopy(string__const_char_array(str_array[i]), ptr, len_array[i]); ptr += len_array[i]; }; 
+  *ptr = '\0'; 
+  return string__push_or_lookup(buffer); 
+}; 
+
+static str_t * string__push_or_lookup__array__in_the_buffer(const int str_nb, const char * carray[], str_t str_array[]) {
+  if (0 >= str_nb) { return str_array; }; 
+  for (int i = 0; i < str_nb; i++) { str_array[i] = string__push_or_lookup(carray[i]); }; 
+  return str_array; 
+};
+
+extern str_t * string__push_or_lookup__array__on_the_heap  (const int str_nb, const char * carray[]);
+extern str_t * string__push_or_lookup__array__on_the_stack (const int str_nb, const char * carray[]);
+extern str_t * string__push_or_lookup__array__in_the_buffer(const int str_nb, const char * carray[], str_t str_array[]);
+#define string__push_or_lookup__array__on_the_heap(str_nb,carray)  string__push_or_lookup__array__in_the_buffer((str_nb), (carray), malloc(sizeof(str_t) * (str_nb)))
+#define string__push_or_lookup__array__on_the_stack(str_nb,carray) string__push_or_lookup__array__in_the_buffer((str_nb), (carray), alloca(sizeof(str_t) * (str_nb)))
+#define string__push_or_lookup__array__heap   string__push_or_lookup__array__on_the_heap 
+#define string__push_or_lookup__array__stack  string__push_or_lookup__array__on_the_stack
+#define string__push_or_lookup__array         string__push_or_lookup__array__heap 
+
+static str_t string__concat__carray__aux(const int str_nb, const char * carray[]) {
+  if (0 >= str_nb) return 0; 
+  return string__concat__array(str_nb, string__push_or_lookup__array__stack(str_nb, carray)); // OK here to stack as the cstring is copied into the great string table. 
+}; 
+#define string__concat__carray(carray) string__concat__carray__aux(ARRAY_SIZE((carray)),((carray)))
+
+static int zcarray_length(const char * zcarray[]) {
+  int len = 0; 
+  for (;;) {
+    if (NULL == *zcarray) return len; 
+    zcarray++;
+    len++; 
+  }; 
+  assert(false); 
+}; 
+
+static str_t string__concat__zcarray(const char * zcarray[]) {
+  const int cstr_nb = zcarray_length(zcarray); 
+  //dputn(stderr, cstr_nb); dput_eol(stderr); 
+  if (0 >= cstr_nb) return 0; 
+  return string__concat__array(cstr_nb, string__push_or_lookup__array__stack(cstr_nb, zcarray)); // OK here to stack as the cstring is copied into the great string table. 
+}; 
+
+
+static str_t string__concat5(const str_t str1, const str_t str2, const str_t str3, const str_t str4, const str_t str5) {
+  return string__concat__array(5, (str_t[]) {str1, str2, str3, str4, str5}); 
+}; 
+
+

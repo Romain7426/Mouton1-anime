@@ -1,0 +1,92 @@
+/* Ceci est un commentaire. "  "  */
+// Ceci est encore un commentaire.
+# C'est encore un commentaire.
+
+physique {
+ zone de choc := {
+  longueur := 0.5;
+  largeur := 0.5;
+  hauteur := 50.;
+ };
+ MaSSe := 240.;
+}
+
+gameplay {
+ points de vie := 9999;
+ invincible := vrai;
+ hostile := faux;
+ 
+ //action parler {
+ // affichage := "parler";
+ // icone := "";
+ // gestionnaire := { fichier := "script.pml"; procedure := "chaman_parler"; } ;
+ //} 
+
+
+}
+
+
+
+graphique {
+ membre corps {
+  fils := ;
+  image := "./villageois/corps6.png";
+  largeur := 20.;
+  hauteur := 22.;
+  angle max y := 0.;
+ }
+
+ membre bras_gauche {
+  fils := ;
+  image := "./villageois/bras12.png";
+  largeur := 9.;
+  hauteur := 26.;
+  angle max y := -.30.;
+ }
+
+ membre bras_droit {
+  fils := /*{qui := epee; x := 0.; y := 0.; z := -.22.; angle y := 0.;}*/;
+  image := "./villageois/bras12.png";
+  largeur := 9.;
+  hauteur := 26.;
+  angle max y := 30.;
+ }
+
+ membre tete {
+  fils := ;
+  image := "./villageois/tetes11.png";
+  largeur := 15.;
+  hauteur := 15.;
+  angle max y := 0.;
+ }
+
+ membre jambe_gauche {
+  fils := ;
+  image := "./villageois/jambes10.png";
+  largeur := 9.;
+  hauteur := 20.;
+  angle max y := 45.;
+ }
+
+ membre jambe_droite {
+  fils := ;
+  image := "./villageois/jambes10.png";
+  largeur := 9.;
+  hauteur := 20.;
+  angle max y := -.45.;
+ }
+
+ membres racines := 
+	{qui := corps;        x := 0.; y :=    0.; z := 37.; angle y := 0.;},
+	{qui := tete;         x := 0.; y :=    0.; z := 49.; angle y := 0.;},
+	{qui := jambe_gauche; x := 0.; y :=    5.; z := 19.; angle y := 0.;},
+	{qui := jambe_droite; x := 0.; y :=  -.5.; z := 19.; angle y := 0.;},
+	{qui := bras_gauche;  x := 0.; y :=   15.; z := 37.; angle y := 0.;},
+	{qui := bras_droit;   x := 0.; y := -.15.; z := 37.; angle y := 0.;};
+
+}
+
+
+
+
+

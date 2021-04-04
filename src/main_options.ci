@@ -1,0 +1,314 @@
+// =================================================================================================== 
+// MAIN OPTIONS 
+ 
+enum {
+  PROGRAM_OPTIONS_INDEX__VERSION, 
+  PROGRAM_OPTIONS_INDEX__COPYRIGHT, 
+  PROGRAM_OPTIONS_INDEX__COPYRIGHT_CSTR, 
+  PROGRAM_OPTIONS_INDEX__COPYRIGHT_CCOMMENT, 
+  PROGRAM_OPTIONS_INDEX__COPYRIGHT_SHELL_COMMENT, 
+  PROGRAM_OPTIONS_INDEX__COPYRIGHT_SLASH_COMMENT, 
+  PROGRAM_OPTIONS_INDEX__LICENCE, 
+  PROGRAM_OPTIONS_INDEX__HELP, 
+  PROGRAM_OPTIONS_INDEX__VERBOSE_LEVEL, 
+  PROGRAM_OPTIONS_INDEX__STDLOG, 
+  PROGRAM_OPTIONS_INDEX__STDUSER, 
+  PROGRAM_OPTIONS_INDEX__PRINT, 
+  PROGRAM_OPTIONS_INDEX__URL, 
+  PROGRAM_OPTIONS_INDEX__EXAMPLE, 
+  PROGRAM_OPTIONS_INDEX__QUIET, 
+  PROGRAM_OPTIONS_INDEX__COUNT, 
+}; 
+ 
+static       uint8_t program_options[PROGRAM_OPTIONS_INDEX__COUNT] = {}; 
+enum {               PROGRAM_OPTIONS__ARGC_MAX = 64 }; 
+static       int     program_options__unknown[PROGRAM_OPTIONS__ARGC_MAX] = {}; 
+static       int     program_options__unknown__nb = 0; 
+static       int     program_options__plain[PROGRAM_OPTIONS__ARGC_MAX] = {}; 
+static       int     program_options__plain__nb = 0; 
+//static const char *  program_options__value[PROGRAM_OPTIONS__ARGC_MAX] = {}; 
+static const char *  program_options__stdlog_new_output = NULL; 
+static const char *  program_options__stduser_new_output = NULL; 
+
+static void program_options__unknown__push(const int argc) { 
+  assert(program_options__unknown__nb < PROGRAM_OPTIONS__ARGC_MAX); 
+  program_options__unknown[program_options__unknown__nb] = argc; 
+  program_options__unknown__nb++; 
+}; 
+
+static void program_options__plain__push(const int argc) { 
+  assert(program_options__plain__nb < PROGRAM_OPTIONS__ARGC_MAX); 
+  program_options__plain[program_options__plain__nb] = argc; 
+  program_options__plain__nb++; 
+}; 
+
+#if 0 
+static void program_options__value__set(const int arg_i, const char * arg_value) { 
+  assert(arg_i < PROGRAM_OPTIONS__ARGC_MAX); 
+  program_options__value[arg_i] = arg_value; 
+}; 
+#endif 
+
+
+static void program_options__bzero(void) {
+  { 
+    uint8_t * p = program_options; 
+    for (int i = 0; i < PROGRAM_OPTIONS_INDEX__COUNT; i++) { 
+      *p = 0; 
+      p++; 
+    }; 
+  };
+};
+
+static void main_arg_print(const int argc, const char * argv[], const int stdlog_d) {
+  dputs(stdlog_d, "argc: "); dputn(stdlog_d, argc); dputs(stdlog_d, "\n"); 
+  for (int i = 0; i < argc; i++) {
+    dputs(stdlog_d, "argv["); dputn(stdlog_d, i); dputs(stdlog_d, "] = "); dputs(stdlog_d, argv[i]); dputs(stdlog_d, "\n"); 
+  }; 
+}; 
+
+static int program_options__parse(const int argc, const char * argv[]) {
+  program_options__bzero();
+  program_options__unknown__nb = 0; 
+  program_options__plain__nb   = 0; 
+  const char * * p = argv;
+  for (int i = 1;; i++) { 
+    p++; 
+    const char * s = *p;
+    if (NULL ==  s) { break; }; 
+    if ('\0' == *s) { continue; }; 
+    if ('-'  != *s) { program_options__plain__push(i); continue; }; 
+    s++; 
+    if ('\0' == *s) { program_options__plain__push(i); continue; }; 
+    if (('-' == *s) && ('\0' == *(s+1))) { 
+      for (;;) { i++; if (i == argc) break; program_options__plain__push(i); }; 
+      break; 
+    }; 
+    if ('-'  != *s) { 
+      for (;;) { 
+	switch (*s) { 
+	 case '?': program_options[PROGRAM_OPTIONS_INDEX__HELP         ]++; break; 
+	 case 'h': program_options[PROGRAM_OPTIONS_INDEX__HELP         ]++; break; 
+	 case 'v': program_options[PROGRAM_OPTIONS_INDEX__VERBOSE_LEVEL]++; break; 
+         case 'V': program_options[PROGRAM_OPTIONS_INDEX__VERSION      ]++; break; 
+         case 'q': program_options[PROGRAM_OPTIONS_INDEX__QUIET        ]++; break; 
+         default : program_options__unknown__push(i); break; // RL: TODO FIXME XXX: Find a way to get that unrecognized letter. 
+	}; 
+	s++; 
+	if ('\0' == *s) { break; }; 
+      }; 
+      continue; 
+    }; 
+    s++;
+    if (0 == strcasecmp(s, "help"                   )) { program_options[PROGRAM_OPTIONS_INDEX__HELP                   ]++; continue; }; 
+    if (0 == strcasecmp(s, "usage"                  )) { program_options[PROGRAM_OPTIONS_INDEX__HELP                   ]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright"              )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT              ]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-cstr"         )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CSTR         ]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-c-str"        )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CSTR         ]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-c_str"        )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CSTR         ]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-ccomment"     )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CCOMMENT     ]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-c-comment"    )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CCOMMENT     ]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-c_comment"    )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CCOMMENT     ]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-shell-comment")) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_SHELL_COMMENT]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-shell_comment")) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_SHELL_COMMENT]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-slash-comment")) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_SLASH_COMMENT]++; continue; }; 
+    if (0 == strcasecmp(s, "copyright-slash_comment")) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_SLASH_COMMENT]++; continue; }; 
+    if (0 == strcasecmp(s, "license"                )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT              ]++; continue; }; 
+    if (0 == strcasecmp(s, "licence"                )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT              ]++; continue; }; 
+    if (0 == strcasecmp(s, "verbose"                )) { program_options[PROGRAM_OPTIONS_INDEX__VERBOSE_LEVEL          ]++; continue; }; 
+    if (0 == strcasecmp(s, "version"                )) { program_options[PROGRAM_OPTIONS_INDEX__VERSION                ]++; continue; }; 
+    if (0 == strcasecmp(s, "example"                )) { program_options[PROGRAM_OPTIONS_INDEX__EXAMPLE                ]++; continue; }; 
+    if (0 == strcasecmp(s, "exemple"                )) { program_options[PROGRAM_OPTIONS_INDEX__EXAMPLE                ]++; continue; }; 
+    if (0 == strcasecmp(s, "quiet"                  )) { program_options[PROGRAM_OPTIONS_INDEX__QUIET                  ]++; continue; }; 
+    if (0 == strcasecmp(s, "mute"                   )) { program_options[PROGRAM_OPTIONS_INDEX__QUIET                  ]++; continue; }; 
+    if (0 == strcasecmp(s, "print"                  )) { program_options[PROGRAM_OPTIONS_INDEX__PRINT                  ]++; continue; }; 
+    if (0 == strcasecmp(s, "url"                    )) { program_options[PROGRAM_OPTIONS_INDEX__URL                    ]++; continue; }; 
+    if (0 == strcasecmp(s, "stdlog"                 )) { program_options[PROGRAM_OPTIONS_INDEX__STDLOG                 ]++; 
+      p++; 
+      if (*p == NULL) return false; 
+#if 1 
+      program_options__stdlog_new_output = *p; 
+ #else 
+      program_options__value__set(i, *p); 
+#endif 
+      i++; 
+      continue; 
+    }; 
+    if (0 == strcasecmp(s, "stduser"                )) { program_options[PROGRAM_OPTIONS_INDEX__STDUSER                ]++; 
+      p++; 
+      if (*p == NULL) return false; 
+      program_options__stduser_new_output = *p; 
+      i++; 
+      continue; 
+    }; 
+    program_options__unknown__push(i); 
+    continue; 
+  }; 
+  return true; 
+}; 
+
+static void main__usage(const int argc, const char * argv[], const int stduser_d) { 
+  //fprintf(stderr, "%s <infile> " "\n", argv[0]); 
+  //fprintf(stderr, "\t <infile> can be a filename or '-' for stdin" "\n", argv[0]); 
+  //dputs(stduser_d, program_description); 
+  dputs_array(stduser_d, argv[0], ": ", "Check if an anime description file is properly written." "\n"); 
+  dputs_array(stduser_d, "Usage: ", argv[0], " [<options>] <infile> [<fields name>] " "\n" ); 
+  dputs(stduser_d, "  " "<infile> can be a filename or '-' for stdin (use './-' for a file named '-')" "\n"); 
+  dputs(stduser_d, "  " "If <fields name> are provided, print the value of the matching fields." "\n"); 
+  dputs(stduser_d, "Options:" "\n"); 
+  dputs(stduser_d, "  " "-h,-?,--help,--usage               " "  \t  " "Display this help" "\n"); 
+  dputs(stduser_d, "  " "--copyright,--license,--licence    " "  \t  " "Display the program license" "\n"); 
+  dputs(stduser_d, "  " "--copyright-cstr                   " "  \t  " "Display the program license as a C string" "\n"); 
+  dputs(stduser_d, "  " "--copyright-ccomment               " "  \t  " "Display the program license as a C comment" "\n"); 
+  dputs(stduser_d, "  " "--copyright-shell_comment          " "  \t  " "Display the program license as a SHELL comment" "\n"); 
+  dputs(stduser_d, "  " "--copyright-slash_comment          " "  \t  " "Display the program license as a double-slash comment" "\n"); 
+  dputs(stduser_d, "  " "-v,--verbose                       " "  \t  " "Increase verbosity" "\n"); 
+  dputs(stduser_d, "  " "-q,--quiet,--mute                  " "  \t  " "Do not tell anything" "\n"); 
+  dputs(stduser_d, "  " "-V,--version                       " "  \t  " "Print program version" "\n"); 
+  dputs(stduser_d, "  " "--example,--exemple                " "  \t  " "Print an example" "\n"); 
+  dputs(stduser_d, "  " "--url                              " "  \t  " "Print url" "\n"); 
+  dputs(stduser_d, "  " "--stduser <file>                   " "  \t  " "Redirect all the talk to the user to <file>. (Default is stderr.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)" "\n"); 
+  dputs(stduser_d, "  " "--stdlog <file>                    " "  \t  " "Write stdlog to <file>. (By default, stdlog fd is 3; therefore the output of stdlog can be gotten using '3>&2' or '3>./stdlog.txt'.) (stdlog is intended for dev. But can be used by users.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)" "\n"); 
+}; 
+ 
+static int program_options__run(const int argc, const char * argv[], const int stdprint_d, const int stduser_d, const int stdlog_d) { 
+  if (0 != program_options__unknown__nb) { 
+    for (int i = 0; i < program_options__unknown__nb; i++) { 
+      dputs(stduser_d, "Unknown option: "); 
+      dputs(stduser_d, "argv["); 
+      dputn(stduser_d, program_options__unknown[i]); 
+      dputs(stduser_d, "]: "); 
+      dputs(stduser_d, argv[program_options__unknown[i]]); 
+      dputs(stduser_d, "\n"); 
+    }; 
+    return ANIME__MAIN__OPTIONS__UNKNOWN; 
+  }; 
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__HELP]) { 
+    main__usage(argc, argv, stduser_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  };
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__VERSION]) {
+    anime_version__print(stdprint_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  };
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__EXAMPLE]) {
+    anime_example__print(stdprint_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  };
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT]) {
+    anime_copyright__print(stdprint_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  };
+
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CSTR]) {
+    const char * p = anime_copyright; 
+    dputs(stdprint_d, "\""); 
+    int i = 0; 
+    for (;;) { 
+      if (*p == '\0') {
+	for (int j = i; j < 73; j++) { dputc(stdprint_d, ' '); }; 
+	dputs(stdprint_d, "\" \"\\n\" \n"); 
+	break; 
+      }; 
+      if (*p == '\n') {
+	for (int j = i; j < 73; j++) { dputc(stdprint_d, ' '); }; 
+	dputs(stdprint_d, "\" \"\\n\" \n\""); 
+	i = 0; 
+	p++; 
+	continue; 
+      }; 
+      dputc(stdprint_d, *p); 
+      i++; 
+      p++; 
+    }; 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  }; 
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CCOMMENT]) {
+    const char * p = anime_copyright; 
+    dputs(stdprint_d, "/* "); 
+    int i = 0; 
+    for (;;) { 
+      if (*p == '\0') {
+	for (int j = i; j < 73; j++) { dputc(stdprint_d, ' '); }; 
+	dputs(stdprint_d, " */\n"); 
+	break; 
+      }; 
+      if (*p == '\n') {
+	for (int j = i; j < 73; j++) { dputc(stdprint_d, ' '); }; 
+	dputs(stdprint_d, " */\n/* "); 
+	i = 0; 
+	p++; 
+	continue; 
+      }; 
+      dputc(stdprint_d, *p); 
+      i++; 
+      p++; 
+    }; 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  }; 
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_SHELL_COMMENT]) {
+    const char * p = anime_copyright; 
+    dputs(stdprint_d, "# "); 
+    int i = 0; 
+    for (;;) { 
+      if (*p == '\0') {
+	for (int j = i; j < 73; j++) { dputc(stdprint_d, ' '); }; 
+	dputs(stdprint_d, " \n"); 
+	break; 
+      }; 
+      if (*p == '\n') {
+	for (int j = i; j < 73; j++) { dputc(stdprint_d, ' '); }; 
+	dputs(stdprint_d, " \n# "); 
+	i = 0; 
+	p++; 
+	continue; 
+      }; 
+      dputc(stdprint_d, *p); 
+      i++; 
+      p++; 
+    }; 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  }; 
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_SLASH_COMMENT]) {
+    const char * p = anime_copyright; 
+    dputs(stdprint_d, "// "); 
+    int i = 0; 
+    for (;;) { 
+      if (*p == '\0') {
+	for (int j = i; j < 73; j++) { dputc(stdprint_d, ' '); }; 
+	dputs(stdprint_d, " \n"); 
+	break; 
+      }; 
+      if (*p == '\n') {
+	for (int j = i; j < 73; j++) { dputc(stdprint_d, ' '); }; 
+	dputs(stdprint_d, " \n// "); 
+	i = 0; 
+	p++; 
+	continue; 
+      }; 
+      dputc(stdprint_d, *p); 
+      i++; 
+      p++; 
+    }; 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  }; 
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__URL]) {
+    anime_url__print(stdprint_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  };
+
+  if (0 == program_options__plain__nb) { 
+    main__usage(argc, argv, stduser_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  }; 
+  
+  return ANIME__OK; 
+}; 
