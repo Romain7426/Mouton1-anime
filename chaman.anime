@@ -16,11 +16,34 @@ gameplay {
  invincible := vrai;
  hostile := faux;
  
- /* action parler {
-  affichage := "parler";
-  icone := "";
-  gestionnaire := { fichier := "script.pml"; procedure := "chaman_parler"; } ;
- } */
+ //action parler {
+ // affichage := "parler";
+ // icone := "";
+ // gestionnaire := { fichier := "script.pml"; procedure := "chaman_parler"; } ;
+ //} 
+
+
+}
+
+physique {
+ zone de choc := {
+  longueur := 0.5;
+  largeur := 0.5;
+  hauteur := 50.;
+ };
+ MaSSe := 240.;
+}
+
+gameplay {
+ points de vie := 9999;
+ invincible := vrai;
+ hostile := faux;
+ 
+ //action parler {
+ // affichage := "parler";
+ // icone := "";
+ // gestionnaire := { fichier := "script.pml"; procedure := "chaman_parler"; } ;
+ //} 
 
 
 }
