@@ -81,7 +81,7 @@ if (error_id != ANIME__OK) {
 ## Executable Example 
 
 <pre>
-\$ ./destroot/bin/anime.exe
+$ ./destroot/bin/anime.exe
 ./destroot/bin/anime.exe: Check if an anime description file is properly written.
 Usage: ./destroot/bin/anime.exe [<options>] <infile> [<fields name>] 
   <infile> can be a filename or '-' for stdin (use './-' for a file named '-')
@@ -103,12 +103,12 @@ Options:
 </pre>
  
 <pre>
-\$ ./destroot/bin/anime.exe chaman.anime 3>./chaman.log
+$ ./destroot/bin/anime.exe chaman.anime 3>./chaman.log
 <chaman.anime>: OK
 </pre>
 
 <pre>
-\$ ./destroot/bin/anime.exe chaman.anime physique
+$ ./destroot/bin/anime.exe chaman.anime physique
 physique.zone_de_choc.longueur =   0.500000 
 physique.zone_de_choc.largeur  =   0.500000 
 physique.zone_de_choc.hauteur  =  50.000000 
