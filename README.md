@@ -65,7 +65,8 @@ graphique {
 <pre>
 #include "anime.h"
 
-const int stdlog_d = open("./stdlog.log", O_WRONLY); 
+const int stdlog_d  = open("./stdlog.log", O_WRONLY); 
+const int stduser_d = 2; //stderr 
 int_anime_error_t error_id; 
 anime_t a_anime[1]; 
 anime__make_r(a_anime, stdlog_d); 
