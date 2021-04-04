@@ -25,6 +25,7 @@ That should do.
  
 ## DSL Example
 
+<pre>
 physique {
  zone de choc := {
   longueur := 0.5;
@@ -57,10 +58,11 @@ graphique {
 	{qui := bras_droit;   x := 0.; y := -.15.; z := 37.; angle y := 0.;};
 
 }
-
+</pre>
 
 ## Lib Example
 
+<pre>
 #include "anime.h"
 
 const int stdlog_d = open("./stdlog.log", O_WRONLY); 
@@ -72,10 +74,12 @@ if (error_id != ANIME__OK) {
   if (stduser_d > 0) dprintf(stduser_d, "<%s>: " "%s[%d]: " "%s" "\n", a_anime -> filename, error_id > 0 ? "Warning" : "Error", error_id, a_anime -> error_str); 
   break; 
 }; 
+</pre>
 
 
 ## Executable Example 
 
+<pre>
 \$ ./destroot/bin/anime.exe
 ./destroot/bin/anime.exe: Check if an anime description file is properly written.
 Usage: ./destroot/bin/anime.exe [<options>] <infile> [<fields name>] 
@@ -95,17 +99,21 @@ Options:
   --url                                	  Print url
   --stduser <file>                     	  Redirect all the talk to the user to <file>. (Default is stderr.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)
   --stdlog <file>                      	  Write stdlog to <file>. (By default, stdlog fd is 3; therefore the output of stdlog can be gotten using '3>&2' or '3>./stdlog.txt'.) (stdlog is intended for dev. But can be used by users.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)
-
+</pre>
  
+<pre>
 \$ ./destroot/bin/anime.exe chaman.anime 3>./chaman.log
 <chaman.anime>: OK
+</pre>
 
+<pre>
 \$ ./destroot/bin/anime.exe chaman.anime physique
 physique.zone_de_choc.longueur =   0.500000 
 physique.zone_de_choc.largeur  =   0.500000 
 physique.zone_de_choc.hauteur  =  50.000000 
 physique.masse = 240.000000 
 <chaman.anime>: OK
+</pre>
 
 
  
