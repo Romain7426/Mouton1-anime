@@ -152,9 +152,9 @@ static void main__usage(const int argc, const char * argv[], const int stduser_d
   //fprintf(stderr, "\t <infile> can be a filename or '-' for stdin" "\n", argv[0]); 
   //dputs(stduser_d, program_description); 
   dputs_array(stduser_d, argv[0], ": ", "Check if an anime description file is properly written." "\n"); 
-  dputs_array(stduser_d, "Usage: ", argv[0], " [<options>] <infile> [<fields name>] " "\n" ); 
+  dputs_array(stduser_d, "Usage: ", argv[0], " [<options>] <infile> [<field name>] " "\n" ); 
   dputs(stduser_d, "  " "<infile> can be a filename or '-' for stdin (use './-' for a file named '-')" "\n"); 
-  dputs(stduser_d, "  " "If <fields name> are provided, print the value of the matching fields." "\n"); 
+  dputs(stduser_d, "  " "If one <field name> or more are provided, print the value of the matching fields." "\n"); 
   dputs(stduser_d, "Options:" "\n"); 
   dputs(stduser_d, "  " "-h,-?,--help,--usage               " "  \t  " "Display this help" "\n"); 
   dputs(stduser_d, "  " "--copyright,--license,--licence    " "  \t  " "Display the program license" "\n"); 

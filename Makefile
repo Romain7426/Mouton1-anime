@@ -86,74 +86,8 @@ src/chaman.anime.ci: src/chaman.anime
 
 
 
-src/anime.h:  
-	touch -m -c src/anime.h 
-
-src/anime_data_generation_001_from_tokens.h:  
-	touch -m -c src/anime_data_generation_001_from_tokens.h 
-
-src/anime_data_generation_002_from_trees.h:  
-	touch -m -c src/anime_data_generation_002_from_trees.h 
-
-src/anime_data_generation_003_from_syntax_filtering.h:  
-	touch -m -c src/anime_data_generation_003_from_syntax_filtering.h 
-
-src/anime_global.h: src/lib__01__pre_header.ci src/lib__02__header.ci src/lib__03.ci src/lib__04__string_stack.ci src/lib__05__error_state.ci src/lib__06__exception.ci 
-	touch -m -c src/anime_global.h 
-
-src/anime_syntax_filtering_engine.h:  
-	touch -m -c src/anime_syntax_filtering_engine.h 
-
-src/anime_token.h:  
-	touch -m -c src/anime_token.h 
-
-src/anime_token_automata.h:  
-	touch -m -c src/anime_token_automata.h 
-
-src/anime_token_input_buffering.h:  
-	touch -m -c src/anime_token_input_buffering.h 
-
-src/anime_token_parser.h:  
-	touch -m -c src/anime_token_parser.h 
-
-src/anime_token_type.h:  
-	touch -m -c src/anime_token_type.h 
-
-src/anime_tree.h:  
-	touch -m -c src/anime_tree.h 
-
-src/anime_tree_parser.h:  
-	touch -m -c src/anime_tree_parser.h 
-
-src/main.h:  
-	touch -m -c src/main.h 
 
 
-
-
-src/anime_token_env.ci:  
-	touch -m -c src/anime_token_env.ci 
-
-src/lib__01__pre_header.ci:  
-	touch -m -c src/lib__01__pre_header.ci 
-
-src/lib__02__header.ci:  
-	touch -m -c src/lib__02__header.ci 
-
-src/lib__03.ci:  
-	touch -m -c src/lib__03.ci 
-
-src/lib__04__string_stack.ci:  
-	touch -m -c src/lib__04__string_stack.ci 
-
-src/lib__05__error_state.ci:  
-	touch -m -c src/lib__05__error_state.ci 
-
-src/lib__06__exception.ci:  
-	touch -m -c src/lib__06__exception.ci 
-
-src/main_options.ci:  
-	touch -m -c src/main_options.ci 
 
 
 
@@ -187,7 +121,7 @@ build/anime_token_automata.o: src/anime_token_automata.c src/anime_global.h src/
 build/anime_token_input_buffering.o: src/anime_token_input_buffering.c src/anime_global.h src/anime_token_input_buffering.h 
 	cc -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG  -O0 -Wall -fmessage-length=0 -fdiagnostics-show-location=once -fdiagnostics-show-option -Wnewline-eof -Wfatal-errors -Werror-implicit-function-declaration -fno-exceptions -fstack-check -Werror -W  -Wparentheses -fverbose-asm -fno-omit-frame-pointer -ffreestanding -fno-builtin -fno-builtin-printf -fno-builtin-abs -fno-builtin-strcpy -fno-builtin-strcat -fno-builtin-strlen -fno-builtin-bzero -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-assert -fno-builtin-tolower -fno-builtin-toupper -fno-builtin-log -fno-builtin-alloca -fno-common -fno-exceptions -fno-non-call-exceptions -fno-asynchronous-unwind-tables -fno-inline -fno-inline-functions -fno-inline-functions  -gfull  -feliminate-unused-debug-types  -Wimplicit -Wreturn-type -Wcomment -Wpointer-arith -Wchar-subscripts -Wimplicit-int -Werror-implicit-function-declaration -Wmain -Wmissing-braces -Wmultichar -Wsequence-point -Wreturn-type  -Wstrict-prototypes -Wpacked -Wcast-qual -Wno-cast-align -Wno-system-headers -Winline -Wformat-nonliteral -Wwrite-strings -Wmissing-field-initializers -Wsign-compare  -Wformat-zero-length -Wswitch -Wswitch-enum -Wswitch-default -Wnested-externs -Wunknown-pragmas -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral -Wno-unsequenced -I /usr/X11R6/include  -I ./libs/SDL-1.2.15/destroot/include -I ./src/SDL_image -I ./src/SDL_mixer   -c src/anime_token_input_buffering.c -o build/anime_token_input_buffering.o  2>&1
 
-build/anime_token_parser.o: src/anime_token_parser.c src/anime_global.h src/anime_token_type.h src/anime_token.h src/anime_token_automata.h src/anime_token_input_buffering.h src/anime_token_parser.h 
+build/anime_token_parser.o: src/anime_token_parser.c src/anime_global.h src/anime.h src/anime_token_type.h src/anime_token.h src/anime_token_automata.h src/anime_token_input_buffering.h src/anime_token_parser.h 
 	cc -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG  -O0 -Wall -fmessage-length=0 -fdiagnostics-show-location=once -fdiagnostics-show-option -Wnewline-eof -Wfatal-errors -Werror-implicit-function-declaration -fno-exceptions -fstack-check -Werror -W  -Wparentheses -fverbose-asm -fno-omit-frame-pointer -ffreestanding -fno-builtin -fno-builtin-printf -fno-builtin-abs -fno-builtin-strcpy -fno-builtin-strcat -fno-builtin-strlen -fno-builtin-bzero -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-assert -fno-builtin-tolower -fno-builtin-toupper -fno-builtin-log -fno-builtin-alloca -fno-common -fno-exceptions -fno-non-call-exceptions -fno-asynchronous-unwind-tables -fno-inline -fno-inline-functions -fno-inline-functions  -gfull  -feliminate-unused-debug-types  -Wimplicit -Wreturn-type -Wcomment -Wpointer-arith -Wchar-subscripts -Wimplicit-int -Werror-implicit-function-declaration -Wmain -Wmissing-braces -Wmultichar -Wsequence-point -Wreturn-type  -Wstrict-prototypes -Wpacked -Wcast-qual -Wno-cast-align -Wno-system-headers -Winline -Wformat-nonliteral -Wwrite-strings -Wmissing-field-initializers -Wsign-compare  -Wformat-zero-length -Wswitch -Wswitch-enum -Wswitch-default -Wnested-externs -Wunknown-pragmas -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral -Wno-unsequenced -I /usr/X11R6/include  -I ./libs/SDL-1.2.15/destroot/include -I ./src/SDL_image -I ./src/SDL_mixer   -c src/anime_token_parser.c -o build/anime_token_parser.o  2>&1
 
 build/anime_token_type.o: src/anime_token_type.c src/anime_global.h src/anime_token_type.h 

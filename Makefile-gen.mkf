@@ -364,7 +364,7 @@ Makefile:
 	echo "" >> $@
 	echo "" >> $@
 	echo "" >> $@
-	$(foreach file_h,$(patsubst src/%,%,$(wildcard src/*.h)), \
+#	$(foreach file_h,$(patsubst src/%,%,$(wildcard src/*.h)), \
 	  echo "src/$(file_h): $(patsubst %,src/%,$(shell cat src/$(file_h) | ./tools/bin/c-file-local-include-list)) " >> $@; \
 	  echo "	touch -m -c src/$(file_h) " >> $@; \
 	  echo "" >> $@; \
@@ -372,7 +372,7 @@ Makefile:
 	echo "" >> $@
 	echo "" >> $@
 	echo "" >> $@
-	$(foreach file_ci,$(patsubst src/%,%,$(wildcard src/*.ci)), \
+#	$(foreach file_ci,$(patsubst src/%,%,$(wildcard src/*.ci)), \
 	  echo "src/$(file_ci): $(patsubst %,src/%,$(shell cat src/$(file_ci) | ./tools/bin/c-file-local-include-list)) " >> $@; \
 	  echo "	touch -m -c src/$(file_ci) " >> $@; \
 	  echo "" >> $@; \
