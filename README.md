@@ -8,7 +8,15 @@
  - It supplies an executable which checks the syntax of an *anime* data file, and prints descriptions of errors. 
 
 In order to parser an *anime* data file, *Mouton1-anime* does not use [*Lex*](https://en.wikipedia.org/wiki/Lex_programming_tool) nor [*Yacc*](https://en.wikipedia.org/wiki/Yacc). It implements its own lexer and parser, which takes a little longer to implement, but is accurate, and prints understandable errors. 
- 
+
+Also, it does not build any tree. As the language is [*LL(1)*](http://compilation.irisa.fr), it reads directly the tokens, and fills the [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) struct accordingly. However, as an extension, it can read expressions. Thus, there's an engine between the tokens and the data generation, which reorders expressions as postfix expressions, which ones can be directly computed on a stack. 
+
+Architecture: 
+ - tokenization (input buffer to provide back-tracking, automata, parser)
+ - syntax filtering engine (reorders expressions to postfix expressions; check parenthesis; provides a «move to ending parenthesis» procedure) 
+ - data generation 
+
+
 
 ## Compile 
  
