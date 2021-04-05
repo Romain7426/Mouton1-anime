@@ -83,9 +83,9 @@ if (error_id != ANIME__OK) {
 <pre>
 $ ./destroot/bin/anime.exe
 ./destroot/bin/anime.exe: Check if an anime description file is properly written.
-Usage: ./destroot/bin/anime.exe [<options>] <infile> [<fields name>] 
-  <infile> can be a filename or '-' for stdin (use './-' for a file named '-')
-  If <fields name> are provided, print the value of the matching fields.
+Usage: ./destroot/bin/anime.exe [&lt;options&gt;] &lt;infile&gt; [&lt;field name&gt;] 
+  &lt;infile&gt; can be a filename or '-' for stdin (use './-' for a file named '-')
+  If one &lt;field name&gt; or more are provided, print the value of the matching fields.
 Options:
   -h,-?,--help,--usage                 	  Display this help
   --copyright,--license,--licence      	  Display the program license
@@ -98,13 +98,13 @@ Options:
   -V,--version                         	  Print program version
   --example,--exemple                  	  Print an example
   --url                                	  Print url
-  --stduser <file>                     	  Redirect all the talk to the user to <file>. (Default is stderr.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)
-  --stdlog <file>                      	  Write stdlog to <file>. (By default, stdlog fd is 3; therefore the output of stdlog can be gotten using '3>&2' or '3>./stdlog.txt'.) (stdlog is intended for dev. But can be used by users.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)
+  --stduser &lt;file&gt;                     	  Redirect all the talk to the user to &lt;file&gt;. (Default is stderr.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)
+  --stdlog &lt;file&gt;                      	  Write stdlog to &lt;file&gt;. (By default, stdlog fd is 3; therefore the output of stdlog can be gotten using '3>&2' or '3>./stdlog.txt'.) (stdlog is intended for dev. But can be used by users.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)
 </pre>
  
 <pre>
 $ ./destroot/bin/anime.exe chaman.anime 3>./chaman.log
-<chaman.anime>: OK
+&lt;chaman.anime&gt;: OK
 </pre>
 
 <pre>
@@ -113,7 +113,7 @@ physique.zone_de_choc.longueur =   0.500000
 physique.zone_de_choc.largeur  =   0.500000 
 physique.zone_de_choc.hauteur  =  50.000000 
 physique.masse = 240.000000 
-<chaman.anime>: OK
+&lt;chaman.anime&gt;: OK
 </pre>
 
 
