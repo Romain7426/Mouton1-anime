@@ -4,15 +4,12 @@ a.anime
 a2.anime
 enum.c
 notes.txt
-
 tools/bin/
-tools/buid
-buid
+tools/buid/
+buid/
 a.txt
 *.log
 *.out
 run
 destroot
 src/chaman.anime.ci
-buid/
-tools/buid/
