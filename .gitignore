@@ -4,9 +4,11 @@ a.anime
 a2.anime
 enum.c
 notes.txt
-tools/bin/
+tools/bin
+tools/bin/*
 tools/buid/
-buid/
+buid
+buid/*
 a.txt
 *.log
 *.out
