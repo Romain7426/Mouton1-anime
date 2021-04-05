@@ -15,6 +15,7 @@ Architecture:
  - tokenization (input buffer to provide back-tracking, automata, parser)
  - syntax filtering engine (reorders expressions to postfix expressions; check parenthesis; provides a «move to ending parenthesis» procedure) 
  - data generation 
+ - consistency check 
 
 
 
