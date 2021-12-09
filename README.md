@@ -184,9 +184,9 @@ Architecture:
  - consistency check 
  
 Nota bene: 
- - [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) multi-lines comments aren't handled. They are handled are inline comments (unlike hash comments & double-slash comments which  are end-of-line comments). <br> 
+ - [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) multi-lines comments aren't handled. They are handled as inline comments (unlike hash comments & double-slash comments which  are end-of-line comments). <br> 
    This is due to the line discipline: we read one line by one line, and no token can expand over two lines (and a comment is a token). <br>
-   [*C*](https://en.wikipedia.org/wiki/C_(programming_language))-compilers deal with that with the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor). That's the main reason why the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor) is separated software: the lexical analyzer of the [*C*](https://en.wikipedia.org/wiki/C_(programming_language))-compiler is constrained by a line discipline, while the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor) is not so. 
+   [*C*](https://en.wikipedia.org/wiki/C_(programming_language))-[compilers](https://en.wikipedia.org/wiki/Compiler) deal with that thanks to the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor). That's the main reason why the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor) is a separated software: the lexical analyzer of the [*C*](https://en.wikipedia.org/wiki/C_(programming_language))-[compiler](https://en.wikipedia.org/wiki/Compiler) is constrained by a line discipline, while the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor) is not so. 
    
 
 About DSL («data specific language»), you can watch these [*Naughty Dog*](https://en.wikipedia.org/wiki/Naughty_Dog) videos: 
@@ -207,14 +207,14 @@ Authors:
  
 Basically, we do not care about [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) (except that we think that [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) is bad, counter-productive, designed by cupid & greedy stock-pilers). You can do whatever you like with anything in that project. 
  
-However, as it seems that backward copyrighting could exist, therefore we did not release it in [public domain](https://en.wikipedia.org/wiki/Public_domain), instead we have a license to prevent that degenerated case. For uninteresting law related stuffs, please see [COPYING](COPYING) (it's like an [ISC license](https://en.wikipedia.org/wiki/ISC_license), but slightly more liberal: do whatever you like with it, as long as you do not prevent ourselves or others to use it). (The [ISC license](https://en.wikipedia.org/wiki/ISC_license) was the most liberal license we found out.)  
+However, as it seems that backward copyrighting could exist, we therefore did not release it in [public domain](https://en.wikipedia.org/wiki/Public_domain). Instead we have a license to prevent that degenerated case. For uninteresting law related stuffs, please see [COPYING](COPYING) (it's like an [ISC license](https://en.wikipedia.org/wiki/ISC_license), but slightly more liberal: do whatever you like with it, as long as you do not prevent ourselves or others to use it). (The [ISC license](https://en.wikipedia.org/wiki/ISC_license) was the most liberal license we found out.)  
  
-In a nutshell, please do whatever you like with this software and its code, as long as you do not prevent anyone to use it (including ourselves). 
+In a nutshell, please feel free to do whatever you like with this software and its code, as long as you do not prevent anyone to use it (including ourselves). 
  
  
 ##  TODO 
  
- - A [FLTK](https://en.wikipedia.org/wiki/FLTK) [GUI](https://en.wikipedia.org/wiki/FLTK). 
+ - A [FLTK](https://en.wikipedia.org/wiki/FLTK) [GUI](https://en.wikipedia.org/wiki/GUI). 
  - A [curses](https://en.wikipedia.org/wiki/Curses)/[PDcurses](https://en.wikipedia.org/wiki/PDcurses) [GUI](https://en.wikipedia.org/wiki/GUI). 
 
 
