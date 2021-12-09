@@ -19,7 +19,7 @@ $ make
 $ make install 
 </pre>
  
-Customization 
+Customizations 
  - [Compiler](https://en.wikipedia.org/wiki/Compiler) — The default used [compiler](https://en.wikipedia.org/wiki/Compiler) is 'cc'. In order to use your favorite [compiler](https://en.wikipedia.org/wiki/Compiler), you have to specify it in the file ['./CC'](CC). 
     - $ echo "cc" > ./CC 
     - $ echo "clang" > ./CC 
@@ -33,11 +33,14 @@ Configuration architecture
  - Configuration is not based on [GNU Autohell](https://en.wikipedia.org/wiki/Autohell). 
  - Instead, we devised something home-made. We based it is on [GNU Make](https://en.wikipedia.org/wiki/GNU_make). Why [GNU Make](https://en.wikipedia.org/wiki/GNU_make)? Because [GNU Make](https://en.wikipedia.org/wiki/GNU_make) language is way simpler & friendlier than [shell](https://en.wikipedia.org/wiki/Bourne_shell) language. 
  - Our idea is to generate a standard [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), predictable & boring (example: [Makefile](Makefile)), so that it could be read by any exotic version of [Make](https://en.wikipedia.org/wiki/Make_(software)). Such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) is way more readable, debuggable, understandable, and prevent the [Make](https://en.wikipedia.org/wiki/Make_(software)) software to take «smart» initiatives (by infering who knows which esoteric rule). (On top of that, theoretically speaking, such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) would be distributable — however, it is not so due to each [compiler](https://en.wikipedia.org/wiki/Compiler) personality, and each [OS](https://en.wikipedia.org/wiki/Operating_system) personality, etc., which has therefore to be beforehand detected.) 
- - To generate this boring [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), we use the file ['./Makefile-gen.mkf'](Makefile-gen.mkf), which is, as earlier explained, [GNU Make](https://en.wikipedia.org/wiki/GNU_make) script. 
- - This script, ['./Makefile-gen.mkf'](Makefile-gen.mkf), requires external tools which are located in the sub-directory ['./tools'](tools). Thus, before running the script ['./Makefile-gen.mkf'](Makefile-gen.mkf), these have to be first generated. This is achieved by the [shell](https://en.wikipedia.org/wiki/Bourne_shell) script named ['./tools-compile.sh'](tools-compile.sh). (Theoretically, all these tools should compile & run issuelessly.) 
+ - To generate this boring [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), we use the file ['./Makefile-gen.mkf'](Makefile-gen.mkf), which is, as earlier explained, a [GNU Make](https://en.wikipedia.org/wiki/GNU_make) script. 
+ - This script, ['./Makefile-gen.mkf'](Makefile-gen.mkf), requires external tools which are located in the sub-directory ['./tools'](tools). Thus, before running the script ['./Makefile-gen.mkf'](Makefile-gen.mkf), these have to be first generated. This is achieved by the [shell](https://en.wikipedia.org/wiki/Bourne_shell) script named ['./tools-compile.sh'](tools-compile.sh). (Theoretically, all these tools should compile & run issuelessly: «sh ./tools-compile.sh».) 
  - And that's all folks! All that is automagically dealt by the [shell](https://en.wikipedia.org/wiki/Bourne_shell) script named ['./configure.sh'](configure.sh). 
  
 Complaints 
+ - For maximum compatibility, [shell](https://en.wikipedia.org/wiki/Bourne_shell) scripts should be run in using 'sh':
+    - $ sh ./configure.sh
+    - $ sh ./tools-compile.sh 
  - If the script named ['./configure.sh'](configure.sh) complains about not finding [GNU Make](https://en.wikipedia.org/wiki/GNU_make), please help it in editing the file ['./configure.sh'](configure.sh) and tell it where to find [GNU Make](https://en.wikipedia.org/wiki/GNU_make) on your system. 
  - The source code is compliant with [C99](https://en.wikipedia.org/wiki/C99); therefore, a [C99](https://en.wikipedia.org/wiki/C99)-compatible [compiler](https://en.wikipedia.org/wiki/Compiler) is required. 
  - For any other complaints, well, from here & now, I do not know. 
