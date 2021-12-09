@@ -31,38 +31,39 @@ Customization
  
 Configuration architecture 
  - Configuration is not based on [GNU Autohell](https://en.wikipedia.org/wiki/Autohell). 
- - Instead, we devised something home-made. We based is on [GNU Make](https://en.wikipedia.org/wiki/GNU_make). Why [GNU Make](https://en.wikipedia.org/wiki/GNU_make)? Because [GNU Make](https://en.wikipedia.org/wiki/GNU_make) language is way much simpler than [shell](https://en.wikipedia.org/wiki/Bourne_shell) language. 
- - Our idea is to generate a standard [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), predictable & boring (example: [Makefile](Makefile)), so that it could be read by any exotic version of [Make](https://en.wikipedia.org/wiki/Make_(software)). Such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) is way more readable, debuggable, understandable, and prevent the [Make](https://en.wikipedia.org/wiki/Make_(software)) software to take «smart» initiatives (by infering who knows which esoteric rule). (Top of that, theoretically speaking, such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) would be distributable — however, it is not due to each [compiler](https://en.wikipedia.org/wiki/Compiler) personality, and each [OS](https://en.wikipedia.org/wiki/OS) personality, etc., which has therefore to be beforehand detected.) 
- - Pour générer un tel [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) ennuyeux, nous utilisons le fichier ['./Makefile-gen.mkf'](Makefile-gen.mkf) qui est un script écrit dans le langage [GNU Make](https://en.wikipedia.org/wiki/GNU_make) (le langage de [GNU Make](https://en.wikipedia.org/wiki/GNU_make) étant beaucoup plus sympathique que le [shell standard](https://en.wikipedia.org/wiki/Bourne_shell)). 
- - Ce script ['./Makefile-gen.mkf'](Makefile-gen.mkf) nécessite des outils extérieurs qui se trouvent dans le sous-répertoire ['./tools'](https://github.com/Romain7426/X_Macros_-_Enum/tree/main/tools). Avant d'exécuter le script ['./Makefile-gen.mkf'](Makefile-gen.mkf), il faut générer ces outils. Cela est fait par le script [shell](https://en.wikipedia.org/wiki/Bourne_shell) ['./tools-compile.sh'](tools-compile.sh). (Notons que ces outils devraient compiler sans problème.) 
- - Et c'est tout. Tout cela est automatiquement réalisé par le script [shell](https://en.wikipedia.org/wiki/Bourne_shell) ['./configure.sh'](configure.sh). 
+ - Instead, we devised something home-made. We based it is on [GNU Make](https://en.wikipedia.org/wiki/GNU_make). Why [GNU Make](https://en.wikipedia.org/wiki/GNU_make)? Because [GNU Make](https://en.wikipedia.org/wiki/GNU_make) language is way simpler & friendlier than [shell](https://en.wikipedia.org/wiki/Bourne_shell) language. 
+ - Our idea is to generate a standard [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), predictable & boring (example: [Makefile](Makefile)), so that it could be read by any exotic version of [Make](https://en.wikipedia.org/wiki/Make_(software)). Such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) is way more readable, debuggable, understandable, and prevent the [Make](https://en.wikipedia.org/wiki/Make_(software)) software to take «smart» initiatives (by infering who knows which esoteric rule). (On top of that, theoretically speaking, such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) would be distributable — however, it is not so due to each [compiler](https://en.wikipedia.org/wiki/Compiler) personality, and each [OS](https://en.wikipedia.org/wiki/Operating_system) personality, etc., which has therefore to be beforehand detected.) 
+ - To generate this boring [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), we use the file ['./Makefile-gen.mkf'](Makefile-gen.mkf), which is, as earlier explained, [GNU Make](https://en.wikipedia.org/wiki/GNU_make) script. 
+ - This script, ['./Makefile-gen.mkf'](Makefile-gen.mkf), requires external tools which are located in the sub-directory ['./tools'](tools). Thus, before running the script ['./Makefile-gen.mkf'](Makefile-gen.mkf), these have to be first generated. This is achieved by the [shell](https://en.wikipedia.org/wiki/Bourne_shell) script named ['./tools-compile.sh'](tools-compile.sh). (Theoretically, all these tools should compile & run issuelessly.) 
+ - And that's all folks! All that is automagically dealt by the [shell](https://en.wikipedia.org/wiki/Bourne_shell) script named ['./configure.sh'](configure.sh). 
  
-Plaintes 
- - Si le script ['./configure.sh'](configure.sh) se plaint que il ne trouve pas [GNU Make](https://en.wikipedia.org/wiki/GNU_make), éditez le fichier ['./configure.sh'](configure.sh) pour lui indiquer où trouver [GNU Make](https://en.wikipedia.org/wiki/GNU_make). 
- - Tout le code source suppose que le [compiler](https://en.wikipedia.org/wiki/Compiler) est compatible avec la norme [C99](https://en.wikipedia.org/wiki/C99). 
- - Pour les autres plaintes, a priori, je ne sais pas. 
+Complaints 
+ - If the script named ['./configure.sh'](configure.sh) complains about not finding [GNU Make](https://en.wikipedia.org/wiki/GNU_make), please help it in editing the file ['./configure.sh'](configure.sh) and tell it where to find [GNU Make](https://en.wikipedia.org/wiki/GNU_make) on your system. 
+ - The source code is compliant with [C99](https://en.wikipedia.org/wiki/C99); therefore, a [C99](https://en.wikipedia.org/wiki/C99)-compatible [compiler](https://en.wikipedia.org/wiki/Compiler) is required. 
+ - For any other complaints, well, from here & now, I do not know. 
  
-[Compilateurs](https://en.wikipedia.org/wiki/Compilateur) testés: 
- - [clang](https://en.wikipedia.org/wiki/Clang): 86k 
- - [gcc11](https://en.wikipedia.org/wiki/GNU_Compiler_Collection): 170k 
- - [tcc](https://en.wikipedia.org/wiki/Tiny_C_Compiler): 134k 
- - [pcc](https://en.wikipedia.org/wiki/Portable_C_Compiler): 82k 
- - D'autres? 
+Tested [Compilater](https://en.wikipedia.org/wiki/Compiler): 
+ - [clang](https://en.wikipedia.org/wiki/Clang): 900k (lib) and 350k (exe) 
+ - [gcc11](https://en.wikipedia.org/wiki/GNU_Compiler_Collection): 
+ - [tcc](https://en.wikipedia.org/wiki/Tiny_C_Compiler): 
+ - [pcc](https://en.wikipedia.org/wiki/Portable_C_Compiler): 
+ - Others? 
 
-[Systèmes](https://en.wikipedia.org/wiki/Syst%C3%A8me_d%27exploitation) testés: 
+Tested [Operating Systems](https://en.wikipedia.org/wiki/Operating_system): 
  - [OpenBSD](https://en.wikipedia.org/wiki/OpenBSD) 
- - Les autres systèmes [BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) devraient fonctionner sans problème. 
- - Il devrait fonctionner sous [MacOSX](https://en.wikipedia.org/wiki/MacOS). 
- - Les systèmes compatibles avec [Unix](https://en.wikipedia.org/wiki/Unix) devraient fonctionner. 
- - Sur [Windows](https://en.wikipedia.org/wiki/Microsoft_Windows), nous ne savons pas, nous n'avons pas essayé, mais le programme devrait pouvoir fonctionner à travers [Cygwin](https://en.wikipedia.org/wiki/Cygwin), [MinGW](https://en.wikipedia.org/wiki/MinGW), etc. 
+ - Other [BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) should work flawlessly. 
+ - Should be working on [MacOSX](https://en.wikipedia.org/wiki/MacOS). 
+ - [Unix](https://en.wikipedia.org/wiki/Unix)-compatible systems should work. 
+ - For [Windows](https://en.wikipedia.org/wiki/Microsoft_Windows), we do not know, we do not have that system. Supposedly, the software should be able to work using [Cygwin](https://en.wikipedia.org/wiki/Cygwin), [MinGW](https://en.wikipedia.org/wiki/MinGW), etc. 
  
-Dépendances: 
- - Un [compiler](https://en.wikipedia.org/wiki/Compiler) compatible avec la norme [C99](https://en.wikipedia.org/wiki/C99). 
+Dependencies: 
+ - A [C99](https://en.wikipedia.org/wiki/C99)-[compiler](https://en.wikipedia.org/wiki/Compiler). 
  - [GNU Make](https://en.wikipedia.org/wiki/GNU_make). 
  
 Nota bene: 
- - Si la compilation des outils prend trop de temps, on peut l'éviter et passer directement à la génération du [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile): 
+ - If compiling tools is too long, it can be skipped, and the [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) could be directly generated: 
     $ gmake -r -R -S -j 1 --warn-undefined-variables -f ./Makefile-gen.mkf  
+
 
 ## DSL Example
 
@@ -100,6 +101,7 @@ graphique {
 
 }
 </pre>
+
 
 ## Lib Example
 
