@@ -13,14 +13,19 @@
 ## Compiling & Installing 
 
 <pre>
-$ echo "clang" > ./CC        # Your favorite compiler. 
+$ echo "clang" > ./CC        # Or your favorite compiler. 
 $ sh ./configure.sh          # First generate tools, and then the Makefile. 
 $ make 
 $ make install 
 </pre>
  
 Customization 
- - [Compiler](https://en.wikipedia.org/wiki/Compiler) — The default used [compiler](https://en.wikipedia.org/wiki/Compiler) is 'cc'. In order to use your favorite [compiler](https://en.wikipedia.org/wiki/Compiler), you have to tell il faut en indiquer le chemin dans le fichier ['./CC'](CC) (for instance, «$ echo "/usr/local/bin/x86_64-unknown-openbsd7.0-gcc-11.2.0" > ./CC», or  «$ echo "pcc -L /usr/lib " > ./CC»).  
+ - [Compiler](https://en.wikipedia.org/wiki/Compiler) — The default used [compiler](https://en.wikipedia.org/wiki/Compiler) is 'cc'. In order to use your favorite [compiler](https://en.wikipedia.org/wiki/Compiler), you have to specify it in the file ['./CC'](CC). For instance, 
+    - $ echo "cc" > ./CC 
+    - $ echo "clang" > ./CC 
+    - $ echo "/usr/local/bin/x86_64-unknown-openbsd7.0-gcc-11.2.0" > ./CC 
+    - $ echo "pcc -L /usr/lib " > ./CC 
+    - $ echo "tcc" > ./CC 
  - Installation directory — The default installation directory is './destroot'. To use your favorite location, please edit the generated [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), or even edit the generating ['./Makefile-gen.mkf'](Makefile-gen.mkf). (Another way is to symbolic-link the wanted destination as './destroot'; or to copy files from './destroot' to the wanted location). 
  - No other customization is available. (However, you can still edit the file ['./Makefile-gen.mkf'](Makefile-gen.mkf) to produce whatever you like.) 
  
@@ -33,7 +38,7 @@ Configuration architecture
  
 Plaintes 
  - Si le script ['./configure.sh'](configure.sh) se plaint que il ne trouve pas [GNU Make](https://en.wikipedia.org/wiki/GNU_make), éditez le fichier ['./configure.sh'](configure.sh) pour lui indiquer où trouver [GNU Make](https://en.wikipedia.org/wiki/GNU_make). 
- - Tout le code source suppose que le [compiler](https://en.wikipedia.org/wiki/Compiler) est compatible avec la norme [C99](https://fr.wikipedia.org/wiki/C_(langage)#Normalisation). 
+ - Tout le code source suppose que le [compiler](https://en.wikipedia.org/wiki/Compiler) est compatible avec la norme [C99](https://en.wikipedia.org/wiki/C99). 
  - Pour les autres plaintes, a priori, je ne sais pas. 
  
 [Compilateurs](https://fr.wikipedia.org/wiki/Compilateur) testés: 
@@ -51,7 +56,7 @@ Plaintes
  - Sur [Windows](https://fr.wikipedia.org/wiki/Microsoft_Windows), nous ne savons pas, nous n'avons pas essayé, mais le programme devrait pouvoir fonctionner à travers [Cygwin](https://fr.wikipedia.org/wiki/Cygwin), [MinGW](https://fr.wikipedia.org/wiki/MinGW), etc. 
  
 Dépendances: 
- - Un [compiler](https://en.wikipedia.org/wiki/Compiler) compatible avec la norme [C99](https://fr.wikipedia.org/wiki/C_(langage)#Normalisation). 
+ - Un [compiler](https://en.wikipedia.org/wiki/Compiler) compatible avec la norme [C99](https://en.wikipedia.org/wiki/C99). 
  - [GNU Make](https://en.wikipedia.org/wiki/GNU_make). 
  
 Nota bene: 
