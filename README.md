@@ -174,7 +174,7 @@ physique.masse = 240.000000
 
 In order to parse an *anime* data file, *Mouton1-anime* does not use [*Lex*](https://en.wikipedia.org/wiki/Lex_programming_tool) nor [*Yacc*](https://en.wikipedia.org/wiki/Yacc). Instead, it implements its own lexer and parser. Admittedly, this latter approach takes a little longer to be implemented, but, unlike the former one, it is accurate, makes sense, easier to maintain, and prints understandable errors. 
 
-Also, it does not build any tree. Building and maintaining a tree structure in [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) is a pain. As the language is [*LL(1)*](http://compilation.irisa.fr), it reads directly the tokens, and fills the [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) struct accordingly. However, as an extension, it can read expressions. Thus, there's an engine between the tokens and the data generation, which reorders expressions as postfix expressions, which ones can be directly computed on a stack. 
+Also, it does not build any tree. Building and maintaining a tree structure in [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) is a pain. As the language is [*LL(1)*](https://en.wikipedia.org/wiki/LL1), it reads directly the tokens, and fills the [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) struct accordingly. However, as an extension, it can read expressions. Thus, there's an engine between the tokens and the data generation, which reorders expressions as postfix expressions, which ones can be directly computed on a stack. 
 
 Architecture: 
  - buffering (to provide back-tracking, which is required by lexical analysis) 
@@ -189,6 +189,9 @@ Nota bene:
 About DSL («data specific language»), you can watch these [*Naughty Dog*](https://en.wikipedia.org/wiki/Naughty_Dog) videos: 
  - https://www.youtube.com/watch?v=Z8Xamkb-J2k
  - https://www.youtube.com/watch?v=oSmqbnhHp1c 
+ 
+About lexical & syntaxic analysis, you can check out this website & book (in french): 
+ - http://compilation.irisa.fr 
  
  
 ## Authors  
