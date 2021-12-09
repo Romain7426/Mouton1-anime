@@ -185,6 +185,10 @@ Architecture:
  
 Nota bene: 
  - [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) aren't handled. They are handled are inline comments (unlike hash comments & double-slash comments which  are end-of-line comments). 
+
+About DSL («data specific language»), you can watch these [*Naughty Dog*](https://en.wikipedia.org/wiki/Naughty_Dog) videos: 
+ - https://www.youtube.com/watch?v=Z8Xamkb-J2k
+ - https://www.youtube.com/watch?v=oSmqbnhHp1c 
  
  
 ## Authors  
