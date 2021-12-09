@@ -2,7 +2,9 @@
  
 *Mouton1-anime* is a sub-project of [*Mouton1*](https://github.com/Romain7426/Mouton1). 
 
-*Mouton1-anime* is a DSL («data specific language»), a library, and an executable: 
+## What is it? 
+
+*Mouton1-anime* is a DSL ([«data specific language»](https://www.youtube.com/watch?v=Z8Xamkb-J2k) or [there](https://www.youtube.com/watch?v=oSmqbnhHp1c)), a library, and an executable: 
  - It specifies a language to describe *anime* data. 
  - It provides a library that reads an *anime* data file, and fills a [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) struct. 
  - It supplies an executable which checks the syntax of an *anime* data file, and prints descriptions of errors. 
