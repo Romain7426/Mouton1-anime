@@ -184,7 +184,10 @@ Architecture:
  - consistency check 
  
 Nota bene: 
- - [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) aren't handled. They are handled are inline comments (unlike hash comments & double-slash comments which  are end-of-line comments). 
+ - [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) multi-lines comments aren't handled. They are handled are inline comments (unlike hash comments & double-slash comments which  are end-of-line comments). <br> 
+   This is due to the line discipline: we read one line by one line, and no token can expand over two lines (and a comment is a token). <br>
+   [*C*](https://en.wikipedia.org/wiki/C_(programming_language))-compilers deal with that with the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor). That's the main reason why the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor) is separated software: the lexical analyzer of the [*C*](https://en.wikipedia.org/wiki/C_(programming_language))-compiler is constrained by a line discipline, while the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor) is not so. 
+   
 
 About DSL («data specific language»), you can watch these [*Naughty Dog*](https://en.wikipedia.org/wiki/Naughty_Dog) videos: 
  - https://www.youtube.com/watch?v=Z8Xamkb-J2k
