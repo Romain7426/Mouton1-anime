@@ -201,7 +201,7 @@ Authors:
  
 Basically, we do not care about [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property). You can do whatever you like with anything in that project. 
  
-However, as it seems that backward copyrighting could exist, therefore we did not release it in [public domain](https://en.wikipedia.org/wiki/Public_domain), instead we have a license to prevent that case - for uninteresting law related stuffs, please see [COPYING](COPYING) (it's an [ISC license](https://en.wikipedia.org/wiki/ISC_license), the most liberal license we found out: do whatever you like with it, as long as you do not prevent ourselves or others to use it). 
+However, as it seems that backward copyrighting could exist, therefore we did not release it in [public domain](https://en.wikipedia.org/wiki/Public_domain), instead we have a license to prevent that degenerated case. For uninteresting law related stuffs, please see [COPYING](COPYING) (it's an [ISC license](https://en.wikipedia.org/wiki/ISC_license), the most liberal license we found out: do whatever you like with it, as long as you do not prevent ourselves or others to use it). 
  
 
 Nous ne portons aucun intérêt à la [propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) du présent programme (ni en général, sauf pour en étudier les principes et exprimer que nous désapprouvons ces principes et la [propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) en général). Vous pouvez faire ce que il vous plaît avec ce programe. 
