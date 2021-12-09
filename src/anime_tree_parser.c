@@ -352,7 +352,7 @@ static int anime_parser__automaton__get_next_token(const anime_token_env_t * tok
 
 #define SYNTAX__EXPECTING_ONE_OF_THESE_TOKENS(given_token_type, ...) {	\
     if (not(int_member_huh(given_token_type, __VA_ARGS__))) {		\
-      const int expected_tokens_array[] = (const int []) { __VA_ARGS__ }; \
+      const int expected_tokens_array[] = { __VA_ARGS__ }; \
       const int expected_tokens_nb      = ARRAY_SIZE(((const int []) { __VA_ARGS__ })); \
       const int token_i = *current_token_ref;				\
       const int token_type = anime_token__get_type(token_env, token_i); \

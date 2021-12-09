@@ -9,6 +9,10 @@
 enum { ANIME_SYNTAX_FILTERING__ERROR_BUFFER_SIZE  = (1 << 11) }; 
 static const uint8_t ANIME_SYNTAX_FILTERING__ERROR_BUFFER_SIZE__compiled_value = (uint8_t) ANIME_SYNTAX_FILTERING__ERROR_BUFFER_SIZE; 
 
+enum { ANIME__SYNTAX_FILTERING__PARENTHESIS_DEPTH = ANIME__EXPRESSION_NESTEDNESS_MAX }; 
+
+enum { ANIME__SYNTAX_FILTERING__OUTPUT_POSTFIX_BUFFER_SIZE = ANIME__LONGEST_INFIX_EXPRESSION }; 
+
 struct anime_syntax_filtering_t { 
   uint8_t malloced_flag; // 0 if not, 1 if yes. 
   
@@ -30,7 +34,6 @@ struct anime_syntax_filtering_t {
   int_anime_token_t token_i; // In regular mode, current token. 
   // 
   // --- Parenthesis tracking --- 
-  enum { ANIME__SYNTAX_FILTERING__PARENTHESIS_DEPTH = ANIME__EXPRESSION_NESTEDNESS_MAX }; 
   int_anime_token_t syntax_filtering__open_parenthesis__stack[ANIME__SYNTAX_FILTERING__PARENTHESIS_DEPTH]; 
   uint8_t           syntax_filtering__open_parenthesis__nb; 
   // 
@@ -54,7 +57,6 @@ struct anime_syntax_filtering_t {
   // * Output Postfix Buffer * 
   // The buffer could contain as many tokens as the input infix expression. 
   // And the whole input infix expression has to be analyzed. So that buffer size is bounded by the size (in tokens) of an expression. 
-  enum { ANIME__SYNTAX_FILTERING__OUTPUT_POSTFIX_BUFFER_SIZE = ANIME__LONGEST_INFIX_EXPRESSION }; 
   int_anime_token_t syntax_filtering__output_postfix_buffer__array[ANIME__SYNTAX_FILTERING__OUTPUT_POSTFIX_BUFFER_SIZE]; 
   uint8_t           syntax_filtering__output_postfix_buffer__nb; 
   uint8_t           syntax_filtering__output_postfix_buffer__i; 
@@ -823,7 +825,7 @@ int_anime_error_t anime_syntax_filtering__lalr_automaton(anime_syntax_filtering_
 
 #define SYNTAX__EXPECTING_ONE_OF_THESE_TOKENS(given_token_type, ...) {	\
     if (not(int_member_huh(given_token_type, __VA_ARGS__))) {		\
-      const int expected_tokens_array[] = (const int []) { __VA_ARGS__ }; \
+      int expected_tokens_array[] = { __VA_ARGS__ };			\
       const int expected_tokens_nb      = ARRAY_SIZE(((const int []) { __VA_ARGS__ })); \
       const int token_i = *current_token_ref;				\
       const int token_type = anime_token__get_type(token_env, token_i); \

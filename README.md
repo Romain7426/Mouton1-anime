@@ -44,9 +44,9 @@ Complaints
  
 Tested [Compilater](https://en.wikipedia.org/wiki/Compiler): 
  - [clang](https://en.wikipedia.org/wiki/Clang): 900k (lib) and 350k (exe) 
- - [gcc11](https://en.wikipedia.org/wiki/GNU_Compiler_Collection): 
- - [tcc](https://en.wikipedia.org/wiki/Tiny_C_Compiler): 
- - [pcc](https://en.wikipedia.org/wiki/Portable_C_Compiler): 
+ - [gcc11](https://en.wikipedia.org/wiki/GNU_Compiler_Collection): 3000k (lib) and 720k (exe) 
+ - [tcc](https://en.wikipedia.org/wiki/Tiny_C_Compiler): FAILS: Generated executable segfaults: 5000k (lib) and 3000k (exe) 
+ - [pcc](https://en.wikipedia.org/wiki/Portable_C_Compiler): FAILS: Cannot compile («identifier exceeds C99 5.2.4.1») 
  - Others? 
 
 Tested [Operating Systems](https://en.wikipedia.org/wiki/Operating_system): 

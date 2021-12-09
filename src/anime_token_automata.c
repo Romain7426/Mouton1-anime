@@ -730,6 +730,12 @@ static int8_t token_automaton__comment_multines_eof(const int8_t current_state, 
 
 
 
+#ifdef __TINYCY__
+#define CASTING_CONST 
+#else 
+#define CASTING_CONST const 
+#endif 
+
 int8_t anime_token_automata__read_symbol(const anime_token_automata_t * automata, const uint8_t automaton_i, const int8_t current_state, const int16_t char_to_be_read) { 
 #if 0 
   dputs_array(stderr, __func__, ": ", "automaton_i: ", int_string__stack(automaton_i), "; current_state = ", int_string__stack(current_state), "\n"); 
@@ -744,16 +750,20 @@ int8_t anime_token_automata__read_symbol(const anime_token_automata_t * automata
   default: assert(false); break; 
   case ANIME_TOKEN_AUTOMATA__TYPE__NULL: return -1; break; 
   case ANIME_TOKEN_AUTOMATA__TYPE__STRING: { 
-    int8_t (* p)(const int cstr_to_be_matched_len, const char * cstr_to_be_matched, const int8_t current_state, const int16_t char_given) = this -> automata; 
+    int8_t (* p)(const int cstr_to_be_matched_len, const char * cstr_to_be_matched, const int8_t current_state, const int16_t char_given);
+    p = (CASTING_CONST void *)this -> automata; 
     next_state = p(this -> value1, this -> value_ptr1, current_state, char_to_be_read); 
   }; break; 
   case ANIME_TOKEN_AUTOMATA__TYPE__FUNCTION: { 
-    int8_t (* p)(const int8_t current_state, const char char_read) = this -> automata; 
+    int8_t (* p)(const int8_t current_state, const char char_read); // = this -> automata; 
+    p = (CASTING_CONST void *)this -> automata; 
     next_state = p(current_state, char_to_be_read); 
   }; break; 
   case ANIME_TOKEN_AUTOMATA__TYPE__MASTER: { 
-    int8_t (* p)(const int master__nb, const int master__len[], const char * master__array[], const int8_t current_state0, const int16_t char_given) = this -> automata; 
-    const anime_token_env_t * token_env = (const void *) this -> value_ptr1; 
+    int8_t (* p)(const int master__nb, const int master__len[], const char * master__array[], const int8_t current_state0, const int16_t char_given); // = (void *)this -> automata; 
+    p = (CASTING_CONST void *)this -> automata; 
+    const anime_token_env_t * token_env; // = (const void *) this -> value_ptr1; 
+    token_env = (const void *) this -> value_ptr1; 
     if (NULL == token_env) { return -1; }; 
     const int      master__nb   = anime_token__master_count(token_env); 
     const int  *   master__len  = anime_token__master_len  (token_env); 
@@ -766,7 +776,8 @@ int8_t anime_token_automata__read_symbol(const anime_token_automata_t * automata
 #endif 
   }; break; 
   case ANIME_TOKEN_AUTOMATA__TYPE__SYNTAX_KEYWORD: { 
-    int8_t (* p)(const int syntax_keyword__nb, const int syntax_keyword__len[], const char * syntax_keyword__array[], const int8_t current_state0, const int16_t char_given) = this -> automata; 
+    int8_t (* p)(const int syntax_keyword__nb, const int syntax_keyword__len[], const char * syntax_keyword__array[], const int8_t current_state0, const int16_t char_given);
+    p = (CASTING_CONST void *)this -> automata; 
     const anime_token_env_t * token_env = (const void *) this -> value_ptr1; 
     if (NULL == token_env) { return -1; }; 
     const int      syntax_keyword__nb   = anime_token__syntax_keyword_count(token_env); 
