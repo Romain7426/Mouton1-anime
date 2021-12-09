@@ -45,7 +45,7 @@ Complaints
  - The source code is compliant with [C99](https://en.wikipedia.org/wiki/C99); therefore, a [C99](https://en.wikipedia.org/wiki/C99)-compatible [compiler](https://en.wikipedia.org/wiki/Compiler) is required. 
  - For any other complaints, well, from here & now, I do not know. 
  
-Tested [Compilater](https://en.wikipedia.org/wiki/Compiler): 
+Tested [Compilers](https://en.wikipedia.org/wiki/Compiler): 
  - [clang](https://en.wikipedia.org/wiki/Clang): 900k (lib) and 350k (exe) 
  - [gcc11](https://en.wikipedia.org/wiki/GNU_Compiler_Collection): 3000k (lib) and 720k (exe) 
  - [tcc](https://en.wikipedia.org/wiki/Tiny_C_Compiler): FAILS: Generated executable segfaults: 5000k (lib) and 3000k (exe) 
@@ -64,7 +64,7 @@ Dependencies:
  - [GNU Make](https://en.wikipedia.org/wiki/GNU_make). 
  
 Nota bene: 
- - If compiling tools is too long, it can be skipped, and the [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) could be directly generated: 
+ - If compiling tools is too long, it can be skipped, and the [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) could be directly generated: <br>
     $ gmake -r -R -S -j 1 --warn-undefined-variables -f ./Makefile-gen.mkf  
 
 
