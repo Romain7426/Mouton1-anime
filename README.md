@@ -199,18 +199,13 @@ Authors:
 
 ## [Intellectual Property](https://en.wikipedia.org/wiki/Intellectual_property) 
  
-Basically, we do not care about [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property). You can do whatever you like with anything in that project. 
+Basically, we do not care about [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) (except that we think that [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) is bad, counter-productive, designed by cupid & greedy stock-pilers). You can do whatever you like with anything in that project. 
  
-However, as it seems that backward copyrighting could exist, therefore we did not release it in [public domain](https://en.wikipedia.org/wiki/Public_domain), instead we have a license to prevent that degenerated case. For uninteresting law related stuffs, please see [COPYING](COPYING) (it's an [ISC license](https://en.wikipedia.org/wiki/ISC_license), the most liberal license we found out: do whatever you like with it, as long as you do not prevent ourselves or others to use it). 
+However, as it seems that backward copyrighting could exist, therefore we did not release it in [public domain](https://en.wikipedia.org/wiki/Public_domain), instead we have a license to prevent that degenerated case. For uninteresting law related stuffs, please see [COPYING](COPYING) (it's like an [ISC license](https://en.wikipedia.org/wiki/ISC_license), but slightly more liberal: do whatever you like with it, as long as you do not prevent ourselves or others to use it). (The [ISC license](https://en.wikipedia.org/wiki/ISC_license) was the most liberal license we found out.)  
  
-
-Nous ne portons aucun intérêt à la [propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) du présent programme (ni en général, sauf pour en étudier les principes et exprimer que nous désapprouvons ces principes et la [propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) en général). Vous pouvez faire ce que il vous plaît avec ce programe. 
-
-Nous aurions bien laissé ce programme dans le [domaine public](https://en.wikipedia.org/wiki/Domaine_public_(propri%C3%A9t%C3%A9_intellectuelle)), mais il semblerait que il existerait une possibilité pour s'approprier du matériel qui serait dans le domaine public, et d'en restreindre l'accès. Afin de prévenir ce cas dégénéré, ce programme a été publié sous une licence équivalente à la [licence ISC](https://en.wikipedia.org/wiki/Licence_ISC), mais en plus relâchée (cf. le fichier [COPYING](COPYING) pour la consulter in extenso). En ce qui nous concerne, vous pouvez faire ce que vous voulez avec ce programme et son code, dans la mesure vous n'empêchez personne de l'utiliser, y compris nous-mêmes. 
-
-
-
-
+In a nutshell, please do whatever you like with this software and its code, as long as you do not prevent anyone to use it (including ourselves). 
+ 
+ 
 ##  TODO 
  
  - A [FLTK](https://en.wikipedia.org/wiki/FLTK) [GUI](https://en.wikipedia.org/wiki/FLTK). 
