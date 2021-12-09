@@ -27,7 +27,7 @@ Customization
     - $ echo "pcc -L /usr/lib " > ./CC 
     - $ echo "tcc" > ./CC 
  - Installation directory — The default installation directory is './destroot'. To use your favorite location, please edit the generated [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), or even edit the generating ['./Makefile-gen.mkf'](Makefile-gen.mkf). (Another way is to symbolic-link the wanted destination as './destroot'; or to copy files from './destroot' to the wanted location). 
- - No other customization is available. (However, you can still edit the file ['./Makefile-gen.mkf'](Makefile-gen.mkf) to customize whatever you like.) 
+ - No other customization is available. (However, you can still edit the file ['./Makefile-gen.mkf'](Makefile-gen.mkf) as much as you like.) 
  
 Configuration architecture 
  - Configuration is not based on [GNU Autohell](https://en.wikipedia.org/wiki/Autohell). 
