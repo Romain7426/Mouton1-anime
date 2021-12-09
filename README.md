@@ -84,6 +84,12 @@ gameplay {
  points de vie := 9999;
  invincible    := vrai;
  hostile       := faux;
+
+ action "parler" {
+  affichage := "parler";
+  icone := "";
+  gestionnaire := { fichier := "script.pml"; procedure := "chaman_parler"; } ; 
+ } 
 }
 
 graphique {
@@ -171,31 +177,32 @@ In order to parse an *anime* data file, *Mouton1-anime* does not use [*Lex*](htt
 Also, it does not build any tree. Building and maintaining a tree structure in [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) is a pain. As the language is [*LL(1)*](http://compilation.irisa.fr), it reads directly the tokens, and fills the [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) struct accordingly. However, as an extension, it can read expressions. Thus, there's an engine between the tokens and the data generation, which reorders expressions as postfix expressions, which ones can be directly computed on a stack. 
 
 Architecture: 
- - tokenization (input buffer to provide back-tracking, automata, parser)
- - syntax filtering engine (reorders expressions to postfix expressions; check parenthesis; provides a «move to ending parenthesis» procedure) 
+ - buffering (to provide back-tracking, which is required by lexical analysis) 
+ - tokenization 
+ - syntax filtering engine (reorders infix expressions to postfix expressions; check parenthesis; provides a «move to ending parenthesis» procedure) 
  - data generation 
  - consistency check 
-
-
-## Auteurs  
  
-Auteurs: 
+Nota bene: 
+ - [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) aren't handled. They are handled are inline comments (unlike hash comments & double-slash comments which  are end-of-line comments). 
+ 
+ 
+## Authors  
+ 
+Authors: 
  - [Romain: https://github.com/Romain7426](https://github.com/Romain7426)
 
 
-## [Propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) 
+## [Intellectual Property](https://en.wikipedia.org/wiki/Intellectual_property) 
  
+Basically, we do not care about [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property). You can do whatever you like with anything in that project. 
+ 
+However, as it seems that backward copyrighting could exist, therefore we did not release it in [public domain](https://en.wikipedia.org/wiki/Public_domain), instead we have a license to prevent that case - for uninteresting law related stuffs, please see [COPYING](COPYING) (it's an [ISC license](https://en.wikipedia.org/wiki/ISC_license), the most liberal license we found out: do whatever you like with it, as long as you do not prevent ourselves or others to use it). 
+ 
+
 Nous ne portons aucun intérêt à la [propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) du présent programme (ni en général, sauf pour en étudier les principes et exprimer que nous désapprouvons ces principes et la [propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) en général). Vous pouvez faire ce que il vous plaît avec ce programe. 
 
 Nous aurions bien laissé ce programme dans le [domaine public](https://en.wikipedia.org/wiki/Domaine_public_(propri%C3%A9t%C3%A9_intellectuelle)), mais il semblerait que il existerait une possibilité pour s'approprier du matériel qui serait dans le domaine public, et d'en restreindre l'accès. Afin de prévenir ce cas dégénéré, ce programme a été publié sous une licence équivalente à la [licence ISC](https://en.wikipedia.org/wiki/Licence_ISC), mais en plus relâchée (cf. le fichier [COPYING](COPYING) pour la consulter in extenso). En ce qui nous concerne, vous pouvez faire ce que vous voulez avec ce programme et son code, dans la mesure vous n'empêchez personne de l'utiliser, y compris nous-mêmes. 
-
-
-
-
-
-Merci!! :smile: 
-
-Et nous vous aimons tous. :kissing_heart: 
 
 
 
@@ -204,6 +211,15 @@ Et nous vous aimons tous. :kissing_heart:
  
  - A [FLTK](https://en.wikipedia.org/wiki/FLTK) [GUI](https://en.wikipedia.org/wiki/FLTK). 
  - A [curses](https://en.wikipedia.org/wiki/Curses)/[PDcurses](https://en.wikipedia.org/wiki/PDcurses) [GUI](https://en.wikipedia.org/wiki/GUI). 
+
+
+## Merci 
+
+Merci!! :smile: 
+
+And we love you all. :kissing_heart: 
+
+
  
 
 
