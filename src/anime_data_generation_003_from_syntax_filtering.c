@@ -528,7 +528,7 @@ static int_anime_error_t anime_data__read_postfix_entier(int_anime_error_t * err
     token_type = anime_token__get_type       (token_env, token_i);	\
     srcval     = anime_token__get_srcval_cstr(token_env, token_i);	\
     if (ANIME_TOKEN_STRING_C != token_type) { error__expected_token_type = ANIME_TOKEN_STRING_C; goto error_label__non_matching_token_type; }; \
-    strval = srcval;							\
+    strval = anime__convert_token_cstring_to_regular_string(anime_data, srcval); \
     MOVE_TO_NEXT_TOKEN();						\
   }; 
 
@@ -541,13 +541,15 @@ static int_anime_error_t anime_data__read_postfix_entier(int_anime_error_t * err
     lookahead_match_huh = (ANIME_TOKEN_IDENT == token_type) && (0 == strcasecmp((_ident_), srcval)); \
   }; 
 
-#define LOOKAHEAD_SUGAR(_expected_token_type_) {			\
+#define LOOKAHEAD_TYPE(_expected_token_type_) {				\
     error_id = anime_syntax_filtering__get_current_token(this, token_env, &token_i); \
     if (error_id != ANIME__OK) { goto error_label__error_in_syntax_filtering; }; \
     if (token_i >= token_nb) { goto error_label__not_enough_tokens; };	\
     token_type = anime_token__get_type       (token_env, token_i);	\
     lookahead_match_huh = ((_expected_token_type_) == token_type);	\
   }; 
+
+#define LOOKAHEAD_SUGAR LOOKAHEAD_TYPE 
 
  
 
@@ -645,10 +647,10 @@ int_anime_error_t anime_data_generation_003_from_syntax_filtering(anime_token_en
 	snprintf(anime_data -> error_str + error_location_written_len, ANIME__ERROR_BUFFER_SIZE - error_location_written_len, "Extraneous 'gameplay' section"); 
 	if (stduser_d > 0) { dprintf(stduser_d, "%s" "\n", anime_data -> error_str); }; 
 	if (anime_data -> stdlog_d > 0) { dprintf(anime_data -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, anime_data -> error_str); }; 
-		MOVE_TO_NEXT_TOKEN(); 
+	MOVE_TO_NEXT_TOKEN(); 
 	error_id = anime_syntax_filtering__skip_to_closing_paren(this, token_env, &token_i); 
 	if (ANIME__OK != error_id) { goto error_label__error_in_syntax_filtering; }; 
-		MOVE_TO_NEXT_TOKEN(); 
+	MOVE_TO_NEXT_TOKEN(); 
 	continue; 
       }; 
     
@@ -657,6 +659,47 @@ int_anime_error_t anime_data_generation_003_from_syntax_filtering(anime_token_en
 	CHECK_IDENT("points"    ); CHECK_IDENT("de"); CHECK_IDENT("vie"); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_LALR_ENTIER(); anime_data -> vie = intval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	CHECK_IDENT("invincible"); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_BOOLEEN(); anime_data -> invincible = boolval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	CHECK_IDENT("hostile"   ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_BOOLEEN(); anime_data -> hostile    = boolval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+
+	for (;;) { 
+	  LOOKAHEAD_IDENT("action" ); if (!lookahead_match_huh) break; 
+	  
+	  const uint8_t action_i = anime_data -> actions_nb; 
+	  
+	  if (action_i >= anime_actions_size) { 
+	    CHECK_IDENT("action"); 
+	    const int_anime_token_t action_token = token_i; 
+	    const int error_location_strlen = action_token <= 0 ? 0 : snprintf(anime_data -> error_str, ANIME__ERROR_BUFFER_SIZE, "{%s:%d:%d}: ", anime_token__get_srcfile_cstr(token_env, action_token - 1), anime_token__get_line1(token_env, action_token - 1), anime_token__get_column0(token_env, action_token - 1)); 
+	    const int error_location_written_len = MIN(ANIME__ERROR_BUFFER_SIZE - 1, error_location_strlen); 
+	    snprintf(anime_data -> error_str + error_location_written_len, ANIME__ERROR_BUFFER_SIZE - error_location_written_len, "WARNING: Too many 'action' fields — can store at most %u, and already storing %u — Extraneous 'action' fields will be ignored", (unsigned int)anime_actions_size, (unsigned int) anime_data -> actions_nb); 
+	    if (stduser_d > 0) { dprintf(stduser_d, "%s" "\n", anime_data -> error_str); }; 
+	    if (anime_data -> stdlog_d > 0) { dprintf(anime_data -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, anime_data -> error_str); }; 
+	    MOVE_TO_NEXT_TOKEN(); // Skip to the opening parenthesis 
+	    error_id = anime_syntax_filtering__skip_to_closing_paren(this, token_env, &token_i); 
+	    if (ANIME__OK != error_id) { goto error_label__error_in_syntax_filtering; }; 
+	    MOVE_TO_NEXT_TOKEN(); // Skipping the current closing parenthesis. 
+	    continue; 
+	  }; 
+	  
+	  anime_data -> actions_nb++; 
+	  
+	  CHECK_IDENT("action"); 
+	  { 
+	    LOOKAHEAD_SUGAR(ANIME_TOKEN_IDENT); 
+	    if (lookahead_match_huh) { READ_IDENT(); anime_data -> actions_array_nom[action_i] = identval; } 
+	    else { READ_STRING(); anime_data -> actions_array_nom[action_i] = strval; }; 
+	  };
+	  CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
+	    CHECK_IDENT("affichage"   ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_STRING(); anime_data -> actions_array_affichage[action_i] = strval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	    CHECK_IDENT("icone"       ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_STRING(); anime_data -> actions_array_icone    [action_i] = strval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	    CHECK_IDENT("gestionnaire"); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
+	      CHECK_IDENT("fichier"   ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_STRING(); anime_data -> actions_array_gestionnaire_fichier[action_i] = strval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	      { LOOKAHEAD_SUGAR(ANIME_TOKEN_PROCEDURE); if (lookahead_match_huh) { MOVE_TO_NEXT_TOKEN(); } else  { CHECK_IDENT("procedure" ); }; }; CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_STRING(); anime_data -> actions_array_gestionnaire_proc   [action_i] = strval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	    }; CHECK_SUGAR(ANIME_TOKEN_CLOSEBRACE); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	  }; CHECK_SUGAR(ANIME_TOKEN_CLOSEBRACE); 
+
+	  
+	}; 
+
       }; CHECK_SUGAR(ANIME_TOKEN_CLOSEBRACE); 
       continue; 
     }; 

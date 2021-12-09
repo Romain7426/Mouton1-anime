@@ -10,7 +10,9 @@
 #include <math.h>     // cosf, ..., int signbit(real-floating x); , isnormal(neither zero, subnormal, infinite, nor NaN)., int isnan(real-floating x); , int isinf(real-floating x); int isfinite(real-floating x); 
 #include <ctype.h>    // tolower, toupper
 #include <assert.h>  // dépend de la valeur de la macro NDEBUG 
+#ifndef __TINYC__ // For some reasons, TCC fails to read this file. 
 #include <complex.h>  // types «complex», «double complex», «long double complex», «float complex» 
+#endif
 #include <ctype.h> 
 #include <errno.h> 
 #include <float.h> // limits 
@@ -19,8 +21,10 @@
 #include <setjmp.h> 
 #include <signal.h> 
 #include <time.h> // clock & time --- 
+#ifndef __PCC__ // For some reasons, PCC fails to read these files. 
 #include <wchar.h> 
 #include <wctype.h> 
+#endif
 #include <locale.h>
 #include <sys/types.h>
 #include <sys/stat.h>

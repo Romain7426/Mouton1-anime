@@ -219,14 +219,14 @@ struct anime_t {
 }; 
 
 
-extern void         anime__print_f       (const anime_t * this, FILE * out_stream); 
-extern void         anime__print_d       (const anime_t * this, const int fd); 
-extern anime_t *    anime__make          (const int stdlog_d); 
-extern anime_t *    anime__make_r        (anime_t * this, const int stdlog_d); 
-extern void         anime__delete        (anime_t * this);  
-extern void         anime__delete_r      (anime_t * this);  
-extern void         anime__bzero         (anime_t * this);  
-extern const char * anime__strcopy       (anime_t * this, const char * cstr); 
+extern void         anime__print_f         (const anime_t * this, FILE * out_stream); 
+extern void         anime__print_d         (const anime_t * this, const int fd); 
+extern anime_t *    anime__make            (const int stdlog_d); 
+extern anime_t *    anime__make_r          (anime_t * this, const int stdlog_d); 
+extern void         anime__delete          (anime_t * this);  
+extern void         anime__delete_r        (anime_t * this);  
+extern void         anime__bzero           (anime_t * this);  
+extern const char * anime__strcopy         (anime_t * this, const char * cstr); 
 
 extern void anime__actions_push  (      anime_t * this, const char * nom, const char * affichage, const char * icone, const char * gestionnaire_fichier, const char * gestionnaire_proc); 
 extern void anime__events_push   (      anime_t * this, const char * events_nom, const int events_genere_type, const char * events_genere_code_fichier, const char * events_genere_code_proc, const char * events_traitement_fichier, const char * events_traitement_proc); 
@@ -240,5 +240,8 @@ extern int_anime_error_t anime__fill_from_file(anime_t * this, const char * inpu
 
 extern int_anime_error_t anime__print_field_value_by_name(const anime_t * this, const char * field_name, const int stdprint_d, const int stduser_d, int_anime_error_t * error_id_r, const uint16_t error_size, char * error_str); 
 
+
+
+extern const char * anime__convert_token_cstring_to_regular_string(anime_t * this, const char * cstr); 
 
 #endif /* ANIME_H */

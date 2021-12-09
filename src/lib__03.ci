@@ -281,12 +281,13 @@ extern char * int_string_in_the_buffer(const int n_given, const int buffer_size,
 #define int_string__buffer_size(n) (2+((sizeof((n)) << 3)))
 #define int_string_on_the_heap(n)  int_string_in_the_buffer((n), int_string__buffer_size(n), malloc(sizeof(char) * (int_string__buffer_size(n))))
 #define int_string_on_the_stack(n) int_string_in_the_buffer((n), int_string__buffer_size(n), alloca(sizeof(char) * (int_string__buffer_size(n))))
-#define int_string        int_string_on_the_heap
-#define int_to_str_stack  int_string_on_the_stack
-#define int_to_str__stack int_string_on_the_stack
-#define int_string__stack int_string_on_the_stack
-#define int2cstr__stack   int_string_on_the_stack
-#define int_2_cstr__stack   int_string_on_the_stack
+#define int_string         int_string_on_the_heap
+#define int_to_str_stack   int_string_on_the_stack
+#define int_to_str__stack  int_string_on_the_stack
+#define int_string__stack  int_string_on_the_stack
+#define int_string__buffer int_string_in_the_buffer
+#define int2cstr__stack    int_string_on_the_stack
+#define int_2_cstr__stack  int_string_on_the_stack
 
 extern char * uint_string(const unsigned int n);
 extern char * uint_string_on_the_heap(const unsigned int n);
@@ -295,7 +296,8 @@ extern char * uint_string_in_the_buffer(const unsigned int n, const int buffer_s
 #define uint_string_buffer_size(n)   ((sizeof((n)) << 3)+1)
 #define uint_string_on_the_heap(n)   uint_string_in_the_buffer((n), uint_string_buffer_size((n)), malloc(uint_string_buffer_size((n))))
 #define uint_string_on_the_stack(n)  uint_string_in_the_buffer((n), uint_string_buffer_size((n)), alloca(uint_string_buffer_size((n))))
-#define uint_string uint_string_on_the_heap
+#define uint_string         uint_string_on_the_heap
+#define uint_string__stack  uint_string_on_the_stack
 
 
 static char * int_string_base2_in_the_buffer(const int n_given, const int buffer_size, char * buffer) {

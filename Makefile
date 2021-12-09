@@ -6,8 +6,8 @@ default: Makefile build build/anime.a build/anime.exe run
 
 SHELL:= /bin/sh
 .SHELLFLAGS: -u -e  
-#MAKEFLAGS:=  --warn-undefined-variables 
-#MAKEFLAGS:=  
+#MAKEFLAGS:= rR -j1 --warn-undefined-variables --warn-undefined-variables 
+#MAKEFLAGS:= rR -j1 
 .SUFFIXES: 
 #.SILENT:
 .NOTPARALLEL:

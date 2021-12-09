@@ -2,10 +2,11 @@
 
 
 
-struct anime_t * yyanime_global_objet_being_filled_up_while_parsing = NULL;
+static struct anime_t * yyanime_global_objet_being_filled_up_while_parsing = NULL;
 
 #if 1 
-extern char * anime_strcopy(const char * cstr) { 
+//extern char * anime_strcopy(const char * cstr) { 
+static char * anime_strcopy(const char * cstr) { 
   if (cstr == NULL) return NULL; 
   //const int cstr_len = strlen(cstr); 
   const char * p = cstr; while (*p) p++; 

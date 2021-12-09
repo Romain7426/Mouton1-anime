@@ -2,6 +2,8 @@
 // Ceci est encore un commentaire.
 # C'est encore un commentaire.
 
+// Et alors, les caractères spéciaux? € è ò ç etc. … 
+
 physique {
  zone de choc := {
   longueur := 0.5;
@@ -16,11 +18,29 @@ gameplay {
  invincible := vrai;
  hostile := faux;
  
- //action parler {
- // affichage := "parler";
- // icone := "";
- // gestionnaire := { fichier := "script.pml"; procedure := "chaman_parler"; } ;
- //} 
+ action "parler" {
+  affichage := "parler";
+  icone := "";
+  gestionnaire := { fichier := "script.pml"; procedure := "chaman_parler"; } ;
+ } 
+
+ action parler {
+  affichage := "parler";
+  icone := "";
+  gestionnaire := { fichier := "script.pml"; procedure := "brigitte_parler"; } ;
+ }
+
+ action parler2 {
+  affichage := "Bonjour!";
+  icone := "";
+  gestionnaire := { fichier := ""; procedure := "brigitte_bonjour"; } ;
+ }
+
+ action parler3 {
+  affichage := "Brigitte te fait signe.";
+  icone := "";
+  gestionnaire := { fichier := ""; procedure := "brigitte_pastas"; } ;
+ }
 
 
 }

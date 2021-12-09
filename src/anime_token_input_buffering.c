@@ -204,13 +204,13 @@ static int anime_token_input__buffer__fill(anime_token_input_env_t * this) {
       assert(false); 
     } 
     else { 
-      int read_nb  = -1; 
-      int buffer_i =  0; 
+      ssize_t read_nb = -1; 
+      int buffer_i = 0; 
       char c; 
       for (;;) { 
 	read_nb = read(this -> fileno[input_i], &c, 1); 
-	if (0 == read_nb) { this -> eof_huh = (0 == buffer_i); this -> buffer_nb = buffer_i; this -> buffer[buffer_i] = '\0'; return buffer_i; }; 
-	if (0 >  read_nb) { this -> buffer_nb = buffer_i; return -1; }; 
+	if ( 0 == read_nb) { this -> eof_huh = (0 == buffer_i); this -> buffer_nb = buffer_i; this -> buffer[buffer_i] = '\0'; return buffer_i; }; 
+	if (-1 == read_nb) { this -> buffer_nb = buffer_i; return -1; }; 
 	*(this -> buffer + buffer_i) = c; 
 	buffer_i += read_nb; 
 	if ('\n' == c) { this -> buffer_nb = buffer_i; this -> buffer[buffer_i] = '\0'; return buffer_i; }; 
@@ -311,7 +311,8 @@ int anime_token_input__getc(anime_token_input_env_t * this) {
   }; 
   
   assert(this -> buffer_j[input_i] < this -> buffer_nb); 
-  const int c = this -> buffer[this -> buffer_j[input_i]]; 
+  //const int c = this -> buffer[this -> buffer_j[input_i]]; 
+  const unsigned char c = this -> buffer[this -> buffer_j[input_i]]; 
   this -> buffer_j[input_i]++; 
   return c; 
 }; 

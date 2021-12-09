@@ -22,16 +22,16 @@ typedef uint32_t          uint24_unpacked_t;
 typedef uint24_unpacked_t uint24_t;
 
 #ifdef ENDIAN_BIG 
-#define INT24_PACKED_ASSIGN_UNPACKED(a,v) { char * p = (a); const int24_unpacked_t u = (v); const char * q = (const char *)&u; q++; *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
+#define INT24_PACKED_ASSIGN_UNPACKED(a,v) { signed char * p = (a); const int24_unpacked_t u = (v); const signed char * q = (const signed char *)&u; q++; *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
 #error 
 #else 
-#define INT24_PACKED_ASSIGN_UNPACKED(a,v) { char * p = (a); const int24_unpacked_t u = (v); const char * q = (const char *)&u; *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
-#define INT24_PACKED_READ(a,v) { v = 0; char * p = (char *)&v; const char * q = (a); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
-#define INT24_PACKED_WRITE(a,v) { const char * INT24_PACKED_WRITE_p = (const char *)&v; char * q = (char *)(a); *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; } 
+#define INT24_PACKED_ASSIGN_UNPACKED(a,v) { signed char * p = (a); const int24_unpacked_t u = (v); const signed char * q = (const signed char *)&u; *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
+#define INT24_PACKED_READ(a,v) { v = 0; signed char * p = (signed char *)&v; const signed char * q = (a); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
+#define INT24_PACKED_WRITE(a,v) { const signed char * INT24_PACKED_WRITE_p = (const signed char *)&v; signed char * q = (signed char *)(a); *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; } 
 #define UINT24_PACKED_READ(a,v) { v = 0; unsigned char * p = (unsigned char *)&v; const unsigned char * q = (a); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
 #define UINT24_PACKED_WRITE(a,v) { const unsigned char * INT24_PACKED_WRITE_p = (const unsigned char *)&v; unsigned char * q = (unsigned char *)(a); *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; } 
 #endif 
-#define INT24_PACKED_ASSIGN_PACKED(a1,a2) { char * p = (a1); const char * q = (a2); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
+#define INT24_PACKED_ASSIGN_PACKED(a1,a2) { signed char * p = (a1); const signed char * q = (a2); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
 
 #ifndef STRINGIFY
 #define STRINGIFY(s) STRINGIFY_AUX(s)
@@ -196,15 +196,17 @@ enum { O_NONBLOCK = 0x0004 };
 enum { O_APPEND   = 0x0008 }; 
 enum { O_TRUNC    = 0x0400 }; 
 
+#ifndef __TINYC__ 
+
 #define	O_SHLOCK	0x0010		/* open with shared file lock */
 #define	O_EXLOCK	0x0020		/* open with exclusive file lock */
 #define	O_ASYNC		0x0040		/* signal pgrp when data ready */
 #define	O_FSYNC		O_SYNC		/* source compatibility: do not use */
-#define O_NOFOLLOW  0x0100      /* don't follow symlinks */
+#define O_NOFOLLOW  	0x0100		/* don't follow symlinks */
 #define	O_CREAT		0x0200		/* create if nonexistant */
 #define	O_EXCL		0x0800		/* error if already exists */
 
-#define AT_FDCWD	-2
+#define AT_FDCWD		-2
 #define AT_EACCESS		0x0010	/* Use effective ids in access check */
 #define AT_SYMLINK_NOFOLLOW	0x0020	/* Act on the symlink itself not the target */
 #define AT_SYMLINK_FOLLOW	0x0040	/* Act on target of symlink */
@@ -280,6 +282,8 @@ enum { O_TRUNC    = 0x0400 };
 #define	LOCK_EX		0x02		/* exclusive file lock */
 #define	LOCK_NB		0x04		/* don't block when locking */
 #define	LOCK_UN		0x08		/* unlock file */
+
+#endif /* __TINYC__ */ 
 
 enum { SEEK_SET = 0 }; 
 enum { SEEK_CUR = 1 }; 

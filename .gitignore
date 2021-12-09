@@ -1,4 +1,4 @@
-.gitignore
+#.gitignore
 .gdb_history
 a.anime
 a2.anime
@@ -16,4 +16,4 @@ a.txt
 *.out
 run
 destroot
-src/chaman.anime.ci
+#src/chaman.anime.ci

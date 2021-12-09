@@ -462,8 +462,8 @@ void anime__print_d001(const anime_t * this, const int fd) {
 
 
 
-const char * anime__strcopy(anime_t * this, const char * str) { 
-  if (NULL ==  str) { return this -> string_stack; }; 
+static const char * anime__strcopy_nolookup(anime_t * this, const char * str) { 
+  if (NULL ==  str) { return NULL; }; 
   if ('\0' == *str) { return this -> string_stack; }; 
   const int len1 = 1 + strlen(str); 
   if (this -> string_stack_nb + len1 > ANIME__STRING_STACK_SIZE) { 
@@ -475,6 +475,32 @@ const char * anime__strcopy(anime_t * this, const char * str) {
   char * new_str = this -> string_stack + this -> string_stack_nb; 
   bcopy(str, new_str, len1); 
   this -> string_stack_nb += len1; 
+  return new_str; 
+}; 
+
+static const char * anime__string_lookup(const anime_t * this, const char * cstr) { 
+  if (NULL ==  cstr) { return NULL; }; 
+  if ('\0' == *cstr) { return this -> string_stack; }; 
+  const int cstr_len1 = 1 + strlen(cstr); 
+  if (cstr_len1 >= this -> string_stack_nb) return NULL; 
+  const uint16_t last_start_pos = this -> string_stack_nb - cstr_len1; 
+  uint16_t pos; 
+  pos = 1; 
+  for (;;) { 
+    if (pos > last_start_pos) return NULL; 
+    if ('\0' == this -> string_stack[pos + cstr_len1] && (0 == strcmp(this -> string_stack + pos, cstr))) { return this -> string_stack + pos; }; 
+    while ('\0' != this -> string_stack[pos]) pos++; 
+    pos++; 
+  }; 
+  assert(false); 
+}; 
+
+const char * anime__strcopy(anime_t * this, const char * str) { 
+  if (NULL ==  str) { return NULL; }; 
+  if ('\0' == *str) { return this -> string_stack; }; 
+  const char * str_lookedup = anime__string_lookup(this, str); 
+  if (NULL != str_lookedup) return str_lookedup; 
+  const char * new_str = anime__strcopy_nolookup(this, str); 
   return new_str; 
 }; 
 
@@ -1147,4 +1173,16 @@ const char * int_anime_error__get_cstr(const int_anime_error_t error_id) {
   UUU(SYNTAX_FILTERING__TOKEN_ENV_HAS_ZERO_TOKEN); 
   };
   return error_cstr; 
+}; 
+
+
+
+const char * anime__convert_token_cstring_to_regular_string(anime_t * this, const char * cstr) { 
+  if (NULL ==  cstr) return cstr; 
+  if ('\0' == *cstr) return this -> string_stack; 
+  const size_t len0 = strlen(cstr); 
+  char tmp[len0]; 
+  bcopy(cstr+1, tmp, len0-2); 
+  tmp[len0-2] = '\0'; 
+  return anime__strcopy(this, tmp); 
 }; 

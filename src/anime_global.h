@@ -51,7 +51,7 @@ typedef enum booleen booleen;
 
 
 
-
+#if 0 
 extern FILE * yyanimein;
 extern FILE * yyanimeout;
 
@@ -69,15 +69,15 @@ extern void yyanimerestart(FILE *new_file);
 
 //extern int memnbelts;
 extern void anime_parser_reset(void);
-
+#endif 
 
 #define pi 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117068 
 #define e 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427 
 
 
 
-extern FILE * yyanimein;
-extern FILE * yyanimeout;
+//extern FILE * yyanimein;
+//extern FILE * yyanimeout;
 #define stderr_FILE stderr
 
 #define BIGLIB_STRING(s) BIGLIB_STRINGX(s)
@@ -97,8 +97,8 @@ extern FILE * yyanimeout;
 
 
 
-struct anime_t;
-extern struct anime_t * yyanime_global_objet_being_filled_up_while_parsing;
+//struct anime_t;
+//extern struct anime_t * yyanime_global_objet_being_filled_up_while_parsing;
 
 
 
