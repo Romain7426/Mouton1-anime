@@ -205,7 +205,7 @@ Authors:
 
 ## [Intellectual Property](https://en.wikipedia.org/wiki/Intellectual_property) 
  
-Basically, we do not care about [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) (except that we think that [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) is bad, counter-productive, designed by cupid & greedy stock-pilers, gold-worshippers). You can do whatever you like with anything in that project. 
+Basically, we do not care about [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) (except that we think that [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) is bad, counter-productive, designed by cupid & greedy stock-pilers & gold-worshippers). You can do whatever you like with anything in that project. 
  
 However, as it seems that backward copyrighting could exist, we therefore did not release it in [public domain](https://en.wikipedia.org/wiki/Public_domain). Instead we have a license to prevent that degenerated case. For uninteresting law related stuffs, please see [COPYING](COPYING) (it's like an [ISC license](https://en.wikipedia.org/wiki/ISC_license), but slightly more liberal: do whatever you like with it, as long as you do not prevent ourselves or others to use it). (The [ISC license](https://en.wikipedia.org/wiki/ISC_license) was the most liberal license we found out.)  
  
