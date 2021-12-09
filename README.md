@@ -27,33 +27,34 @@ Customization
     - $ echo "pcc -L /usr/lib " > ./CC 
     - $ echo "tcc" > ./CC 
  - Installation directory — The default installation directory is './destroot'. To use your favorite location, please edit the generated [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), or even edit the generating ['./Makefile-gen.mkf'](Makefile-gen.mkf). (Another way is to symbolic-link the wanted destination as './destroot'; or to copy files from './destroot' to the wanted location). 
- - No other customization is available. (However, you can still edit the file ['./Makefile-gen.mkf'](Makefile-gen.mkf) to produce whatever you like.) 
+ - No other customization is available. (However, you can still edit the file ['./Makefile-gen.mkf'](Makefile-gen.mkf) to customize whatever you like.) 
  
 Configuration architecture 
  - Configuration is not based on [GNU Autohell](https://en.wikipedia.org/wiki/Autohell). 
- - L'idée est de générer un [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) qui soit le plus standard possible, parfaitement prévisible et ennuyeux (exemple: [Makefile](Makefile)), afin de pouvoir être lu par n'importe quelle version exotique de [Make](https://fr.wikipedia.org/wiki/Make). Un tel [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) est beaucoup plus lisible, plus simple à déboguer, plus compréhensible, et évite au programme [Make](https://fr.wikipedia.org/wiki/Make) de prendre des initiatives (en inférant on ne sait pas quelle règle ésotérique). (En sus, en théorie, un tel [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) serait distribuable — dans les faits, ceci est improbable dû aux spécificités de chaque [compiler](https://en.wikipedia.org/wiki/Compiler), de chaque [système](https://fr.wikipedia.org/wiki/Syst%C3%A8me_d%27exploitation), etc., spécificités que il faut donc détecter en amont.) 
- - Pour générer un tel [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) ennuyeux, nous utilisons le fichier ['./Makefile-gen.mkf'](Makefile-gen.mkf) qui est un script écrit dans le langage [GNU Make](https://en.wikipedia.org/wiki/GNU_make) (le langage de [GNU Make](https://en.wikipedia.org/wiki/GNU_make) étant beaucoup plus sympathique que le [shell standard](https://fr.wikipedia.org/wiki/Bourne_shell)). 
- - Ce script ['./Makefile-gen.mkf'](Makefile-gen.mkf) nécessite des outils extérieurs qui se trouvent dans le sous-répertoire ['./tools'](https://github.com/Romain7426/X_Macros_-_Enum/tree/main/tools). Avant d'exécuter le script ['./Makefile-gen.mkf'](Makefile-gen.mkf), il faut générer ces outils. Cela est fait par le script [shell](https://fr.wikipedia.org/wiki/Bourne_shell) ['./tools-compile.sh'](tools-compile.sh). (Notons que ces outils devraient compiler sans problème.) 
- - Et c'est tout. Tout cela est automatiquement réalisé par le script [shell](https://fr.wikipedia.org/wiki/Bourne_shell) ['./configure.sh'](configure.sh). 
+ - Instead, we devised something home-made. We based is on [GNU Make](https://en.wikipedia.org/wiki/GNU_make). Why [GNU Make](https://en.wikipedia.org/wiki/GNU_make)? Because [GNU Make](https://en.wikipedia.org/wiki/GNU_make) language is way much simpler than [shell](https://en.wikipedia.org/wiki/Bourne_shell) language. 
+ - Our idea is to generate a standard [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), predictable & boring (example: [Makefile](Makefile)), so that it could be read by any exotic version of [Make](https://en.wikipedia.org/wiki/Make_(software)). Such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) is way more readable, debuggable, understandable, and prevent the [Make](https://en.wikipedia.org/wiki/Make_(software)) software to take «smart» initiatives (by infering who knows which esoteric rule). (Top of that, theoretically speaking, such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) would be distributable — however, it is not due to each [compiler](https://en.wikipedia.org/wiki/Compiler) personality, and each [OS](https://en.wikipedia.org/wiki/OS) personality, etc., which has therefore to be beforehand detected.) 
+ - Pour générer un tel [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) ennuyeux, nous utilisons le fichier ['./Makefile-gen.mkf'](Makefile-gen.mkf) qui est un script écrit dans le langage [GNU Make](https://en.wikipedia.org/wiki/GNU_make) (le langage de [GNU Make](https://en.wikipedia.org/wiki/GNU_make) étant beaucoup plus sympathique que le [shell standard](https://en.wikipedia.org/wiki/Bourne_shell)). 
+ - Ce script ['./Makefile-gen.mkf'](Makefile-gen.mkf) nécessite des outils extérieurs qui se trouvent dans le sous-répertoire ['./tools'](https://github.com/Romain7426/X_Macros_-_Enum/tree/main/tools). Avant d'exécuter le script ['./Makefile-gen.mkf'](Makefile-gen.mkf), il faut générer ces outils. Cela est fait par le script [shell](https://en.wikipedia.org/wiki/Bourne_shell) ['./tools-compile.sh'](tools-compile.sh). (Notons que ces outils devraient compiler sans problème.) 
+ - Et c'est tout. Tout cela est automatiquement réalisé par le script [shell](https://en.wikipedia.org/wiki/Bourne_shell) ['./configure.sh'](configure.sh). 
  
 Plaintes 
  - Si le script ['./configure.sh'](configure.sh) se plaint que il ne trouve pas [GNU Make](https://en.wikipedia.org/wiki/GNU_make), éditez le fichier ['./configure.sh'](configure.sh) pour lui indiquer où trouver [GNU Make](https://en.wikipedia.org/wiki/GNU_make). 
  - Tout le code source suppose que le [compiler](https://en.wikipedia.org/wiki/Compiler) est compatible avec la norme [C99](https://en.wikipedia.org/wiki/C99). 
  - Pour les autres plaintes, a priori, je ne sais pas. 
  
-[Compilateurs](https://fr.wikipedia.org/wiki/Compilateur) testés: 
- - [clang](https://fr.wikipedia.org/wiki/Clang): 86k 
- - [gcc11](https://fr.wikipedia.org/wiki/GNU_Compiler_Collection): 170k 
+[Compilateurs](https://en.wikipedia.org/wiki/Compilateur) testés: 
+ - [clang](https://en.wikipedia.org/wiki/Clang): 86k 
+ - [gcc11](https://en.wikipedia.org/wiki/GNU_Compiler_Collection): 170k 
  - [tcc](https://en.wikipedia.org/wiki/Tiny_C_Compiler): 134k 
  - [pcc](https://en.wikipedia.org/wiki/Portable_C_Compiler): 82k 
  - D'autres? 
 
-[Systèmes](https://fr.wikipedia.org/wiki/Syst%C3%A8me_d%27exploitation) testés: 
- - [OpenBSD](https://fr.wikipedia.org/wiki/OpenBSD) 
- - Les autres systèmes [BSD](https://fr.wikipedia.org/wiki/Berkeley_Software_Distribution) devraient fonctionner sans problème. 
- - Il devrait fonctionner sous [MacOSX](https://fr.wikipedia.org/wiki/MacOS). 
- - Les systèmes compatibles avec [Unix](https://fr.wikipedia.org/wiki/Unix) devraient fonctionner. 
- - Sur [Windows](https://fr.wikipedia.org/wiki/Microsoft_Windows), nous ne savons pas, nous n'avons pas essayé, mais le programme devrait pouvoir fonctionner à travers [Cygwin](https://fr.wikipedia.org/wiki/Cygwin), [MinGW](https://fr.wikipedia.org/wiki/MinGW), etc. 
+[Systèmes](https://en.wikipedia.org/wiki/Syst%C3%A8me_d%27exploitation) testés: 
+ - [OpenBSD](https://en.wikipedia.org/wiki/OpenBSD) 
+ - Les autres systèmes [BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) devraient fonctionner sans problème. 
+ - Il devrait fonctionner sous [MacOSX](https://en.wikipedia.org/wiki/MacOS). 
+ - Les systèmes compatibles avec [Unix](https://en.wikipedia.org/wiki/Unix) devraient fonctionner. 
+ - Sur [Windows](https://en.wikipedia.org/wiki/Microsoft_Windows), nous ne savons pas, nous n'avons pas essayé, mais le programme devrait pouvoir fonctionner à travers [Cygwin](https://en.wikipedia.org/wiki/Cygwin), [MinGW](https://en.wikipedia.org/wiki/MinGW), etc. 
  
 Dépendances: 
  - Un [compiler](https://en.wikipedia.org/wiki/Compiler) compatible avec la norme [C99](https://en.wikipedia.org/wiki/C99). 
@@ -177,11 +178,11 @@ Auteurs:
  - [Romain: https://github.com/Romain7426](https://github.com/Romain7426)
 
 
-## [Propriété intellectuelle](https://fr.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) 
+## [Propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) 
  
-Nous ne portons aucun intérêt à la [propriété intellectuelle](https://fr.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) du présent programme (ni en général, sauf pour en étudier les principes et exprimer que nous désapprouvons ces principes et la [propriété intellectuelle](https://fr.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) en général). Vous pouvez faire ce que il vous plaît avec ce programe. 
+Nous ne portons aucun intérêt à la [propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) du présent programme (ni en général, sauf pour en étudier les principes et exprimer que nous désapprouvons ces principes et la [propriété intellectuelle](https://en.wikipedia.org/wiki/Propri%C3%A9t%C3%A9_intellectuelle) en général). Vous pouvez faire ce que il vous plaît avec ce programe. 
 
-Nous aurions bien laissé ce programme dans le [domaine public](https://fr.wikipedia.org/wiki/Domaine_public_(propri%C3%A9t%C3%A9_intellectuelle)), mais il semblerait que il existerait une possibilité pour s'approprier du matériel qui serait dans le domaine public, et d'en restreindre l'accès. Afin de prévenir ce cas dégénéré, ce programme a été publié sous une licence équivalente à la [licence ISC](https://fr.wikipedia.org/wiki/Licence_ISC), mais en plus relâchée (cf. le fichier [COPYING](COPYING) pour la consulter in extenso). En ce qui nous concerne, vous pouvez faire ce que vous voulez avec ce programme et son code, dans la mesure vous n'empêchez personne de l'utiliser, y compris nous-mêmes. 
+Nous aurions bien laissé ce programme dans le [domaine public](https://en.wikipedia.org/wiki/Domaine_public_(propri%C3%A9t%C3%A9_intellectuelle)), mais il semblerait que il existerait une possibilité pour s'approprier du matériel qui serait dans le domaine public, et d'en restreindre l'accès. Afin de prévenir ce cas dégénéré, ce programme a été publié sous une licence équivalente à la [licence ISC](https://en.wikipedia.org/wiki/Licence_ISC), mais en plus relâchée (cf. le fichier [COPYING](COPYING) pour la consulter in extenso). En ce qui nous concerne, vous pouvez faire ce que vous voulez avec ce programme et son code, dans la mesure vous n'empêchez personne de l'utiliser, y compris nous-mêmes. 
 
 
 
@@ -197,7 +198,7 @@ Et nous vous aimons tous. :kissing_heart:
 ##  TODO 
  
  - A [FLTK](https://en.wikipedia.org/wiki/FLTK) [GUI](https://en.wikipedia.org/wiki/FLTK). 
- - A [curses](https://fr.wikipedia.org/wiki/Curses)/[PDcurses](https://fr.wikipedia.org/wiki/PDcurses) [GUI](https://en.wikipedia.org/wiki/GUI). 
+ - A [curses](https://en.wikipedia.org/wiki/Curses)/[PDcurses](https://en.wikipedia.org/wiki/PDcurses) [GUI](https://en.wikipedia.org/wiki/GUI). 
  
 
 
