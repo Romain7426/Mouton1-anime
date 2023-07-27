@@ -1,0 +1,655 @@
+
+// log10(256) = log10(2^8) = 8 * log10(2) = 8 * 0.301029… = 2.408239968… ≤ 2.5 
+// =>  2.4 x sizeof(n) ≤ sizeof(n) * log10(256) ≤ 2.5 x sizeof(n) 
+//ASSERT_COMPILE(WRITE_BUF_SIZE >= (((sizeof(long long int)) << 1) + ((sizeof(long long int)) >> 1) + 1 + 1)); 
+
+
+//#define LOG10_OF_2_AS_MACRO  0.301029995663981195213738894724493026768189881462108541310427461127108189274424509486927252118186172040684
+// LLINT_BASE10_BIT_DIGITS_COUNT = LLINT_BASE2_BIT_DIGITS_COUNT x LOG10_OF_2_AS_MACRO 
+// 0.3 * LLINT_BASE2_BIT_DIGITS_COUNT ≤ LLINT_BASE10_BIT_DIGITS_COUNT ≤ 0.30103 * LLINT_BASE2_BIT_DIGITS_COUNT 
+enum { LLINT_BASE2_BIT_DIGITS_COUNT = (sizeof(long long int) << 3) }; 
+enum { LLINT_BASE10_BIT_DIGITS_COUNT = (LLINT_BASE2_BIT_DIGITS_COUNT * 3) / 10 }; 
+enum { LLFIXED_BASE10_DIGITS__ALL = LLINT_BASE10_BIT_DIGITS_COUNT }; 
+enum { LLFIXED_BASE10_DIGITS__DEC = (LLFIXED_BASE10_DIGITS__ALL / 3) }; // 1/ 3 = 0,0101010101… 
+enum { LLFIXED_BASE10_DIGITS__INT = LLFIXED_BASE10_DIGITS__ALL - LLFIXED_BASE10_DIGITS__DEC }; 
+
+enum { LLFIXED_UNIT = 
+  LLFIXED_BASE10_DIGITS__DEC ==  0 ? 1 : 
+  LLFIXED_BASE10_DIGITS__DEC ==  1 ? 10 : 
+  LLFIXED_BASE10_DIGITS__DEC ==  2 ? 100 : 
+  LLFIXED_BASE10_DIGITS__DEC ==  3 ? 1000 : 
+  LLFIXED_BASE10_DIGITS__DEC ==  4 ? 10000 : 
+  LLFIXED_BASE10_DIGITS__DEC ==  5 ? 100000 : 
+  LLFIXED_BASE10_DIGITS__DEC ==  6 ? 1000000 : 
+  LLFIXED_BASE10_DIGITS__DEC ==  7 ? 10000000 : 
+  LLFIXED_BASE10_DIGITS__DEC ==  8 ? 100000000 : 
+  LLFIXED_BASE10_DIGITS__DEC ==  9 ? 1000000000 : 
+  LLFIXED_BASE10_DIGITS__DEC == 10 ? 10000000000 : 
+  LLFIXED_BASE10_DIGITS__DEC == 11 ? 100000000000 : 
+  LLFIXED_BASE10_DIGITS__DEC == 12 ? 1000000000000 : 
+  LLFIXED_BASE10_DIGITS__DEC == 13 ? 10000000000000 : 
+  LLFIXED_BASE10_DIGITS__DEC == 14 ? 100000000000000 : 
+  LLFIXED_BASE10_DIGITS__DEC == 15 ? 1000000000000000 : 
+  LLFIXED_BASE10_DIGITS__DEC == 16 ? 10000000000000000 : 
+  0 }; 
+ 
+enum { LLFIXED__UNIT = LLFIXED_UNIT }; 
+
+enum { LLFIXED_NAN = (1 << (LLINT_BASE2_BIT_DIGITS_COUNT - 1)) }; 
+enum { LLFIXED__NAN = LLFIXED_NAN }; 
+
+enum { LLFIXED__CONST_10 = LLFIXED_UNIT * 10 }; 
+enum { LLFIXED_CONST_10 = LLFIXED__CONST_10 }; 
+
+enum { LLFIXED__CONST_2 = LLFIXED_UNIT << 1 }; 
+enum { LLFIXED_CONST_2 = LLFIXED__CONST_2 }; 
+
+static int llfixed__token_prefix_is_number_huh(const char * token, int16_t * retval__prefix_bytesize) { 
+  int16_t prefix_bytesize = -1; 
+  int retval = false; 
+  const char * token_given = token; 
+  goto label__body; 
+  
+  label__exit: { 
+    if (-1 == prefix_bytesize) prefix_bytesize = (token - token_given); 
+    if (NULL != retval__prefix_bytesize) *retval__prefix_bytesize = prefix_bytesize; 
+    return retval; 
+  }; 
+  
+ label__body: { 
+    if (NULL == token) goto label__exit; 
+    char c = *token; 
+    if ('\0' == c) goto label__exit; 
+    if ('-'  == c) { token++, c = *token; }; 
+    for (;;token++, c = *token) { 
+      if (c >= '0' && c <= '9') continue; 
+      break; 
+    }; 
+    retval = true; 
+    
+    if (c == '\0') goto label__exit; 
+    
+    for (;;) { 
+      if (c ==  '.') break; 
+      if (c ==  ',') break; 
+      goto label__exit; 
+    }; 
+    
+    token++, c = *token; 
+    
+    for (;;token++, c = *token) { 
+      if (c >= '0' && c <= '9') continue; 
+      goto label__exit; 
+    }; 
+    
+    assert(false); 
+  }; 
+  
+}; 
+
+
+static long long int llfixed__convert_buffer(const char * buffer, const uint16_t buffer_bytesize) { 
+  if (buffer_bytesize <= 0) return 0; 
+  long long int new_value = 0; 
+  const int negative_huh = '-' == *buffer; 
+  
+  uint16_t current_pos = 0; 
+  if (negative_huh || ('+' == *buffer)) current_pos++; 
+  
+  char c; 
+  for (;current_pos < buffer_bytesize; current_pos++) { 
+    c = buffer[current_pos]; 
+    if ('.' == c) break; 
+    if (',' == c) break; 
+    new_value *= 10; 
+    new_value += (c - '0'); 
+  }; 
+  
+  uint16_t dec_digits_count = 0; 
+  if ('.' == c) { 
+    current_pos++; 
+    for (;current_pos < buffer_bytesize; current_pos++) { 
+      c = buffer[current_pos]; 
+      new_value *= 10; 
+      new_value += (c - '0'); 
+      dec_digits_count++; 
+      if (LLFIXED_BASE10_DIGITS__DEC <= dec_digits_count) break; 
+    }; 
+  }; 
+
+  if (LLFIXED_BASE10_DIGITS__DEC <= dec_digits_count) { 
+    current_pos++; 
+    for (;current_pos < buffer_bytesize;) { 
+      c = buffer[current_pos]; 
+#if 0
+    write_string(STDERR_FILENO, "LOOK AHEAD POST CHAR: "); 
+    write(STDERR_FILENO, &c, 1); 
+    write_eol(STDERR_FILENO); 
+#endif 
+      if (c < '5') break; 
+      if (c > '9') break; 
+      new_value++; 
+      break; 
+    }; 
+    current_pos--; 
+  }; 
+  
+  const uint16_t digit_shift = LLFIXED_BASE10_DIGITS__DEC - dec_digits_count; 
+  for (uint16_t i = 0; i < digit_shift; i++) { 
+    new_value *= 10; 
+  }; 
+  
+  if (negative_huh) new_value = -new_value; 
+  
+  return new_value; 
+}; 
+
+
+static int llfixed__print_into_buffer(char * buffer, const int16_t buffer_bytesize, long long int n) { 
+  if (0 >= buffer_bytesize) return 0; 
+  goto label__body; 
+  
+ label__error_buffer_too_small: { 
+    //write(STDERR_FILENO, "SMALL", 5); 
+    return ~0; 
+  }; 
+
+ label__NAN: { 
+    if (buffer_bytesize < 4) return 0; 
+    bytecopy("NAN", buffer, 4); 
+    return 4; 
+  }; 
+  
+ label__body: { 
+    if (LLFIXED__NAN == n) goto label__NAN; 
+    const int8_t neg_huh = (n < 0); 
+    if (neg_huh) n = -n; 
+    
+    char * p; 
+    p = buffer + buffer_bytesize; 
+    
+    // First, the null ending char. 
+    p--; 
+    *p = '\0'; 
+
+    int16_t digit_read_count = -1; 
+    int8_t digit; 
+    
+    // Second, skipping the ending zero in the decimal part 
+    {
+      for (;;) { 
+	digit_read_count++; 
+	if (LLFIXED_BASE10_DIGITS__DEC <= digit_read_count) break; 
+	digit = (n % 10); 
+	n /= 10; 
+	if (0 == digit) continue; 
+	break; 
+      }; 
+    }; 
+
+    // Now, writing the decimal part 
+    if (LLFIXED_BASE10_DIGITS__DEC > digit_read_count) { 
+      if (p == buffer) { goto label__error_buffer_too_small; }; 
+      p--; 
+      for (;;) { 
+	*p = '0' + digit; 
+	digit_read_count++; 
+	if (LLFIXED_BASE10_DIGITS__DEC <= digit_read_count) break; 
+	digit = (n % 10); 
+	n /= 10; 
+	if (p == buffer) { goto label__error_buffer_too_small; }; 
+	p--; 
+      }; 
+    }; 
+    
+    // Now, writing the point 
+    if ('\0' != *p) { 
+      if (p == buffer) { goto label__error_buffer_too_small; }; 
+      p--; 
+      *p = '.'; 
+    }; 
+    
+    // Now, writing the integer part 
+    {
+      if (p == buffer) { goto label__error_buffer_too_small; }; 
+      p--; 
+      for (;;) { 
+	digit = (n % 10); 
+	n /= 10; 
+	*p = '0' + digit; 
+	if (0 == n) break; 
+	if (p == buffer) { goto label__error_buffer_too_small; }; 
+	p--; 
+      }; 
+    }; 
+    
+    // Finally, writing the possible '-' 
+    if (neg_huh) { 
+      if (p == buffer) { goto label__error_buffer_too_small; }; 
+      p--; 
+      *p = '-'; 
+    }; 
+    
+    const int bytecopied = (buffer + buffer_bytesize) - p; 
+    
+    // Rotate to the front  
+    if (p != buffer) { 
+      bytecopy(p, buffer, bytecopied); 
+    }; 
+    return bytecopied; 
+  }; 
+  
+}; 
+
+
+
+static int llfixed__print(const int file_des, const long long int n) { 
+  enum { BUFFER_BYTESIZE = LLFIXED_BASE10_DIGITS__ALL + 4 }; 
+  char write_buffer[BUFFER_BYTESIZE]; 
+  
+  const int written_bytesize = llfixed__print_into_buffer(write_buffer, BUFFER_BYTESIZE, n); 
+#if 0
+  write_string(STDERR_FILENO, "written_bytesize = "); 
+  write_long_long_int_old(STDERR_FILENO, written_bytesize); 
+  write_eol(STDERR_FILENO); 
+#endif
+  
+  if (0 >= written_bytesize) return written_bytesize; 
+  
+  // removing last '\0' 
+  const int len = written_bytesize - 1; 
+  const char last_char = write_buffer[len]; 
+  if ('\0' == last_char) { 
+    write(file_des, write_buffer, len); 
+    return len; 
+  } 
+  else { 
+    write(file_des, write_buffer, written_bytesize); 
+    return written_bytesize; 
+  }; 
+}; 
+
+
+static long long int llfixed__mult(long long int n, long long int m) { 
+  if (0 == n) return 0; 
+  if (0 == m) return 0; 
+  const int n_neg_huh = n < 0; 
+  const int m_neg_huh = m < 0; 
+  if (n_neg_huh) n = -n; 
+  if (m_neg_huh) m = -m; 
+  
+  const long long int n_int_part = n / LLFIXED__UNIT; 
+  const long long int m_int_part = m / LLFIXED__UNIT; 
+  
+  const long long int n_dec_part = n % LLFIXED__UNIT; 
+  const long long int m_dec_part = m % LLFIXED__UNIT; 
+  
+  long long int result = 0; 
+  
+  result += n_int_part * m_int_part * LLFIXED__UNIT; 
+  result += n_dec_part * m_dec_part / LLFIXED__UNIT; 
+  result += n_dec_part * m_int_part + n_int_part * m_dec_part; 
+  
+  if (n_neg_huh) { if (!m_neg_huh) result = -result; } 
+  else { if (m_neg_huh) result = -result; } 
+  
+  return result; 
+}; 
+
+
+static long long int llfixed__div(long long int n, long long int m) { 
+  if (0 == m) return LLFIXED__NAN; 
+  if (0 == n) return 0; 
+  if (LLFIXED__UNIT == m) return n; 
+  const int n_neg_huh = n < 0; 
+  const int m_neg_huh = m < 0; 
+  if (n_neg_huh) n = -n; 
+  if (m_neg_huh) m = -m; 
+  
+  long long int result; 
+  
+  result = n / m; 
+  
+  long long int remainder; 
+  remainder = n % m; 
+
+  long long int dividend; 
+  long long int quotient; 
+  
+  for (int i = 0; i < LLFIXED_BASE10_DIGITS__DEC; i++) { 
+    dividend  = remainder * 10; 
+    quotient  = dividend / m; 
+    remainder = dividend % m; 
+    result *= 10; 
+    result += quotient; 
+  }; 
+  
+  remainder <<= 1; 
+  
+  if (remainder >= m) result ++; 
+  
+  if (n_neg_huh) { if (!m_neg_huh) result = -result; } 
+  else { if (m_neg_huh) result = -result; } 
+  
+  return result; 
+}; 
+
+
+static int16_t llfixed__token_get_number_prefix_bytesize(const char * token, int8_t * retval__roundup_huh) { 
+  int16_t prefix_bytesize = -1; 
+  int8_t roundup_huh = false; 
+  const char * token_given = token; 
+  goto label__body; 
+  
+ label__exit: { 
+    if (-1 == prefix_bytesize) prefix_bytesize = (token - token_given); 
+    if (NULL != retval__roundup_huh) *retval__roundup_huh = roundup_huh; 
+    return prefix_bytesize; 
+  }; 
+  
+ label__body: { 
+    if (NULL == token) goto label__exit; 
+    char c = *token; 
+    if ('\0' == c) goto label__exit; 
+    if (('-'  == c) || ('+'  == c)) { 
+      token++, c = *token; 
+      for (;;) { 
+	if (('0' <= c) && ('9' >= c)) break; 
+	if (('.' != c) && (',' != c)) { 
+	  token--; 
+	  goto label__exit; 
+	}; 
+	const char d = *(token+1); 
+	if (('0' <= d) && ('9' >= d)) break; 
+	token--; 
+	goto label__exit; 
+      }; 
+    }; 
+    for (;;token++, c = *token) { 
+      if (c >= '0' && c <= '9') continue; 
+      break; 
+    }; 
+    
+    if (c == '\0') goto label__exit; 
+    
+    for (;;) { 
+      if (c ==  '.') break; 
+      if (c ==  ',') break; 
+      goto label__exit; 
+    }; 
+    
+    token++, c = *token; 
+
+    int16_t current_digit = 0; 
+    
+    for (;;token++, c = *token) { 
+      if (LLFIXED_BASE10_DIGITS__DEC <= current_digit) { 
+	roundup_huh = (c >= '5' && c <= '9'); 
+	goto label__exit; 
+      }; 
+      current_digit++; 
+      if (c >= '0' && c <= '9') continue; 
+      goto label__exit; 
+    }; 
+    
+    /* NOT REACHED */
+    assert(false); 
+  }; 
+  
+}; 
+
+
+
+
+
+
+
+
+enum { LLFIXED_STACK_UNITSIZE = 127 }; 
+static long long int llfixed_stack[LLFIXED_STACK_UNITSIZE] = {}; 
+static int8_t llfixed_stack_nb = 0; 
+
+static void llfixed_stack__check_and_assert(void) { 
+  llfixed_stack_nb = LLFIXED_STACK_UNITSIZE; 
+  assert(llfixed_stack_nb == LLFIXED_STACK_UNITSIZE); 
+}; 
+
+
+// Operation symbol must be ordered by priority. 
+enum { 
+  OPERATION_SYMBOL__NULL, 
+  OPERATION_SYMBOL__ERROR__EMPTY_SYMBOL, 
+  OPERATION_SYMBOL__ERROR__NOT_AN_OPERATION_SYMBOL, 
+  OPERATION_SYMBOL__INC, 
+  OPERATION_SYMBOL__DEC, 
+  OPERATION_SYMBOL__LOG10, 
+  OPERATION_SYMBOL__LOG2, 
+  OPERATION_SYMBOL__SHIFT10_RIGHT, 
+  OPERATION_SYMBOL__SHIFT2_RIGHT, 
+  OPERATION_SYMBOL__SHIFT10_LEFT, 
+  OPERATION_SYMBOL__SHIFT2_LEFT, 
+  OPERATION_SYMBOL__MOD, 
+  OPERATION_SYMBOL__QUOTIENT, 
+  OPERATION_SYMBOL__ADD, 
+  OPERATION_SYMBOL__SUB, 
+  OPERATION_SYMBOL__MULT, 
+  OPERATION_SYMBOL__DIV, 
+  OPERATION_SYMBOL__ZERO, 
+  OPERATION_SYMBOL__NAN, 
+  OPERATION_SYMBOL__SYNTAX__OPENPAR, 
+  OPERATION_SYMBOL__SYNTAX__CLOSEPAR, 
+  OPERATION_SYMBOL__COUNT 
+}; 
+
+static int8_t operation_symbol__token_match(const char * token) { 
+  if (NULL ==  token) return OPERATION_SYMBOL__ERROR__EMPTY_SYMBOL; 
+  if ('\0' == *token) return OPERATION_SYMBOL__ERROR__EMPTY_SYMBOL; 
+  int8_t operation_symbol; 
+  const int16_t token_len = cstrlen(token); 
+  goto label__body; 
+
+  label__exit: { 
+    return operation_symbol;
+  }; 
+  
+  label__body: { 
+    if (cstring_compare__token_contains_prefix_huh(token, "zero"    )) { operation_symbol = OPERATION_SYMBOL__ZERO    ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "NAN"     )) { operation_symbol = OPERATION_SYMBOL__NAN     ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "+"       )) { operation_symbol = OPERATION_SYMBOL__ADD     ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "-"       )) { operation_symbol = OPERATION_SYMBOL__SUB     ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "*"       )) { operation_symbol = OPERATION_SYMBOL__MULT    ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "x"       )) { operation_symbol = OPERATION_SYMBOL__MULT    ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "/"       )) { operation_symbol = OPERATION_SYMBOL__DIV     ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "mod"     )) { operation_symbol = OPERATION_SYMBOL__MOD     ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "quotient")) { operation_symbol = OPERATION_SYMBOL__QUOTIENT; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "log10"   )) { operation_symbol = OPERATION_SYMBOL__LOG10   ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "log2"    )) { operation_symbol = OPERATION_SYMBOL__LOG2    ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, ">>"      )) { operation_symbol = OPERATION_SYMBOL__SHIFT10_RIGHT; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, ">>10"    )) { operation_symbol = OPERATION_SYMBOL__SHIFT10_RIGHT; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, ">>2"     )) { operation_symbol = OPERATION_SYMBOL__SHIFT2_RIGHT ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "<<"      )) { operation_symbol = OPERATION_SYMBOL__SHIFT10_LEFT ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "<<10"    )) { operation_symbol = OPERATION_SYMBOL__SHIFT10_LEFT ; goto label__exit; }; 
+    if (cstring_compare__token_contains_prefix_huh(token, "<<2"     )) { operation_symbol = OPERATION_SYMBOL__SHIFT2_LEFT  ; goto label__exit; }; 
+    operation_symbol = OPERATION_SYMBOL__ERROR__NOT_AN_OPERATION_SYMBOL; 
+    goto label__exit; 
+  }; 
+  
+}; 
+
+
+
+
+
+static long long int llfixed__log10int(long long int n) { 
+  if (0 == n) return LLFIXED__NAN; 
+  const int n_neg_huh = n < 0; 
+  if (n_neg_huh) n = -n; 
+  if (LLFIXED__UNIT == n) return 0; 
+  long long int result; 
+  goto label__body; 
+
+  label__exit: { 
+    return result; 
+  }; 
+
+  label__larger: { 
+    result = 0; 
+    for (;;) { 
+      if (LLFIXED__CONST_10 > n) break; 
+      n /= 10; 
+      result++; 
+    }; 
+    result *= LLFIXED__UNIT; 
+    goto label__exit; 
+  }; 
+
+  label__smaller: { 
+    result = 0; 
+    for (;;) { 
+      if (LLFIXED_UNIT <= n) break; 
+      n *= 10; 
+      result--; 
+    }; 
+    result *= LLFIXED__UNIT; 
+    goto label__exit; 
+  }; 
+
+ label__body: { 
+    if (LLFIXED__UNIT < n) goto label__larger; 
+    if (LLFIXED__UNIT > n) goto label__smaller; 
+    /* NOT REACHED */ 
+    assert(false); 
+  }; 
+  
+}; 
+
+
+static long long int llfixed__log2int(long long int n) { 
+  if (0 == n) return LLFIXED__NAN; 
+  const int n_neg_huh = n < 0; 
+  if (n_neg_huh) n = -n; 
+  if (LLFIXED__UNIT == n) return 0; 
+  long long int result; 
+  goto label__body; 
+
+  label__exit: { 
+    return result; 
+  }; 
+
+  label__larger: { 
+    result = 0; 
+    for (;;) { 
+      if (LLFIXED__CONST_2 > n) break; 
+      n /= 2; 
+      result++; 
+    }; 
+    result *= LLFIXED__UNIT; 
+    goto label__exit; 
+  }; 
+
+  label__smaller: { 
+    result = 0; 
+    for (;;) { 
+      if (LLFIXED_UNIT <= n) break; 
+      n *= 2; 
+      result--; 
+    }; 
+    result *= LLFIXED__UNIT; 
+    goto label__exit; 
+  }; 
+
+ label__body: { 
+    if (LLFIXED__UNIT < n) goto label__larger; 
+    if (LLFIXED__UNIT > n) goto label__smaller; 
+    /* NOT REACHED */ 
+    assert(false); 
+  }; 
+  
+}; 
+
+
+
+
+static long long int llfixed__exp10int(long long int n) { 
+  if (0 == n) return LLFIXED__UNIT; 
+  const int n_neg_huh = n < 0; 
+  if (n_neg_huh) n = -n; 
+  long long int result; 
+  goto label__body; 
+
+  label__exit: { 
+    return result; 
+  }; 
+
+  label__positive: { 
+    result = LLFIXED_UNIT; 
+    for (;;) { 
+      if (0 == n) break; 
+      n--; 
+      result *= 10; 
+    }; 
+    goto label__exit; 
+  }; 
+
+  label__negative: { 
+    result = LLFIXED_UNIT; 
+    for (;;) { 
+      if (0 == n) break; 
+      n--; 
+      result /= 10; 
+    }; 
+    goto label__exit; 
+  }; 
+
+ label__body: { 
+    n /= LLFIXED_UNIT; 
+    if (n_neg_huh) goto label__negative; 
+    else goto label__positive; 
+    /* NOT REACHED */ 
+  }; 
+  
+}; 
+
+
+static long long int llfixed__exp2int(long long int n) { 
+  if (0 == n) return LLFIXED__UNIT; 
+  const int n_neg_huh = n < 0; 
+  if (n_neg_huh) n = -n; 
+  long long int result; 
+  goto label__body; 
+
+  label__exit: { 
+    return result; 
+  }; 
+
+  label__positive: { 
+    result = LLFIXED_UNIT; 
+    for (;;) { 
+      if (0 == n) break; 
+      n--; 
+      //result *= 2; 
+      result <<= 1; 
+    }; 
+    goto label__exit; 
+  }; 
+
+  label__negative: { 
+    result = LLFIXED_UNIT; 
+    for (;;) { 
+      if (0 == n) break; 
+      n--; 
+      //result /= 2; 
+      result >>= 1; 
+    }; 
+    goto label__exit; 
+  }; 
+
+ label__body: { 
+    n /= LLFIXED_UNIT; 
+    if (n_neg_huh) goto label__negative; 
+    else goto label__positive; 
+    /* NOT REACHED */ 
+  }; 
+  
+}; 
+

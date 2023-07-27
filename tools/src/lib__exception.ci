@@ -1,0 +1,178 @@
+#include <setjmp.h> // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/setjmp.h.html
+
+// ************ EXCEPTION - BEGIN ************ 
+enum { EXCEPTION_MESSAGE_STRING_BUFFER_BYTESIZE = 32767 }; 
+static char       exception_message_string_buffer[EXCEPTION_MESSAGE_STRING_BUFFER_BYTESIZE] = { }; 
+static int16_t    exception_message_string_nb = 0; 
+static int        exception_code = 0; 
+static sigjmp_buf exception_data; 
+
+#define EXCEPTION_CODE__LIST \
+  X(EXCEPTION_CODE__NONE, = 0)		 \
+  X(EXCEPTION_CODE__READ_BUFFER_TOO_SMALL,) \
+  X(EXCEPTION_CODE__NEWLINE_LOOKUP_ISSUE,) \
+  X(EXCEPTION_CODE__STDIN_LINE_DATA_BUFFER_TOO_SMALL,) \
+  X(EXCEPTION_CODE__READING_ERROR,) \
+  X(EXCEPTION_CODE__FORK_FAILED,) \
+  X(EXCEPTION_CODE__MAPPED_ARGV_ARRAY_TOO_SMALL,) 
+
+enum { 
+#define X(ident, value) ident value, 
+  EXCEPTION_CODE__LIST 
+#undef X 
+}; 
+
+enum { 
+#define X(ident, value) ident##__ID, 
+  EXCEPTION_CODE__LIST
+#undef X 
+  EXCEPTION_CODE__COUNT
+}; 
+
+typedef      uint8_t              int_exception_code_t; 
+typedef      int_exception_code_t     exception_code_t; 
+static const char *                   exception_code__get_cstr(const exception_code_t exception_code); 
+static       uint8_t                  exception_code__get_id  (const exception_code_t exception_code); 
+static       int                      exception_code__value_is_an_exception_code__huh(const uint8_t value); 
+static const char *                   exception_code__by_id_cstr [EXCEPTION_CODE__COUNT + 1]; 
+enum {                                exception_code__by_id_cstr__size = ARRAY_SIZE(exception_code__by_id_cstr) }; 
+static const uint8_t                  exception_code__by_id_cstr__size__compiled_value; 
+static const exception_code_t         exception_code__by_id_value[EXCEPTION_CODE__COUNT]; 
+enum {                                exception_code__by_id_value__size = ARRAY_SIZE(exception_code__by_id_value) }; 
+static const uint8_t                  exception_code__by_id_value__size__compiled_value; 
+
+#define X(ident, value) static const exception_code_t ident##__compiled_value = ident; 
+EXCEPTION_CODE__LIST 
+#undef X 
+
+static void exception_code__check_and_assert(void) { 
+#define X(ident, value) assert(ident == ident##__compiled_value); 
+EXCEPTION_CODE__LIST 
+#undef X 
+  ;
+ 
+ assert(exception_code__by_id_cstr__size  == exception_code__by_id_cstr__size__compiled_value ); 
+ assert(exception_code__by_id_value__size == exception_code__by_id_value__size__compiled_value); 
+}; 
+
+static const char * exception_code__get_cstr(const exception_code_t exception_code) { 
+  const char * exception_code__cstr = NULL; 
+  switch (exception_code) { 
+    default: assert(false); 
+#define X(ident, value) case ident: exception_code__cstr = #ident; break; 
+    EXCEPTION_CODE__LIST 
+#undef X 
+      }; 
+  return exception_code__cstr; 
+}; 
+
+static uint8_t int_exception_code__get_id(const exception_code_t exception_code) { 
+  switch (exception_code) { 
+    default: assert(false); 
+#define X(ident, value) case ident: return ident##__ID; 
+    EXCEPTION_CODE__LIST 
+#undef X 
+      }; 
+}; 
+
+static int exception_code__value_is_an_exception_code__huh(const uint8_t value) { 
+  int value_is_an_exception_code_huh; 
+  switch (value) { 
+#define X(ident, value) case ident: value_is_an_exception_code_huh = true; break; 
+  EXCEPTION_CODE__LIST 
+#undef X 
+    default: value_is_an_exception_code_huh = false; break; 
+  }; 
+  return value_is_an_exception_code_huh; 
+}; 
+
+static const char * exception_code__by_id_cstr[EXCEPTION_CODE__COUNT + 1] = { 
+#define X(ident, value) #ident, 
+    EXCEPTION_CODE__LIST 
+#undef X 
+    NULL 
+}; 
+
+static const uint8_t exception_code__by_id_cstr__size__compiled_value = ARRAY_SIZE(exception_code__by_id_cstr); 
+
+static const exception_code_t exception_code__by_id_value[EXCEPTION_CODE__COUNT] = { 
+#define X(ident, value) ident, 
+    EXCEPTION_CODE__LIST 
+#undef X 
+}; 
+
+static const uint8_t exception_code__by_id_value__size__compiled_value = ARRAY_SIZE(exception_code__by_id_value); 
+
+
+
+static void exception_raise(const int exception_code_given) { 
+#if 0
+  write_string(STDERR_FILENO, "exception_code_given = "); 
+  write_long_long_int(STDERR_FILENO, exception_code_given); 
+  write_eol(STDERR_FILENO); 
+#endif 
+
+  if (EXCEPTION_MESSAGE_STRING_BUFFER_BYTESIZE == exception_message_string_nb) { 
+    exception_message_string_buffer[EXCEPTION_MESSAGE_STRING_BUFFER_BYTESIZE - 1] = '\0'; 
+  }
+  else { 
+    exception_message_string_buffer[exception_message_string_nb] = '\0'; 
+    exception_message_string_nb++; 
+  }; 
+
+  exception_code = exception_code_given; 
+  siglongjmp(exception_data, 1); 
+  /* NOT REACHED */
+}; 
+
+static void exception_message_raz(void) { 
+  exception_message_string_nb = 0; 
+}; 
+
+static void exception_message_push_char_array(const char * char_array, const int char_array_bytesize) { 
+  if (0 >= char_array_bytesize) return; 
+  const int16_t available_bytesize = EXCEPTION_MESSAGE_STRING_BUFFER_BYTESIZE - exception_message_string_nb; 
+  const int will_copy_bytesize = MIN(char_array_bytesize, available_bytesize); 
+  bytecopy(char_array, exception_message_string_buffer + exception_message_string_nb, will_copy_bytesize); 
+  exception_message_string_nb += will_copy_bytesize; 
+}; 
+
+static void exception_message_push_string(const char * msg) { 
+  if (NULL == msg) return; 
+  const int msg_len = cstrlen(msg); 
+  if (0 >= msg_len) return; 
+  exception_message_push_char_array(msg, msg_len); 
+}; 
+
+static void exception_message_push_string_old(const char * msg) { 
+  for (;;) { 
+    if (0 == exception_message_string_nb) {
+      stringcopy(msg, exception_message_string_buffer, EXCEPTION_MESSAGE_STRING_BUFFER_BYTESIZE); 
+      break; 
+    }; 
+    
+    if (EXCEPTION_MESSAGE_STRING_BUFFER_BYTESIZE == exception_message_string_nb) break; 
+
+    const char last_char = exception_message_string_buffer[exception_message_string_nb - 1]; 
+    if ('\0' == last_char) exception_message_string_nb--; 
+    stringcopy(msg, exception_message_string_buffer + exception_message_string_nb, EXCEPTION_MESSAGE_STRING_BUFFER_BYTESIZE - exception_message_string_nb); 
+    
+    break; 
+  }; 
+
+  //const char last_char = exception_message_string_buffer[exception_message_string_nb - 1]; 
+  //assert('\0' == last_char); 
+}; 
+
+static void exception_message_push_llint(const long long int n) { 
+  char buffer[WRITE_LONG_LONG_INT_BUFFER__BYTESIZE_MIN]; 
+  const int written_bytesize = write_long_long_int_into_buffer(buffer, sizeof(buffer),  n); 
+  if (0 >= written_bytesize) return; 
+  // removing last '\0' 
+  const int len = written_bytesize - 1; 
+  const char last_char = buffer[len]; 
+  exception_message_push_char_array(buffer, last_char == '\0' ? len : written_bytesize); 
+}; 
+
+// ************ EXCEPTION - END ************ 
+

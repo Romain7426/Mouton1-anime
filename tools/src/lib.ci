@@ -1,0 +1,459 @@
+#include <unistd.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/unistd.h.html */ /* https://en.wikipedia.org/wiki/Unistd.h */ 
+
+
+#ifndef __bool_true_false_are_defined /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/stdbool.h.html */ 
+enum { true  = (0 == 0) }; 
+enum { false = (0 != 0) }; 
+#  define __bool_true_false_are_defined 1
+#endif 
+
+#define ARRAY_SIZE(__some_array__) ((sizeof((__some_array__))) / (sizeof(*(__some_array__))))
+
+#define ASSERT_COMPILE(a) { int tab[((a) ? 1 : (-1))]; }; 
+
+#define assert(__cond__) { if (!(__cond__)) { write(STDERR_FILENO, "assertion failed\n", 17); _exit(1); }; }; 
+
+#define  INT16_MAX__M   (0x0FFF) 
+enum {   INT16_MAX__E = (1   <<  0) + (1   <<  1) + (1   <<  2) + (1   <<  3) + (1   <<  4) + (1   <<  5) + (1   <<  6) + (1   <<  7) + 
+                        (1   <<  8) + (1   <<  9) + (1   << 10) + (1   << 11) + (1   << 12) + (1   << 13) + (1   << 14) }; 
+
+#define UINT16_MAX__M   (0xFFFF) 
+enum {  UINT16_MAX__E = (1   <<  0) + (1   <<  1) + (1   <<  2) + (1   <<  3) + (1   <<  4) + (1   <<  5) + (1   <<  6) + (1   <<  7) + 
+                        (1   <<  8) + (1   <<  9) + (1   << 10) + (1   << 11) + (1   << 12) + (1   << 13) + (1   << 14) + (1   << 15) }; 
+
+#ifndef INT16_MAX
+#  define INT16_MAX INT16_MAX__E
+#endif
+
+#ifndef UINT16_MAX
+#  define UINT16_MAX UINT16_MAX__E
+#endif
+
+#ifndef MIN
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#endif 
+
+static void bytecopy(const char * byte_src, char * byte_dest, const int bytesize) { 
+  for (int i = 0; i < bytesize; i++) { 
+    *byte_dest = *byte_src; 
+    byte_dest++; 
+    byte_src++; 
+  }; 
+}; 
+
+static int bytecompare_prefix(const char * buffer1, const int16_t buffer1_bytesize, const char * buffer2, const int16_t buffer2_bytesize, const int16_t prefix_bytesize) { 
+  if (0 >= prefix_bytesize) return true; 
+  if (buffer1_bytesize < prefix_bytesize) return false; 
+  if (buffer2_bytesize < prefix_bytesize) return false; 
+  
+  for (int16_t i = 0; i < prefix_bytesize; i++) { 
+    if (buffer1[i] != buffer2[i]) return false; 
+  }; 
+  
+  return true; 
+}; 
+
+static int bytecompare__token_contains_prefix_huh(const char * token_buffer, const int16_t token_buffer_bytesize, const char * prefix_buffer, const int16_t prefix_buffer_bytesize) { 
+  if (0 >= prefix_buffer_bytesize) return true; 
+  if (token_buffer_bytesize < prefix_buffer_bytesize) return false; 
+  
+  for (int16_t i = 0; i < prefix_buffer_bytesize; i++) { 
+    if (token_buffer[i] != prefix_buffer[i]) return false; 
+  }; 
+  
+  return true; 
+}; 
+
+static int cstrlen(const char * cstr) { 
+  if (cstr == NULL) return -1; 
+  const char * p = cstr; 
+  for (;;) { if (*p == '\0') break; p++; }; 
+  const int len = p - cstr; 
+  return len;
+}; 
+
+static int stringcopy(const char * string0_src, char * byte_dest, const int dest_bytesize) { 
+  const char * p = string0_src; 
+  char * q = byte_dest; 
+  int available_bytes = dest_bytesize; 
+  if (0 >= available_bytes) return 0; 
+  goto label__body; 
+  
+  label__exit: { 
+    *q = '\0';  
+    return dest_bytesize - available_bytes; 
+  }; 
+  
+  label__body: { 
+    for (;;) { 
+      if (0 == available_bytes) goto label__exit; 
+      const char c = *p; 
+      *q = c; 
+      available_bytes--; 
+      if ('\0' == c) goto label__exit; 
+      p++; 
+      q++; 
+    }; 
+  }; 
+  
+}; 
+
+static int cstring_compare__token_contains_prefix_huh(const char * token_cstr, const char * prefix_cstr) { 
+  const int16_t token_buffer_bytesize = cstrlen(token_cstr); 
+  const int16_t prefix_buffer_bytesize = cstrlen(prefix_cstr); 
+  return bytecompare__token_contains_prefix_huh(token_cstr, token_buffer_bytesize, prefix_cstr, prefix_buffer_bytesize); 
+}; 
+
+static int cstring__equal_huh(const char * cstr1, const char * cstr2) { 
+  if (cstr1 == cstr2) return true; 
+  if (NULL == cstr1) return false; 
+  if (NULL == cstr2) return false; 
+  const char *p = cstr1; 
+  const char *q = cstr2; 
+  for (;;) { 
+    if (*p != *q) return false; 
+    if ('\0' == *p) return true; 
+    p++; 
+    q++; 
+  };
+  /* NOT REACHED */
+}; 
+
+enum { WRITE_BUF_SIZE = INT16_MAX }; 
+static char write_buffer[WRITE_BUF_SIZE] = {}; 
+enum { write_buffer_size = sizeof(write_buffer) }; 
+
+#define DIGIT_TO_STRING(d) (			\
+			    (d) == 0 ? "0" :	\
+			    (d) == 1 ? "1" :	\
+			    (d) == 2 ? "2" :	\
+			    (d) == 3 ? "3" :	\
+			    (d) == 4 ? "4" :	\
+			    (d) == 5 ? "5" :	\
+			    (d) == 6 ? "6" :	\
+			    (d) == 7 ? "7" :	\
+			    (d) == 8 ? "8" :	\
+			    (d) == 9 ? "9" :	\
+			    "?")
+
+#define DIGIT_TO_CHAR(d) (((d) >= 0 && (d) <= 9) ? '0' + (d) : '?') 
+
+
+static int write_eol(const int file_des) { 
+  write(file_des, "\n", 1); 
+  return 1; 
+}; 
+
+static int write_string(const int file_des, const char * cstr) { 
+  if (NULL == cstr) { 
+    static const char s[] = "NULL"; 
+    write(file_des, s, sizeof(s) - 1); 
+    return sizeof(s) - 1; 
+  }; 
+  
+  const char * p = cstr; 
+  for (;;) { if (*p == '\0') break; p++; }; 
+  const int len = p - cstr; 
+  write(file_des, cstr, len); 
+  return len; 
+}; 
+
+static int write_string2(const int file_des, const char * cstr1, const char * cstr2) { 
+  if (NULL == cstr1) return write_string(file_des, cstr2); 
+  if (NULL == cstr2) return write_string(file_des, cstr1); 
+  const int len1 = write_string(file_des, cstr1); 
+  const int len2 = write_string(file_des, cstr2); 
+  return len1 + len2; 
+}; 
+
+static int write_string3(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3) { 
+  if (NULL == cstr3) return write_string2(file_des, cstr1, cstr2); 
+  const int len1 = write_string2(file_des, cstr1, cstr2); 
+  const int len2 = write_string(file_des, cstr3); 
+  return len1 + len2; 
+}; 
+
+static int write_string4(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4) { 
+  if (NULL == cstr4) return write_string3(file_des, cstr1, cstr2, cstr3); 
+  const int len1 = write_string3(file_des, cstr1, cstr2, cstr3); 
+  const int len2 = write_string(file_des, cstr4); 
+  return len1 + len2; 
+}; 
+
+static int write_string_ln(const int file_des, const char * cstr) { 
+  const int len1 = write_string(file_des, cstr); 
+  const int len2 = write_eol(file_des); 
+  return len1 + len2; 
+}; 
+
+static int write_string2_ln(const int file_des, const char * cstr1, const char * cstr2) { 
+  const int len1 = write_string2(file_des, cstr1, cstr2); 
+  const int len2 = write_eol(file_des); 
+  return len1 + len2; 
+}; 
+
+static int write_string3_ln(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3) { 
+  const int len1 = write_string3(file_des, cstr1, cstr2, cstr3); 
+  const int len2 = write_eol(file_des); 
+  return len1 + len2; 
+}; 
+
+static int write_string4_ln(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4) { 
+  const int len1 = write_string4(file_des, cstr1, cstr2, cstr3, cstr4); 
+  const int len2 = write_eol(file_des); 
+  return len1 + len2; 
+}; 
+
+
+#define LOG10_OF_2_AS_MACRO  0.301029995663981195213738894724493026768189881462108541310427461127108189274424509486927252118186172040684
+// log10(256) = log10(2^8) = 8 * log10(2) = 8 * 0.301029… = 2.408239968… ≤ 2.5 
+// => sizeof(n) * log10(256) ≤ 2.5 x sizeof(n) 
+
+enum { WRITE_LONG_LONG_INT_BUFFER__BYTESIZE_MIN = (((sizeof(long long int)) << 1) + ((sizeof(long long int)) >> 1) + 1 + 1) }; 
+static void write_long_long_int__compile_check(void) { 
+  //ASSERT_COMPILE(WRITE_BUF_SIZE >= (((sizeof(long long int)) << 1) + ((sizeof(long long int)) >> 1) + 1 + 1)); 
+  ASSERT_COMPILE(WRITE_BUF_SIZE >= WRITE_LONG_LONG_INT_BUFFER__BYTESIZE_MIN); 
+}; 
+
+
+static int write_long_long_int_into_buffer(char * buffer, const int buffer_bytesize, long long int n) { 
+  if (0 >= buffer_bytesize) return 0; 
+  goto label__body; 
+  
+ label__error_buffer_too_small: { 
+    //write(STDERR_FILENO, "SMALL", 5); 
+    return ~0; 
+  }; 
+  
+ label__body: { 
+    const int8_t neg_huh = (n < 0); 
+    if (neg_huh) n = -n; 
+    
+    char * p; 
+    p = buffer + buffer_bytesize; 
+    
+    p--; 
+    *p = '\0'; 
+    
+    p--; 
+    for (;;) { 
+      *p = '0' + (n % 10); 
+      n /= 10; 
+      if (0 == n) break; 
+      if (p == buffer) { goto label__error_buffer_too_small; }; 
+      p--; 
+    }; 
+    
+    if (neg_huh) { 
+      if (p == buffer) { goto label__error_buffer_too_small; }; 
+      p--; 
+      *p = '-'; 
+    }; 
+    
+    const int bytecopied = (buffer + buffer_bytesize) - p; 
+    
+    // Rotate to the front; 
+    //const int shift_bytesize = p - buffer; 
+    //bytecopy(p, buffer, shift_bytesize); 
+    if (p != buffer) { 
+      bytecopy(p, buffer, bytecopied); 
+    }; 
+    return bytecopied; 
+  }; 
+}; 
+
+
+static int write_long_long_int_old(const int file_des, long long int n) { 
+  enum { BUF_SIZE = INT16_MAX }; 
+  static char buffer[BUF_SIZE] = {}; 
+  char * p; 
+  p = buffer + BUF_SIZE; 
+  p--; 
+  *p = '\0'; 
+  p--; 
+  for (;;) { 
+    *p = '0' + (n % 10); 
+    n = n / 10; 
+    if (0 == n) break; 
+    if (p == buffer) { return ~0; }; 
+    p--; 
+  }; 
+  const int len = BUF_SIZE - (p - buffer) - 1; 
+  write(file_des, p, len); 
+  return len; 
+}; 
+
+#define write_llint write_long_long_int
+static int write_long_long_int(const int file_des, long long int n) { 
+  //assert(BUF_SIZE >= (((sizeof(n)) << 1) + ((sizeof(n)) >> 1) + 1 + 1)); 
+  //if (BUF_SIZE <= 3) return 2; 
+
+#if 0   
+  if (0 == n) { 
+    write(file_des, "0", 1); 
+    return 1; 
+  }; 
+#endif 
+  
+  const int written_bytesize = write_long_long_int_into_buffer(write_buffer, WRITE_BUF_SIZE,  n); 
+#if 0
+  write_string(STDERR_FILENO, "written_bytesize = "); 
+  write_long_long_int_old(STDERR_FILENO, written_bytesize); 
+  write_eol(STDERR_FILENO); 
+#endif
+  
+  if (0 >= written_bytesize) return written_bytesize; 
+  
+  // removing last '\0' 
+  const int len = written_bytesize - 1; 
+  const char last_char = write_buffer[len]; 
+  if ('\0' == last_char) { 
+    write(file_des, write_buffer, len); 
+    return len; 
+  } 
+  else { 
+    write(file_des, write_buffer, written_bytesize); 
+    return written_bytesize; 
+  }; 
+}; 
+
+static int write_long_long_int_ln(const int file_des, const long long int n) { 
+  const int len1 = write_long_long_int(file_des, n); 
+  const int len2 = write_eol(file_des); 
+  return len1 + len2; 
+}; 
+
+#define write_long_long_int_eol write_long_long_int_ln
+
+static void write__compile_check(void) { 
+  ASSERT_COMPILE(WRITE_BUF_SIZE >= 3); 
+}; 
+
+
+static int char_array0__number_huh(const char * token) { 
+  if (NULL == token) return false; 
+  char c = *token; 
+  if ('\0' == c) return false; 
+  if ('-'  == c) { token++, c = *token; }; 
+  for (;;token++, c = *token) { 
+    if (c >= '0' && c <= '9') continue; 
+    break; 
+  }; 
+  return (c == '\0'); 
+}; 
+
+static int char_array0__number_type(const char * token, int * retval__int_bytesize) { 
+  char int_bytesize = -1; 
+  int retval = 0; 
+  const char * token_argv = token; 
+  goto label__start; 
+
+  label__exit: { 
+    if (-1 == int_bytesize) int_bytesize = (token - token_argv); 
+    if (NULL != retval__int_bytesize) *retval__int_bytesize = int_bytesize; 
+    return retval; 
+  }; 
+  
+ label__start: {}; 
+  if (NULL == token) { retval = 1; goto label__exit; }; 
+  char c = *token; 
+  if ('\0' == c) { retval = 2; goto label__exit; }; 
+  if ('-'  == c) { token++, c = *token; }; 
+  for (;;token++, c = *token) { 
+    if (c >= '0' && c <= '9') continue; 
+    break; 
+  }; 
+  
+  if (c == '\0') { retval = 3; goto label__exit; }; 
+  
+  if (*(token+1) == '\0') { 
+    if (c == '\n') { retval = 6; goto label__exit; }; 
+    if (c ==  '.') { retval = 4; goto label__exit; }; 
+    if (c ==  ',') { retval = 4; goto label__exit; }; 
+    /* ELSE */     { retval = 5; goto label__exit; }; 
+  }; 
+  
+  if (c == '.') { 
+    c = *(1+token); 
+    if (c >= '0' && c <= '4') { retval = 4; goto label__exit; }; 
+    if (c >= '5' && c <= '9') { retval = 7; goto label__exit; }; 
+    /* ELSE */                { retval = 5; goto label__exit; }; 
+  }; 
+  
+  assert(false); 
+}; 
+
+static long long int convert_buffer_to_long_long_int(const char * buffer, const uint16_t buffer_bytesize) { 
+  if (buffer_bytesize <= 0) return 0; 
+  long long int new_value = 0; 
+  const int negative_huh = *buffer == '-'; 
+  
+  uint16_t current_pos = 0; 
+  if (negative_huh) current_pos++; 
+  
+  for (;current_pos < buffer_bytesize; current_pos++) { 
+    const char c = buffer[current_pos]; 
+    new_value *= 10; 
+    new_value += (c - '0'); 
+  }; 
+
+  if (negative_huh) new_value = -new_value; 
+  
+  return new_value; 
+}; 
+
+
+static int16_t lookup_newline_char(const char * buffer, const int16_t buffer_bytesize, const int16_t start_pos) { 
+  if (0 > buffer_bytesize) return -3; 
+  if (0 == buffer_bytesize) return -2; 
+  int16_t current_index; 
+  for (int16_t current_index = start_pos; current_index < buffer_bytesize; current_index++) { 
+    if ('\n' == buffer[current_index]) return current_index; 
+  }; 
+  return -1; 
+}; 
+
+
+static int16_t llint__token_get_number_prefix_bytesize(const char * token, int8_t * retval__roundup_huh) { 
+  int16_t prefix_bytesize = -1; 
+  int8_t roundup_huh = false; 
+  const char * token_given = token; 
+  goto label__body; 
+  
+ label__exit: { 
+    if (-1 == prefix_bytesize) prefix_bytesize = (token - token_given); 
+    if (NULL != retval__roundup_huh) *retval__roundup_huh = roundup_huh; 
+    return prefix_bytesize; 
+  }; 
+  
+ label__body: { 
+    if (NULL == token) goto label__exit; 
+    char c = *token; 
+    if ('\0' == c) goto label__exit; 
+    if ('-'  == c) { token++, c = *token; }; 
+    for (;;token++, c = *token) { 
+      if (c >= '0' && c <= '9') continue; 
+      break; 
+    }; 
+    
+    if (c == '\0') goto label__exit; 
+    
+    for (;;) { 
+      if (c ==  '.') break; 
+      if (c ==  ',') break; 
+      goto label__exit; 
+    }; 
+    
+    c = *(token+1); 
+    roundup_huh = (c >= '5' && c <= '9'); 
+    goto label__exit; 
+  }; 
+  
+}; 
+
+
+
+
+
+
+
