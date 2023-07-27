@@ -216,7 +216,7 @@ In a nutshell, please feel free to do whatever you like with this software and i
  
  - A [FLTK](https://en.wikipedia.org/wiki/FLTK) [GUI](https://en.wikipedia.org/wiki/GUI). 
  - A [curses](https://en.wikipedia.org/wiki/Curses)/[PDcurses](https://en.wikipedia.org/wiki/PDcurses) [GUI](https://en.wikipedia.org/wiki/GUI). 
- - A [Lazarus](https://en.wikipedia.org/wiki/Lazarus_(software)) [GUI](https://en.wikipedia.org/wiki/GUI). (But [Lazarus](https://en.wikipedia.org/wiki/Lazarus_(software)) does not work anylonger on [OpenBSD](https://en.wikipedia.org/wiki/OpenBSD) :frowney:). 
+ - A [Lazarus](https://en.wikipedia.org/wiki/Lazarus_(software)) [GUI](https://en.wikipedia.org/wiki/GUI). (But [Lazarus](https://en.wikipedia.org/wiki/Lazarus_(software)) does not work anylonger on [OpenBSD](https://en.wikipedia.org/wiki/OpenBSD) ☹). 
 
 
 ## Merci 
