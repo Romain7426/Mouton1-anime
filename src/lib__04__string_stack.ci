@@ -104,7 +104,8 @@ static int string__concat2(const str_t str1, const str_t str2) {
   const int len1 = string__length(str1); 
   const int len2 = string__length(str2); 
   const int catlen = len1 + len2; 
-  char buffer[1 + catlen]; 
+  //char buffer[1 + catlen]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  char * buffer = alloca(1 + catlen); 
   bcopy(string__const_char_array(str1), buffer, len1); 
   bcopy(string__const_char_array(str2), buffer+len1, len2); 
   buffer[catlen] = '\0'; 
@@ -116,7 +117,8 @@ static int string__concat3(const str_t str1, const str_t str2, const str_t str3)
   const int len2 = string__length(str2); 
   const int len3 = string__length(str3); 
   const int catlen = len1 + len2 + len3; 
-  char buffer[1 + catlen]; 
+  //char buffer[1 + catlen]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  char * buffer = alloca(1 + catlen); 
   char * ptr = buffer; 
   bcopy(string__const_char_array(str1), ptr, len1); ptr += len1; 
   bcopy(string__const_char_array(str2), ptr, len2); ptr += len2; 
@@ -131,7 +133,8 @@ static int string__concat4(const str_t str1, const str_t str2, const str_t str3,
   const int len3 = string__length(str3); 
   const int len4 = string__length(str4); 
   const int catlen = len1 + len2 + len3 + len4; 
-  char buffer[1 + catlen]; 
+  //char buffer[1 + catlen]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  char * buffer = alloca(1 + catlen); 
   char * ptr = buffer; 
   bcopy(string__const_char_array(str1), ptr, len1); ptr += len1; 
   bcopy(string__const_char_array(str2), ptr, len2); ptr += len2; 
@@ -143,11 +146,13 @@ static int string__concat4(const str_t str1, const str_t str2, const str_t str3,
 
 static str_t string__concat__array(const int str_nb, const str_t str_array[]) {
   if (0 >= str_nb) return 0; 
-  int len_array[str_nb]; 
+  //int len_array[str_nb]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  int * len_array = alloca((sizeof(*len_array)) * str_nb); 
   for (int i = 0; i < str_nb; i++) { len_array[i] = string__length(str_array[i]); }; 
   int catlen = 0; 
   for (int i = 0; i < str_nb; i++) { catlen += len_array[i]; }; 
-  char buffer[1 + catlen]; 
+  //char buffer[1 + catlen]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  char * buffer = alloca(1 + catlen); 
   char * ptr = buffer; 
   for (int i = 0; i < str_nb; i++) { bcopy(string__const_char_array(str_array[i]), ptr, len_array[i]); ptr += len_array[i]; }; 
   *ptr = '\0'; 

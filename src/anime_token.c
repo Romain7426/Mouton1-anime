@@ -310,7 +310,8 @@ static int anime_token__master_push__common(anime_token_env_t * this, const char
  
 int anime_token__master_push_cstr(anime_token_env_t * this, const char * ident_cstr) { 
   const int  ident_len = strlen(ident_cstr); 
-  char ident_lower_cstr[ident_len]; 
+  //char ident_lower_cstr[ident_len]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  char * ident_lower_cstr = alloca(ident_len); 
   for (int i = 0; i <= ident_len; i++) { 
     ident_lower_cstr[i] = tolower(ident_cstr[i]); 
   }; 
@@ -365,7 +366,8 @@ static int anime_token__syntax_keyword_push__common(anime_token_env_t * this, co
  
 int anime_token__syntax_keyword_push_cstr(anime_token_env_t * this, const char * ident_cstr) { 
   const int  ident_len = strlen(ident_cstr); 
-  char ident_lower_cstr[ident_len]; 
+  //char ident_lower_cstr[ident_len]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  char * ident_lower_cstr = alloca(ident_len); 
   for (int i = 0; i <= ident_len; i++) { 
     ident_lower_cstr[i] = tolower(ident_cstr[i]); 
   }; 
@@ -424,12 +426,12 @@ void anime_token__print_one_token(const int filedes, const anime_token_env_t * t
   const char * token_len_str                = int_string__stack(srcval_len); 
   const int    token_len_str_len            = strlen(token_len_str); 
   const int    token_len_str_len_spaces_nb  = MAX(0, 6 - token_len_str_len); 
-
+  
   const int    token_line1                    = anime_token__get_line1(this, token_i); 
   const char * token_line1_cstr               = int_string__stack(token_line1); 
   const int    token_line1_cstr_len           = strlen(token_line1_cstr); 
   const int    token_line1_cstr_len_spaces_nb = MAX(0, 6 - token_line1_cstr_len); 
-
+  
   const int    token_column0                    = this -> column0[token_i]; 
   const char * token_column0_cstr               = int_string__stack(token_column0); 
   const int    token_column0_cstr_len           = strlen(token_column0_cstr); 

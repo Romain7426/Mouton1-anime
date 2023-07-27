@@ -839,7 +839,8 @@ int_anime_error_t anime_syntax_filtering__lalr_automaton(anime_syntax_filtering_
 	"Unexpected token: ", anime_token__type_get_cstr(given_token_type), "(", int_string__stack(given_token_type), ") -- Was expecting one of these ", int_string__stack(expected_tokens_nb), " tokens: " }; \
       const int prefix_msg_array_nb = ARRAY_SIZE(prefix_msg_array);	\
       const int msg_array_nb = prefix_msg_array_nb + 5*expected_tokens_nb; \
-      const char * msg_array[msg_array_nb];				\
+      /* const char * msg_array[msg_array_nb]; */			\
+      const char * * msg_array = alloca((sizeof(*msg_array))*msg_array_nb); \
       bcopy(prefix_msg_array, msg_array, sizeof(prefix_msg_array));	\
       for (int i = 0; i < expected_tokens_nb; i++) {			\
 	const char * * p = msg_array + prefix_msg_array_nb + 5*i;	\
@@ -1569,7 +1570,8 @@ static int_anime_error_t anime_syntax_filtering__lalr_automaton__aux(char * exce
 	  continue; 
 	}; 
 	//const int *   subtrees = &(this -> custom_syntax_trees__array[rule_index][2]); 
-	int subtrees[subtrees_len]; 
+	//int subtrees[subtrees_len]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+	int * subtrees = alloca((sizeof(*subtrees)) * subtrees_len); 
 	for (int i = 0; i < subtrees_len; i++) { 
 	  subtrees[i] = custom_syntax_env -> custom_syntax_trees__array[rule_index][2 + i]; 
 	}; 
@@ -1624,7 +1626,8 @@ static int_anime_error_t anime_syntax_filtering__lalr_automaton__aux(char * exce
 	  continue; 
 	}; 
 	// RL: TODO XXX FIXME: This code works only if the indices are well-ordered. 
-	int subtrees[subtrees_len]; 
+	//int subtrees[subtrees_len]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+	int * subtrees = alloca((sizeof(*subtrees)) * subtrees_len); 
 	int one_subtree; 
 	int j = subtrees_len - 1; 
 	int item_index = custom_syntax_env -> custom_syntax_trees__array[rule_index][2 + j]; 

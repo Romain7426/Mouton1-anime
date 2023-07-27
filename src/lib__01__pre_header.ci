@@ -366,6 +366,9 @@ enum { EBADF = 9 };
 enum { false = (0 != 0) }; 
 enum { true = (0 == 0) }; 
 enum { undecided_boolean = 1+MAX(BOOL_ABS(false),BOOL_ABS(true)) }; 
+#define false false
+#define true true
+#define undecided_boolean undecided_boolean
 #endif
 
 static void assert_compile__check_boolean_all_different(void) {

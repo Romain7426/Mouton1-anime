@@ -157,6 +157,7 @@ int main(const int argc, const char * argv[]) {
     if ( 0 == buffer_len) /* EOF   */ { goto label__exit; }; 
     const char * p = buffer; 
     for (int16_t i = 0; i < buffer_len; i++, p++) { 
+      line_bytesize_current ++; 
       if (*p == '\n') { 
 	if (line_bytesize_current > line_bytesize_max) { 
 	  line_bytesize_max = line_bytesize_current; 
@@ -164,7 +165,6 @@ int main(const int argc, const char * argv[]) {
 	line_bytesize_current = 0; 
 	continue; 
       }; 
-      line_bytesize_current ++; 
     }; 
   }; 
     

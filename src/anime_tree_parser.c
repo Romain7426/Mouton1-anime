@@ -366,7 +366,8 @@ static int anime_parser__automaton__get_next_token(const anime_token_env_t * tok
 	"Unexpected token: ", anime_token__type_get_cstr(given_token_type), "(", int_string__stack(given_token_type), ") -- Was expecting one of these ", int_string__stack(expected_tokens_nb), " tokens: " }; \
       const int prefix_msg_array_nb = ARRAY_SIZE(prefix_msg_array);	\
       const int msg_array_nb = prefix_msg_array_nb + 5*expected_tokens_nb; \
-      const char * msg_array[msg_array_nb];				\
+      /*const char * msg_array[msg_array_nb];*/				\
+      const char * * msg_array = alloca((sizeof(*msg_array))*msg_array_nb); \
       bcopy(prefix_msg_array, msg_array, sizeof(prefix_msg_array));	\
       for (int i = 0; i < expected_tokens_nb; i++) {			\
 	const char * * p = msg_array + prefix_msg_array_nb + 5*i;	\
@@ -1304,7 +1305,8 @@ static int anime_parser__automaton__aux(char * exception_data, anime_parser_env_
 	    continue; 
 	  }; 
 	  //const int *   subtrees = &(this -> custom_syntax_trees__array[rule_index][2]); 
-	  int subtrees[subtrees_len]; 
+	  //int subtrees[subtrees_len]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+	  int * subtrees = alloca((sizeof(*subtrees)) * subtrees_len); 
 	  for (int i = 0; i < subtrees_len; i++) { 
 	    subtrees[i] = this -> custom_syntax_trees__array[rule_index][2 + i]; 
 	  }; 
@@ -1359,7 +1361,8 @@ static int anime_parser__automaton__aux(char * exception_data, anime_parser_env_
 	    continue; 
 	  }; 
 	  // RL: TODO XXX FIXME: This code works only if the indices are well-ordered. 
-	  int subtrees[subtrees_len]; 
+	  //int subtrees[subtrees_len]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+	  int * subtrees = alloca((sizeof(*subtrees)) * subtrees_len); 
 	  int one_subtree; 
 	  int j = subtrees_len - 1; 
 	  int item_index = this -> custom_syntax_trees__array[rule_index][2 + j]; 
@@ -1457,8 +1460,14 @@ static int anime_parser__automaton__aux(char * exception_data, anime_parser_env_
     
     // OK, now the tree is postfix-ly stored in the output tree stack. 
     // Now, we want to reverse, to store it prefix-ly. 
+#if 0 
+    // For some unknown reasons, VLAs make «-fstack-protector» fail. 
     uint16_t reverse_tree__array[output_token_tree_stack__nb]; 
     uint8_t  reverse_tree__arity[output_token_tree_stack__nb]; 
+#else 
+    uint16_t * reverse_tree__array = alloca((sizeof(*reverse_tree__array)) * output_token_tree_stack__nb); 
+    uint8_t  * reverse_tree__arity = alloca((sizeof(*reverse_tree__arity)) * output_token_tree_stack__nb); 
+#endif 
     uint8_t  reverse_tree__nb = 0; 
 #define REVERSE_TREE_PUSH(node,arity) { assert(reverse_tree__nb < output_token_tree_stack__nb); reverse_tree__array[reverse_tree__nb] = (node); reverse_tree__arity[reverse_tree__nb] = (arity); reverse_tree__nb++; }; 
     { 

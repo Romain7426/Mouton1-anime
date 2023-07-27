@@ -6,22 +6,43 @@
 #include "anime_token_input_buffering.h"
 #include "anime_token_parser.h"
 
+//#define VLA__YES
+//#define ALLOCA__YES
+#define LOCAL_ALLOCA__YES
 
+#define LOCAL_ALLOCA__DECLARE(LOCAL_ALLOCA_SIZEOF)			\
+  enum { LOCAL_ALLOCA__BYTE_SIZE = (LOCAL_ALLOCA_SIZEOF) }; char local_alloca__mem[LOCAL_ALLOCA__BYTE_SIZE]; int16_t local_alloca__left = LOCAL_ALLOCA__BYTE_SIZE; int16_t local_alloca__used = 0; int16_t local_alloca__requested; 
+
+#define LOCAL_ALLOCA(REQUESTED_SIZEOF)					\
+  (local_alloca__requested = (REQUESTED_SIZEOF), (local_alloca__requested > local_alloca__left ? NULL : (local_alloca__left -= local_alloca__requested, local_alloca__used += local_alloca__requested,  local_alloca__mem + local_alloca__used - local_alloca__requested))) 
 
 // =================================================================================================== 
 // LEXING / TOKENIZATION 
 
 int_anime_error_t anime_token__parser(anime_token_env_t * token_env, anime_token_input_env_t * input_env, const int input_i, int_anime_error_t * error_id_r, const uint16_t error_size, char * error_str) { 
+  LOCAL_ALLOCA__DECLARE(1 << 14); 
   if (NULL == error_id_r) { return ANIME__NULL_ERROR_ID_R; }; 
   if (1     > error_size) { *error_id_r = ANIME__ERROR_SIZE_LOWER_THAN_1; return *error_id_r; }; 
   if (NULL ==  input_env) { *error_id_r = ANIME__NULL_INPUT_ENV         ; snprintf(error_str, error_size, "input_env argument is null."); return *error_id_r; }; 
   if (NULL ==  token_env) { *error_id_r = ANIME__NULL_TOKEN_ENV         ; snprintf(error_str, error_size, "token_env argument is null."); return *error_id_r; }; 
   const int stdlog_d = anime_token__parser__stdlog(token_env); 
   
-  int    recognizing_automaton_index; 
-  int    current_prefix_total_length; 
-  int    current_prefix_length_recognized; 
-  int8_t lexer_automata_states[anime_token_automata__size]; 
+  int      recognizing_automaton_index; 
+  int      current_prefix_total_length; 
+  int      current_prefix_length_recognized; 
+#ifdef VLA__YES
+  int8_t   lexer_automata_states[anime_token_automata__size]; // VLA makes «-fstack-protector» fails. 
+  //enum { lexer_automata_states__sizeof = sizeof(lexer_automata_states) }; 
+  const int16_t lexer_automata_states__sizeof = sizeof(lexer_automata_states); 
+#elif defined ALLOCA__YES
+  //enum { lexer_automata_states__sizeof = (sizeof(int8_t)) * anime_token_automata__size }; 
+  const int16_t lexer_automata_states__sizeof = (sizeof(int8_t)) * anime_token_automata__size; 
+  int8_t * lexer_automata_states = alloca(lexer_automata_states__sizeof); 
+#elif defined LOCAL_ALLOCA__YES
+  const int16_t lexer_automata_states__sizeof = (sizeof(int8_t)) * anime_token_automata__size; 
+  int8_t * lexer_automata_states = LOCAL_ALLOCA(lexer_automata_states__sizeof); 
+#endif 
+  //int8_t   lexer_automata_states[255]; 
   
   const char * input_filename_cstr = anime_token_input__get_filename_cstr(input_env); 
   
@@ -35,7 +56,7 @@ int_anime_error_t anime_token__parser(anime_token_env_t * token_env, anime_token
   recognizing_automaton_index = -1; 
   current_prefix_total_length = 0; 
   current_prefix_length_recognized = 0; 
-  bzero(lexer_automata_states, sizeof(lexer_automata_states)); 
+  bzero(lexer_automata_states, lexer_automata_states__sizeof); 
   
   for (;;) { 
     c = anime_token_input__getc(input_env); 
@@ -118,7 +139,7 @@ int_anime_error_t anime_token__parser(anime_token_env_t * token_env, anime_token
       recognizing_automaton_index = -1; 
       current_prefix_total_length = 0; 
       current_prefix_length_recognized = 0; 
-      bzero(lexer_automata_states, sizeof(lexer_automata_states)); 
+      bzero(lexer_automata_states, lexer_automata_states__sizeof); 
       continue; 
     }; 
     
@@ -155,7 +176,7 @@ int_anime_error_t anime_token__parser(anime_token_env_t * token_env, anime_token
     recognizing_automaton_index = -1; 
     current_prefix_total_length = 0; 
     current_prefix_length_recognized = 0; 
-    bzero(lexer_automata_states, sizeof(lexer_automata_states)); 
+    bzero(lexer_automata_states, lexer_automata_states__sizeof); 
     continue; 
   }; 
   
@@ -164,7 +185,13 @@ int_anime_error_t anime_token__parser(anime_token_env_t * token_env, anime_token
       *error_id_r = ANIME__TOKEN_PARSER__ERROR_WHILE_READING_THE_INPUT_STREAM; 
       const char * srcval_rstr    = anime_token_input__get_srcval_rstr(input_env); 
       const int    srcval_len     = anime_token_input__get_srcval_len (input_env); 
+#ifdef VLA__YES
       char srcval_cstr[srcval_len+1]; bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#elif defined ALLOCA__YES
+      char * srcval_cstr = alloca(srcval_len+1); bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#elif defined LOCAL_ALLOCA__YES
+      char * srcval_cstr = LOCAL_ALLOCA(srcval_len+1); bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#endif 
       snprintf(error_str, error_size, "%s:%d:%d: There was an error while reading the input stream (read char = %X [%c]): '%s'", input_filename_cstr, line1, offset0 - line1_offset0, c, c, srcval_cstr); 
       if (stdlog_d  > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Error: " "%s" "\n", __func__, error_str); }; 
       return *error_id_r; 
@@ -174,7 +201,13 @@ int_anime_error_t anime_token__parser(anime_token_env_t * token_env, anime_token
       *error_id_r = ANIME__TOKEN_PARSER__TOKEN_MATCHES_NO_PATTERN; 
       const char * srcval_rstr    = anime_token_input__get_srcval_rstr(input_env); 
       const int    srcval_len     = anime_token_input__get_srcval_len (input_env); 
-      char srcval_cstr[srcval_len+1]; bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#ifdef VLA__YES
+      char srcval_cstr[srcval_len+1]; bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0';  
+#elif defined ALLOCA__YES
+     char * srcval_cstr = alloca(srcval_len+1); bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#elif defined LOCAL_ALLOCA__YES
+      char * srcval_cstr = LOCAL_ALLOCA(srcval_len+1); bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#endif 
       snprintf(error_str, error_size, "%s:%d:%d: Failure to recognize this input as a token: '%s'", input_filename_cstr, line1, offset0 - line1_offset0, srcval_cstr); 
       if (stdlog_d  > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Error: " "%s" "\n", __func__, error_str); }; 
       return *error_id_r; 
@@ -184,7 +217,13 @@ int_anime_error_t anime_token__parser(anime_token_env_t * token_env, anime_token
     *error_id_r = ANIME__TOKEN_PARSER__ERROR_TOKEN; 
     const char * srcval_rstr    = anime_token_input__get_srcval_rstr(input_env); 
     const int    srcval_len     = anime_token_input__get_srcval_len (input_env); 
+#ifdef VLA__YES
     char srcval_cstr[srcval_len+1]; bcopy(srcval_rstr, srcval_cstr, srcval_len); srcval_cstr[srcval_len] = '\0'; 
+#elif defined ALLOCA__YES
+    char * srcval_cstr = alloca(srcval_len+1); bcopy(srcval_rstr, srcval_cstr, srcval_len); srcval_cstr[srcval_len] = '\0'; 
+#elif defined LOCAL_ALLOCA__YES
+      char * srcval_cstr = LOCAL_ALLOCA(srcval_len+1); bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#endif 
     for (int i = 0; i < srcval_len; i++) { if ('\n' != srcval_cstr[i]) continue; srcval_cstr[i] = '\0'; break; }; 
     const char * msg; 
     switch (error_var__recognized_token_type) { 
@@ -205,7 +244,13 @@ int_anime_error_t anime_token__parser(anime_token_env_t * token_env, anime_token
     *error_id_r = ANIME__TOKEN_PARSER__STACK_OVERFLOW; 
     const char * srcval_rstr    = anime_token_input__get_srcval_rstr(input_env); 
     const int    srcval_len     = anime_token_input__get_srcval_len (input_env); 
+#ifdef VLA__YES
     char srcval_cstr[srcval_len+1]; bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#elif defined ALLOCA__YES
+    char * srcval_cstr = alloca(srcval_len+1); bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#elif defined LOCAL_ALLOCA__YES
+      char * srcval_cstr = LOCAL_ALLOCA(srcval_len+1); bcopy(srcval_rstr, srcval_cstr, srcval_len);  srcval_cstr[srcval_len] = '\0'; 
+#endif 
     snprintf(error_str, error_size, "%s:%d:%d: Token stack overflow (this problem could be overcome in recompiling me with a bigger size for the token stack): '%s'", input_filename_cstr, line1, offset0 - line1_offset0, srcval_cstr); 
     if (stdlog_d  > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Error: " "%s" "\n", __func__, error_str); }; 
     return *error_id_r; 

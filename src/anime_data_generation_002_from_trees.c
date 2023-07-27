@@ -166,7 +166,8 @@ int anime_data_generation_002_from_trees(const anime_tree_env_t * tree_env, cons
     
     const int fils_nb = child_nb; 
     if (0 == fils_nb) break; 
-    uint16_t fils_address[child_nb]; 
+    //uint16_t fils_address[child_nb]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+    uint16_t * fils_address = alloca((sizeof(*fils_address)) * child_nb); 
     fils_address[0] = current_tree + shift_to_first_child; 
     for (int i = 0; i < fils_nb - 1; i++) { 
       uint16_t fils_size; 

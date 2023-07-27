@@ -571,7 +571,8 @@ int_anime_error_t anime_data_generation_003_from_syntax_filtering(anime_token_en
   int error__expected_token_type; 
   const char * error__expected_token_value; 
   int_anime_error_t error_id; 
-  char this_memory_space[anime_syntax_filtering__sizeof]; 
+  //char this_memory_space[anime_syntax_filtering__sizeof]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  char * this_memory_space = alloca(anime_syntax_filtering__sizeof); 
   anime_syntax_filtering_t * this = (anime_syntax_filtering_t *) &this_memory_space; 
   
   anime__bzero(anime_data); 

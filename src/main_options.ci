@@ -163,7 +163,7 @@ static void main__usage(const int argc, const char * argv[], const int stduser_d
   dputs(stduser_d, "  " "--copyright-shell_comment          " "  \t  " "Display the program license as a SHELL comment" "\n"); 
   dputs(stduser_d, "  " "--copyright-slash_comment          " "  \t  " "Display the program license as a double-slash comment" "\n"); 
   dputs(stduser_d, "  " "-v,--verbose                       " "  \t  " "Increase verbosity" "\n"); 
-  dputs(stduser_d, "  " "-q,--quiet,--mute                  " "  \t  " "Do not tell anything" "\n"); 
+  dputs(stduser_d, "  " "-q,--quiet,--mute                  " "  \t  " "Do not say anything" "\n"); 
   dputs(stduser_d, "  " "-V,--version                       " "  \t  " "Print program version" "\n"); 
   dputs(stduser_d, "  " "--example,--exemple                " "  \t  " "Print an example" "\n"); 
   dputs(stduser_d, "  " "--url                              " "  \t  " "Print url" "\n"); 

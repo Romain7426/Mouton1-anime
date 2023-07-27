@@ -505,15 +505,43 @@ const char * anime__strcopy(anime_t * this, const char * str) {
 }; 
 
 
+//#define VLA__YES
+//#define ALLOCA__YES
+#define LOCAL_ALLOCA__YES
+
+#define LOCAL_ALLOCA__DECLARE(LOCAL_ALLOCA_SIZEOF)			\
+  enum { LOCAL_ALLOCA__BYTE_SIZE = (LOCAL_ALLOCA_SIZEOF) }; char local_alloca__mem[LOCAL_ALLOCA__BYTE_SIZE]; uint16_t local_alloca__left = LOCAL_ALLOCA__BYTE_SIZE; uint16_t local_alloca__used = 0; uint16_t local_alloca__requested; 
+
+#define LOCAL_ALLOCA(REQUESTED_SIZEOF)					\
+  (local_alloca__requested = (REQUESTED_SIZEOF), ((local_alloca__requested > local_alloca__left) ? NULL : (local_alloca__left -= local_alloca__requested, local_alloca__used += local_alloca__requested,  local_alloca__mem + local_alloca__used - local_alloca__requested))) 
 
 int_anime_error_t anime__fill_from_file(anime_t * this, const char * input_name, const int input_fd, const int stduser_d) { 
+  LOCAL_ALLOCA__DECLARE(UINT16_MAX); 
   int_anime_error_t         error_id; 
   anime_token_input_env_t   input_env[1]; 
-  char                      token_env_b[anime_token_env__sizeof]; 
+  //dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
+#if defined VLA__YES
+  char                      token_env_b[anime_token_env__sizeof]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+#elif defined ALLOCA__YES
+  char                    * token_env_b = alloca(anime_token_env__sizeof); 
+#elif defined LOCAL_ALLOCA__YES
+  char                    * token_env_b = LOCAL_ALLOCA(anime_token_env__sizeof); 
+#endif 
   anime_token_env_t       * token_env; 
+
+#if 0
+  dputs_array(stderr_d, "TOKEN_ENV_SIZEOF = ", int_string(sizeof(token_env_b)), "\n"); 
+  dputs_array(stderr_d, "TOKEN_ENV_B IS NULL HUH = ", bool_string(token_env_b == NULL), "\n"); 
+  dputs_array(stderr_d, "local_alloca__requested = ", int_string(local_alloca__requested), "\n"); 
+  dputs_array(stderr_d, "anime_token_env__sizeof = ", int_string(anime_token_env__sizeof), "\n"); 
+  dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
+  dputs_array(stderr_d, "local_alloca__used = ", int_string(local_alloca__used), "\n"); 
+#endif 
   
   anime_token_input_env__make_r(input_env, this -> stdlog_d); 
-  token_env = anime_token_env__make_b(sizeof(token_env_b), token_env_b, NULL, this -> stdlog_d); 
+  
+  token_env = anime_token_env__make_b(anime_token_env__sizeof, token_env_b, NULL, this -> stdlog_d); 
+  //dputs_array(stderr_d, "TOKEN_ENV IS NULL HUH = ", bool_string(token_env == NULL), "\n"); 
   
   this -> filename = anime__strcopy(this, input_name); 
   
@@ -1181,7 +1209,8 @@ const char * anime__convert_token_cstring_to_regular_string(anime_t * this, cons
   if (NULL ==  cstr) return cstr; 
   if ('\0' == *cstr) return this -> string_stack; 
   const size_t len0 = strlen(cstr); 
-  char tmp[len0]; 
+  //char tmp[len0]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  char * tmp = alloca(len0); 
   bcopy(cstr+1, tmp, len0-2); 
   tmp[len0-2] = '\0'; 
   return anime__strcopy(this, tmp); 
