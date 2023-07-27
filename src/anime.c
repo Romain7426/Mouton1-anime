@@ -541,6 +541,7 @@ int_anime_error_t anime__fill_from_file(anime_t * this, const char * input_name,
   anime_token_input_env__make_r(input_env, this -> stdlog_d); 
   
   token_env = anime_token_env__make_b(anime_token_env__sizeof, token_env_b, NULL, this -> stdlog_d); 
+  assert(NULL != token_env); 
   //dputs_array(stderr_d, "TOKEN_ENV IS NULL HUH = ", bool_string(token_env == NULL), "\n"); 
   
   this -> filename = anime__strcopy(this, input_name); 
@@ -553,6 +554,8 @@ int_anime_error_t anime__fill_from_file(anime_t * this, const char * input_name,
   
   if (this -> stdlog_d > 0) { anime_token__print_all_tokens(this -> stdlog_d, token_env); fflush(NULL); }; 
   
+  assert(NULL != token_env); 
+  assert(NULL != this); 
   error_id = anime_data_generation_003_from_syntax_filtering(token_env, this, stduser_d); 
   if (error_id != ANIME__OK) { return error_id; }; 
 	

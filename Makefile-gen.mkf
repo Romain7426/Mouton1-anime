@@ -334,7 +334,7 @@ Makefile:
 	echo "	mkdir -p destroot/lib" >> $@
 	echo "	cp -fp build/$(PROG).a destroot/lib/$(PROG).a" >> $@
 	echo "	mkdir -p destroot/include" >> $@
-	echo "#	cp -fp src/decimal.h destroot/include/" >> $@
+	echo "	cp -fp src/anime.h destroot/include/" >> $@
 	echo "" >> $@
 	echo "" >> $@
 	echo "" >> $@

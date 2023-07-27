@@ -571,14 +571,26 @@ int_anime_error_t anime_data_generation_003_from_syntax_filtering(anime_token_en
   int error__expected_token_type; 
   const char * error__expected_token_value; 
   int_anime_error_t error_id; 
+#if 0 
   //char this_memory_space[anime_syntax_filtering__sizeof]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
-  char * this_memory_space = alloca(anime_syntax_filtering__sizeof); 
+  //char * this_memory_space = alloca(anime_syntax_filtering__sizeof); // This alloca failed. And zero-es got written on the stack... 
+  enum { this_memory_space__bytesize = sizeof(anime_syntax_filtering_t) }; 
+  char this_memory_space[this_memory_space__bytesize]; 
   anime_syntax_filtering_t * this = (anime_syntax_filtering_t *) &this_memory_space; 
   
   anime__bzero(anime_data); 
   anime_data -> filled_huh = -1; 
   anime_syntax_filtering__make_r(this, anime_data -> stdlog_d); 
-  
+#else
+  //enum { this_memory_space__bytesize = sizeof(anime_syntax_filtering_t) }; // Unknown
+  enum { this_memory_space__bytesize = 1 << 14 }; 
+  char this_memory_space[this_memory_space__bytesize]; 
+  anime_syntax_filtering_t * this = anime_syntax_filtering__make_b(this_memory_space__bytesize, this_memory_space, NULL, stduser_d); 
+
+  anime__bzero(anime_data); 
+  anime_data -> filled_huh = -1; 
+#endif 
+
   const int_anime_token_t token_nb = anime_token__get_count(token_env); 
   if (0 >= token_nb) { goto error_label__not_enough_tokens; }; 
   anime_data -> filename = anime__strcopy(anime_data, anime_token__get_srcfile_cstr(token_env, 0)); 
