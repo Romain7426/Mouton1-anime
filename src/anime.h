@@ -237,6 +237,7 @@ extern void anime__racines_push  (      anime_t * this, const char * qui, const 
 extern int_anime_error_t anime__consistency_check(anime_t * this, const int stduser_d); 
 
 extern int_anime_error_t anime__fill_from_file(anime_t * this, const char * input_name, const int input_fd, const int stduser_d); 
+extern int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d); 
 
 extern int_anime_error_t anime__print_field_value_by_name(const anime_t * this, const char * field_name, const int stdprint_d, const int stduser_d, int_anime_error_t * error_id_r, const uint16_t error_size, char * error_str); 
 
