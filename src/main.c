@@ -4,7 +4,12 @@
 
 #include "main_options.ci"
 
-static int stdlog_d; 
+#include <signal.h> 
+
+
+static int stdlog_d = -1; 
+static int stdlog_pipe[2] = {-1, -1}; // RL: [0] is output (read end), [1] is input (write end) 
+static int stdlog_post_pipe_d = -1; 
  
 static void main__stdlog_init(void) { 
   //stdlog_d = 2; return;
@@ -20,6 +25,51 @@ static void main__stdlog_init(void) {
   }; 
 }; 
 
+static void (*former_handler)(int) = NULL; 
+static char handler_buffer[INT16_MAX]; 
+static int16_t handler_buffer_nb = 0; 
+static void handler_buffer_flush(void) { 
+  write(stdlog_post_pipe_d, handler_buffer, handler_buffer_nb); 
+  handler_buffer_nb = 0; 
+}; 
+static void handler(int sig) { 
+  // RL: Nous appelons write(2) qui génère des SIGIO. 
+  // Donc nous devons désactiver le mask, et réinstaller le former_handler. 
+  
+  sigset_t sigset[1]; 
+  sigemptyset(sigset);
+  sigaddset(sigset, SIGIO);
+  signal(SIGIO, former_handler); 
+  sigprocmask(SIG_UNBLOCK, sigset, NULL); 
+  goto label__body;
+
+  label__exit: { 
+    signal(SIGIO, handler); 
+    return; 
+  }; 
+  
+  label__body: { 
+#if 1 
+    //{ if (NULL == former_handler) { write(2, "former_handler is NULL\n", sizeof("former_handler is NULL\n")); } else { write(2, "former_handler is NOT NULL\n", sizeof("former_handler is NOT NULL\n"));}; }; 
+    //const ssize_t read_nb = read(stdlog_pipe[0], handler_buffer, sizeof(handler_buffer)); 
+    const ssize_t read_nb = read(stdlog_pipe[0], handler_buffer + handler_buffer_nb, sizeof(handler_buffer) - handler_buffer_nb); 
+    if (0 < read_nb) { 
+      handler_buffer_nb += read_nb; 
+      if (sizeof(handler_buffer) == handler_buffer_nb) { 
+	write(stdlog_post_pipe_d, handler_buffer, handler_buffer_nb); 
+	handler_buffer_nb = 0; 
+      }; 
+      //write(2, "SIGIO reçu\n", sizeof("SIGIO reçu\n")); 
+      //write(2, handler_buffer, read_nb); 
+      goto label__exit; 
+    }; 
+#endif 
+    if (NULL == former_handler) goto label__exit; 
+    former_handler(sig); 
+    goto label__exit; 
+  }; 
+}; 
+
 static void main__stdlog_reopen(const char * filename) { 
   if (NULL ==  filename) return; 
   if ('\0' == *filename) return; 
@@ -30,9 +80,72 @@ static void main__stdlog_reopen(const char * filename) {
     if (0 == strcasecmp("stdnull", filename)) { filename = "/dev/null"; }; 
     new_fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0600); 
     if (new_fd < 0) return; 
+    fcntl(new_fd, F_SETFL, O_ASYNC); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    write(new_fd, "NEW_FD works!\n", sizeof("NEW_FD works!\n")); 
   }; 
   close(stdlog_d); 
+#if 1
+  if (-1 == pipe(stdlog_pipe)) { 
+    stdlog_pipe[0] = -1; 
+    stdlog_pipe[1] = -1; 
+    stdlog_d = new_fd; 
+  } 
+  else { 
+    stdlog_post_pipe_d = new_fd; 
+    former_handler = signal(SIGIO, handler); 
+#if 0 
+    assert(SIG_ERR != former_handler); 
+    signal(SIGIO, former_handler); 
+    signal(SIGIO, SIG_DFL); 
+    signal(SIGIO, SIG_IGN); 
+#endif 
+#if 0 
+#elif 0 
+    fcntl(stdlog_pipe[1], F_SETOWN, getpid()); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[1], F_SETFL, O_ASYNC); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+#elif 1 
+    fcntl(stdlog_pipe[0], F_SETOWN, getpid()); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[0], F_SETFL, O_NONBLOCK); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[0], F_SETFL, O_ASYNC); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[0], F_SETFL, O_ASYNC | O_NONBLOCK); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+#else 
+    fcntl(stdlog_pipe[0], F_SETOWN, 0); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[1], F_SETOWN, 0); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[0], F_SETOWN, getpid()); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[1], F_SETOWN, getpid()); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[0], F_SETFL, O_ASYNC); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[1], F_SETFL, O_ASYNC); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non.  
+    fcntl(stdlog_pipe[0], F_SETOWN, getpid()); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+    fcntl(stdlog_pipe[0], F_SETFL, O_ASYNC); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+#endif 
+    for (int i = 0; i < 1; i++) { 
+      write(2, "0: ", sizeof("0: "));
+      write(stdlog_pipe[1], "++++++++++++++++", 16); 
+      fcntl(stdlog_pipe[0], F_SETFL, O_ASYNC); // RL: J’avais espoir que cette commande ajoute un buffer… Mais non. 
+      write(2, "1: ", sizeof("1: "));
+      write(stdlog_pipe[1], "++++++++++++++++", 16); 
+      write(stdlog_pipe[1], "++++++++++++++++", 16); 
+      write(stdlog_pipe[1], "++++++++++++++++", 16); 
+    }; 
+    write(new_fd, "Completed\n", sizeof("Completed\n")); 
+#if 1 
+    //dup2(stdlog_pipe[0], new_fd); 
+    //dup2(new_fd, stdlog_pipe[0]); 
+#else 
+    close(stdlog_pipe[0]); 
+    stdlog_pipe[0] = new_fd; 
+#endif
+    write(stdlog_pipe[1], "%%%%", 4);
+    stdlog_d = stdlog_pipe[1]; 
+    write(new_fd, "NEW_FD works BIS!\n", sizeof("NEW_FD works BIS!\n")); 
+    write(stdlog_d, "Pipe works!\n", sizeof("Pipe works!\n")); 
+    for (int i = 0; i < 1; i++) { 
+      write(stdlog_d, "+", 1);
+    }; 
+  };
+#else 
   stdlog_d = new_fd; 
+#endif 
 }; 
 
 static void main__stderr_open(int * stduser_d_r, const char * filename) { 
@@ -53,131 +166,138 @@ static void main__stderr_open(int * stduser_d_r, const char * filename) {
 
 
 int main(const int argc, const char * argv[]) { 
-  //fprintf(stderr, "anime_token_env__sizeof = %d" "\n", (int) (anime_token_env__sizeof)); 
-  main__stdlog_init(); 
-  main_arg_print(argc, argv, stdlog_d); 
-  srandomdev(); 
-  
-  { 
-    enum { STRFTIME_BUFFER_SIZE = 64 }; 
-    char strftime_buffer[STRFTIME_BUFFER_SIZE]; 
-    const time_t clock = time(NULL); 
-    struct tm timeptr[1]; 
-    
-    bzero(timeptr, sizeof(timeptr));
-    gmtime_r(&clock, timeptr); 
-    strftime(strftime_buffer, sizeof(strftime_buffer), "TZ=%Z %Y_%m_%d-%Hh%Mm%Ss %A", timeptr); 
-    strftime_buffer[STRFTIME_BUFFER_SIZE-1] = '\0';
-    if (stdlog_d > 0) dprintf(stdlog_d, "%s" "\n", strftime_buffer); 
- 
-    bzero(timeptr, sizeof(timeptr));
-    localtime_r(&clock, timeptr); 
-    strftime(strftime_buffer, sizeof(strftime_buffer), "TZ=%Z %Y_%m_%d-%Hh%Mm%Ss %A", timeptr); 
-    strftime_buffer[STRFTIME_BUFFER_SIZE-1] = '\0'; 
-    if (stdlog_d > 0) dprintf(stdlog_d, "%s" "\n", strftime_buffer); 
-  }; 
-  
   int_anime_error_t error_id; 
-  if (!program_options__parse(argc, argv)) { 
-    const char err_str[] = "Error while parsing options" "\n"; 
-    enum { err_str_len = ARRAY_LEN(err_str) - 1 }; 
-    write(stderr_d, err_str, err_str_len); 
-    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s", __func__, err_str); }; 
-    error_id = ANIME__MAIN__OPTIONS__PARSING_ERROR; 
-    goto label__exit; 
-  }; 
-  
-  char error_str[ANIME__ERROR_BUFFER_SIZE]; 
-  error_id = program_options__run(argc, argv, /*stdprint_d*/stdout_d, /*stduser_d*/stderr_d, /*stdlog_d*/stdlog_d); 
-  if (ANIME__OK != error_id) { goto label__exit; }; 
-  
-  //dprintf(stderr_d, "program_options__stdlog_new_output = %s" "\n", program_options__stdlog_new_output); 
-  if (program_options__stdlog_new_output != NULL) { 
-    main__stdlog_reopen(program_options__stdlog_new_output); 
-  }; 
-  
-  int stduser_d = stderr_d; 
-  if (program_options[PROGRAM_OPTIONS_INDEX__QUIET] > 0) { 
-    stduser_d = -1; 
-  }; 
-  if (program_options__stduser_new_output != NULL) { 
-    main__stderr_open(&stduser_d, program_options__stduser_new_output); 
-  }; 
-  
-  assert(program_options__plain__nb > 0); 
-  
-  int          input_file_fd   = stdin_d;
-  const char * input_file_name = "<stdin>";  
-  for (;;) { 
-    const int arg_i = program_options__plain[0]; 
-    const char * s = argv[arg_i];
-    if ('-' == *s && '\0' == *(s+1)) break; 
-    if (0 == strcasecmp(s, "stdin")) break; 
-    input_file_name = s; 
-    input_file_fd   = open(input_file_name, O_RDONLY); 
-    if (0 > input_file_fd) { 
-      error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
-      snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Cannot open input file: %s", input_file_name); 
-      if (stduser_d > 0) { dprintf(stduser_d, "%s" "\n", error_str); }; 
-      if (stdlog_d  > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
-      goto label__exit; 
-    }; 
-    break; 
-  }; 
-  if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "input_file_name = %s" "\n", __func__, input_file_name); }; 
-  if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "input_file_fd   = %d" "\n", __func__, input_file_fd  ); }; 
-  
-  
-#if 0 
-  dprintf(stderr_d, "ANIME__MAIN__CANNOT_OPEN_INPUT_FILE = %d [ %s ]" "\n", ANIME__MAIN__CANNOT_OPEN_INPUT_FILE, int_anime_error__get_cstr(ANIME__MAIN__CANNOT_OPEN_INPUT_FILE));
-  dprintf(stderr_d, "ANIME__OK = %d [ %s ]" "\n", ANIME__MAIN__CANNOT_OPEN_INPUT_FILE, int_anime_error__get_cstr(ANIME__OK));
-#endif 
-  
-  do { 
-    anime_t a_anime[1]; 
-    anime__make_r(a_anime, stdlog_d); 
-    //anime__print_d(a_anime, stduser_d); 
-    
-    error_id = anime__fill_from_file(a_anime, input_file_name, input_file_fd, stduser_d); 
-    if (error_id != ANIME__OK) { 
-      if (stduser_d > 0) dprintf(stduser_d, "<%s>: " "%s[%d]: " "%s" "\n", a_anime -> filename, error_id > 0 ? "Warning" : "Error", error_id, a_anime -> error_str); 
-      break; 
-    }; 
-    
-    if (program_options[PROGRAM_OPTIONS_INDEX__PRINT] > 0) { 
-      anime__print_d(a_anime, stdout_d); 
-    }; 
-    
-  
-    for (int i = 1; i < program_options__plain__nb; i++) { 
-      const int arg_i = program_options__plain[i]; 
-      error_id = anime__print_field_value_by_name(a_anime, argv[arg_i], /*stdprint_d*/stdout_d, /*stduser_d*/stduser_d, &a_anime -> error_id, a_anime -> error_size, a_anime -> error_str); 
-      if (error_id != ANIME__OK) { 
-	if (stduser_d > 0) dprintf(stduser_d, "<%s>: " "%s[%d]: " "%s" "\n", a_anime -> filename, error_id > 0 ? "Warning" : "Error", error_id, a_anime -> error_str); 
-      }; 
-    }; 
-    
-    if (error_id == ANIME__OK) { 
-      if (stduser_d > 0) dprintf(stduser_d, "<%s>: " "OK" "\n", a_anime -> filename); 
-      break; 
-    }; 
-  } while (false); 
-  
-  if (input_file_fd != stdin_d) { 
-    close(input_file_fd); 
-  }; 
-  
-  if (stduser_d > 2) { 
-    close(stduser_d); 
-  }; 
-  
-  goto label__exit; 
+  goto label__body; 
 
 
  label__exit: { 
     if (stdlog_d > 0) { dprintf(stdlog_d, "Exit value = [ %d ] %s " "\n", error_id, int_anime_error__get_cstr(error_id)); }; 
+    handler_buffer_flush(); 
     return error_id; 
   }; 
+
+ label__body: { 
+    //fprintf(stderr, "anime_token_env__sizeof = %d" "\n", (int) (anime_token_env__sizeof)); 
+    main__stdlog_init(); 
+    main_arg_print(argc, argv, stdlog_d); 
+    srandomdev(); 
+  
+    { 
+      enum { STRFTIME_BUFFER_SIZE = 64 }; 
+      char strftime_buffer[STRFTIME_BUFFER_SIZE]; 
+      const time_t clock = time(NULL); 
+      struct tm timeptr[1]; 
+    
+      bzero(timeptr, sizeof(timeptr));
+      gmtime_r(&clock, timeptr); 
+      strftime(strftime_buffer, sizeof(strftime_buffer), "TZ=%Z %Y_%m_%d-%Hh%Mm%Ss %A", timeptr); 
+      strftime_buffer[STRFTIME_BUFFER_SIZE-1] = '\0';
+      if (stdlog_d > 0) dprintf(stdlog_d, "%s" "\n", strftime_buffer); 
+ 
+      bzero(timeptr, sizeof(timeptr));
+      localtime_r(&clock, timeptr); 
+      strftime(strftime_buffer, sizeof(strftime_buffer), "TZ=%Z %Y_%m_%d-%Hh%Mm%Ss %A", timeptr); 
+      strftime_buffer[STRFTIME_BUFFER_SIZE-1] = '\0'; 
+      if (stdlog_d > 0) dprintf(stdlog_d, "%s" "\n", strftime_buffer); 
+    }; 
+  
+    if (!program_options__parse(argc, argv)) { 
+      const char err_str[] = "Error while parsing options" "\n"; 
+      enum { err_str_len = ARRAY_LEN(err_str) - 1 }; 
+      write(stderr_d, err_str, err_str_len); 
+      if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s", __func__, err_str); }; 
+      error_id = ANIME__MAIN__OPTIONS__PARSING_ERROR; 
+      goto label__exit; 
+    }; 
+  
+    char error_str[ANIME__ERROR_BUFFER_SIZE]; 
+    error_id = program_options__run(argc, argv, /*stdprint_d*/stdout_d, /*stduser_d*/stderr_d, /*stdlog_d*/stdlog_d); 
+    if (ANIME__OK != error_id) { goto label__exit; }; 
+  
+    //dprintf(stderr_d, "program_options__stdlog_new_output = %s" "\n", program_options__stdlog_new_output); 
+    if (program_options__stdlog_new_output != NULL) { 
+      main__stdlog_reopen(program_options__stdlog_new_output); 
+    }; 
+  
+    int stduser_d = stderr_d; 
+    if (program_options[PROGRAM_OPTIONS_INDEX__QUIET] > 0) { 
+      stduser_d = -1; 
+    }; 
+    if (program_options__stduser_new_output != NULL) { 
+      main__stderr_open(&stduser_d, program_options__stduser_new_output); 
+    }; 
+  
+    assert(program_options__plain__nb > 0); 
+  
+    int          input_file_fd   = stdin_d;
+    const char * input_file_name = "<stdin>";  
+    for (;;) { 
+      const int arg_i = program_options__plain[0]; 
+      const char * s = argv[arg_i];
+      if ('-' == *s && '\0' == *(s+1)) break; 
+      if (0 == strcasecmp(s, "stdin")) break; 
+      input_file_name = s; 
+      input_file_fd   = open(input_file_name, O_RDONLY); 
+      if (0 > input_file_fd) { 
+	error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
+	snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Cannot open input file: %s", input_file_name); 
+	if (stduser_d > 0) { dprintf(stduser_d, "%s" "\n", error_str); }; 
+	if (stdlog_d  > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+	goto label__exit; 
+      }; 
+      break; 
+    }; 
+    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "input_file_name = %s" "\n", __func__, input_file_name); }; 
+    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "input_file_fd   = %d" "\n", __func__, input_file_fd  ); }; 
+  
+  
+#if 0 
+    dprintf(stderr_d, "ANIME__MAIN__CANNOT_OPEN_INPUT_FILE = %d [ %s ]" "\n", ANIME__MAIN__CANNOT_OPEN_INPUT_FILE, int_anime_error__get_cstr(ANIME__MAIN__CANNOT_OPEN_INPUT_FILE));
+    dprintf(stderr_d, "ANIME__OK = %d [ %s ]" "\n", ANIME__MAIN__CANNOT_OPEN_INPUT_FILE, int_anime_error__get_cstr(ANIME__OK));
+#endif 
+  
+    do { 
+      anime_t a_anime[1]; 
+      anime__make_r(a_anime, stdlog_d); 
+      //anime__print_d(a_anime, stduser_d); 
+    
+      error_id = anime__fill_from_file(a_anime, input_file_name, input_file_fd, stduser_d); 
+      if (error_id != ANIME__OK) { 
+	if (stduser_d > 0) dprintf(stduser_d, "<%s>: " "%s[%d]: " "%s" "\n", a_anime -> filename, error_id > 0 ? "Warning" : "Error", error_id, a_anime -> error_str); 
+	break; 
+      }; 
+    
+      if (program_options[PROGRAM_OPTIONS_INDEX__PRINT] > 0) { 
+	anime__print_d(a_anime, stdout_d); 
+      }; 
+    
+  
+      for (int i = 1; i < program_options__plain__nb; i++) { 
+	const int arg_i = program_options__plain[i]; 
+	error_id = anime__print_field_value_by_name(a_anime, argv[arg_i], /*stdprint_d*/stdout_d, /*stduser_d*/stduser_d, &a_anime -> error_id, a_anime -> error_size, a_anime -> error_str); 
+	if (error_id != ANIME__OK) { 
+	  if (stduser_d > 0) dprintf(stduser_d, "<%s>: " "%s[%d]: " "%s" "\n", a_anime -> filename, error_id > 0 ? "Warning" : "Error", error_id, a_anime -> error_str); 
+	}; 
+      }; 
+    
+      if (error_id == ANIME__OK) { 
+	if (stduser_d > 0) dprintf(stduser_d, "<%s>: " "OK" "\n", a_anime -> filename); 
+	break; 
+      }; 
+    } while (false); 
+  
+    if (input_file_fd != stdin_d) { 
+      close(input_file_fd); 
+    }; 
+  
+    if (stduser_d > 2) { 
+      close(stduser_d); 
+    }; 
+  
+    goto label__exit; 
+  }; 
+
+
 }; 
 
 

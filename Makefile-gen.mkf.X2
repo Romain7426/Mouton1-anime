@@ -1,0 +1,488 @@
+#! /usr/local/bin/gmake -f
+#! /usr/local/bin/gmake -r -R -S -j 1 --warn-undefined-variables -f 
+#!/usr/bin/env gmake -f
+#!/usr/bin/env env gmake -r -R -S -j 1 --warn-undefined-variables -f 
+#!/usr/bin/env gmake
+#!/usr/bin/env gmake -r -R -S -j 1 --warn-undefined-variables -f 
+#!/bin/sh -c 'gmake -r -R -S -j 1 --warn-undefined-variables -f '
+#!/bin/sh
+#!gmake -r -R -S -j 1 --warn-undefined-variables -f 
+#!gmake
+SHELL:= /bin/sh
+.SHELLFLAGS: -u -e  
+#MAKEFLAGS:= $(MAKEFLAGS) --warn-undefined-variables 
+#MAKEFLAGS:= $(MAKEFLAGS) -r -R -S -j 1 --warn-undefined-variables 
+#MAKEFLAGS:= $(filter-out  --warn-undefined-variables,$(MAKEFLAGS)) 
+.SUFFIXES: 
+.SILENT:
+.NOTPARALLEL:
+.EXPORT_ALL_VARIABLES:
+.SECONDARY:
+.PRECIOUS:
+.ONESHELL:
+
+
+.PHONY: default
+default: 
+default: Makefile
+default: build.sh
+
+
+.PHONY: clean
+clean:
+	rm -f Makefile build.sh
+
+
+#PROJECT_NAME := $(shell ./tools/bin/filename_without_path $$PWD)
+PROJECT_NAME := anime
+DATETIME_UTC := $(shell TZ="UTC" date "+%Z[%z] %Y_%m_%d-%Hh%Mm%Ss %A")
+#CC           := $(if $(strip $(CC)),$(if $(strip $(filter $(CC),cc)),$(shell which cc),$(CC)),$(shell which cc))
+#$(info $(origin CC)) # returns "undefined" or something else 
+ifdef CC
+#$(info CC is defined)
+CC           := $(if $(strip $(filter $(CC),cc)),$(shell which cc),$(CC))
+else
+#$(info CC is undefined)
+CC           := $(if $(strip $(wildcard CC)),$(shell cat CC),$(shell which cc))
+endif
+CC_NAME      := $(shell mkdir -p tmp && $(CC) ./tools/src/compiler-detect.c -o tmp/compiler-detect.exe && ./tmp/compiler-detect.exe) 
+UNAME        := $(shell uname)
+#ENDIAN       := $(shell ./tools/bin/endianness-detect)
+ENDIAN       := $(shell mkdir -p tmp && $(CC) ./tools/src/endianness-detect.c -o tmp/endianness-detect.exe && ./tmp/endianness-detect.exe) 
+ARCH         := $(shell arch)
+MACHINE      := $(shell machine)
+HARDWARE     := $(shell uname -m)
+
+UNAME_LIST := FreeBSD NetBSD OpenBSD Darwin Linux MINGW32_NT-6.1 MINGW32_NT-5.1 windows DOS
+OS_LIST := freebsd netbsd openbsd macosx linux windows windows windows dos
+ifneq ($(words $(UNAME_LIST)),$(words $(OS_LIST)))
+  $(error The number of elements in the UNAME_LIST is not equal to the number of elements of the OS_LIST)
+endif
+UNAME_IDX := $(shell ./tools/bin/list-match $(UNAME) $(UNAME_LIST) $(UNAME))
+OS := $(word $(UNAME_IDX), $(OS_LIST) unknown_os)
+
+HW_LIST := i386 amd64 x86_64 i686 386 8086
+INTSIZE_LIST := 32 64 64 32 32 16
+ifneq ($(words $(HW_LIST)),$(words $(INTSIZE_LIST)))
+  $(error The number of elements in the HW_LIST is not equal to the number of elements of the INTSIZE_LIST)
+endif
+HW_IDX := $(shell tools/bin/list-match $(HARDWARE) $(HW_LIST) $(HARDWARE))
+#INTSIZE := $(word $(HW_IDX), $(INTSIZE_LIST) unknown_intsize)
+
+#INTSIZE := $(shell tools/bin/intsize)
+#PTRSIZE := $(shell tools/bin/ptrsize)
+
+INTSIZE  := $(shell mkdir -p tmp && $(CC) ./tools/src/intsize.c -o tmp/intsize.exe && ./tmp/intsize.exe) 
+PTRSIZE  := $(shell mkdir -p tmp && $(CC) ./tools/src/ptrsize.c -o tmp/ptrsize.exe && ./tmp/ptrsize.exe) 
+CHARSIZE        := $(shell mkdir -p tmp && $(CC) ./tools/src/charsize.c        -o tmp/charsize.exe        && ./tmp/charsize.exe       ) 
+SHORTINTSIZE    := $(shell mkdir -p tmp && $(CC) ./tools/src/shortintsize.c    -o tmp/shortintsize.exe    && ./tmp/shortintsize.exe   ) 
+LONGINTSIZE     := $(shell mkdir -p tmp && $(CC) ./tools/src/longintsize.c     -o tmp/longintsize.exe     && ./tmp/longintsize.exe    ) 
+LONGLONGINTSIZE := $(shell mkdir -p tmp && $(CC) ./tools/src/longlongintsize.c -o tmp/longlongintsize.exe && ./tmp/longlongintsize.exe) 
+ENUMSIZE        := $(shell mkdir -p tmp && $(CC) ./tools/src/enumsize.c        -o tmp/enumsize.exe        && ./tmp/enumsize.exe       ) 
+FLOATSIZE       := $(shell mkdir -p tmp && $(CC) ./tools/src/floatsize.c       -o tmp/floatsize.exe       && ./tmp/floatsize.exe      ) 
+DOUBLESIZE      := $(shell mkdir -p tmp && $(CC) ./tools/src/doublesize.c      -o tmp/doublesize.exe      && ./tmp/doublesize.exe     ) 
+LONGDOUBLESIZE  := $(shell mkdir -p tmp && $(CC) ./tools/src/longdoublesize.c  -o tmp/longdoublesize.exe  && ./tmp/longdoublesize.exe ) 
+
+
+#$(info DATETIME_UTC  : $(DATETIME_UTC)) 
+#$(info PROJECT_NAME: $(PROJECT_NAME)) 
+$(info CC          : $(CC))
+$(info CC_NAME     : $(CC_NAME))
+#$(info OS          : $(OS))
+#$(info UNAME       : $(UNAME))
+#$(info MACHINE     : $(MACHINE))
+$(info INTSIZE     : $(INTSIZE))
+$(info PTRSIZE     : $(PTRSIZE))
+$(info ENUMSIZE    : $(ENUMSIZE)) 
+ifeq "a" "b"
+$(info ENDIANNESS  : $(ENDIAN))
+$(info CHARSIZE       : $(CHARSIZE)       ) 
+$(info SHORTINTSIZE   : $(SHORTINTSIZE)   ) 
+$(info LONGINTSIZE    : $(LONGINTSIZE)    ) 
+$(info LONGLONGINTSIZE: $(LONGLONGINTSIZE)) 
+$(info FLOATSIZE      : $(FLOATSIZE)      ) 
+$(info DOUBLESIZE     : $(DOUBLESIZE)     ) 
+$(info LONGDOUBLESIZE : $(LONGDOUBLESIZE) ) 
+endif 
+
+
+CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -O0 
+
+#       -aux-info filename
+#           Output to the given filename prototyped declarations for all functions declared and/or defined in a translation
+#           unit, including those in header files.  This option is silently ignored in any language other than C.
+
+
+# -pedantic -pedantic-errors 
+CC_FLAGS_F := -fmessage-length=0 -fdiagnostics-show-location=once -fdiagnostics-show-option -fstack-check  -fverbose-asm -ffreestanding -feliminate-unused-debug-types 
+CC_FLAGS_F_NO := -fno-exceptions -fno-omit-frame-pointer  -fno-builtin -fno-builtin-printf -fno-builtin-abs -fno-builtin-strcpy -fno-builtin-strcat -fno-builtin-strlen -fno-builtin-bzero -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-assert -fno-builtin-tolower -fno-builtin-toupper -fno-builtin-log -fno-builtin-alloca -fno-common -fno-exceptions -fno-non-call-exceptions -fno-asynchronous-unwind-tables -fno-inline -fno-inline-functions -fno-inline-functions 
+# unknown: -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon 
+CC_FLAGS_W := -Wall -W -Wextra  -Werror -Wfatal-errors  -Werror-implicit-function-declaration -Wparentheses -Wimplicit -Wreturn-type -Wcomment -Wpointer-arith -Wchar-subscripts -Wimplicit-int -Werror-implicit-function-declaration -Wmain -Wmissing-braces -Wmultichar -Wsequence-point -Wreturn-type -Wstrict-prototypes -Wpacked -Wcast-qual -Winline -Wformat-nonliteral -Wwrite-strings -Wmissing-field-initializers -Wsign-compare  -Wformat-zero-length -Wswitch -Wswitch-enum -Wswitch-default -Wnested-externs -Wunknown-pragmas
+CC_FLAGS_W_NO := -Wno-cast-align -Wno-system-headers  -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral 
+# unknown: -gstabs+3 
+
+# -I /usr/X11R6/include  -I ./libs/SDL-1.2.15/destroot/include -I ./src/SDL_image -I ./src/SDL_mixer # -Wmissing-prototypes -Wmissing-declarations 
+# Linker option: -aux-info build/action.aux 
+# unsupported: -fpcc-struct-return -fno-ivopts -fno-inline-functions-called-once 
+# unused: -fno-eliminate-unused-debug-symbols 
+
+CLANG_FLAGS := -gfull -W -Wextra -Wnewline-eof -Wno-unsequenced 
+#GCC: -gstabs+3: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
+#pragma GCC diagnostics disable "-Wtype-limits" 
+GCC_FLAGS := -g3  -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon  -fno-stack-check -Wno-error -Wno-enum-compare #-Wno-extra -Wno-sign-compare #-Werror=no-type-limits #-Wno-absolute-value #-Wno-type-limits #-Wframe-larger-than=76368 #-Wframe-larger-than=1844674407370955161 #-Wframe-larger-than=18446744073709551615 #-Wframe-larger-than=18446744073709551615UL #-Wframe-larger-than='18446744073709551615UL' #-Wframe-larger-than='SIZE_MAX' #-Wno-frame-larger-than # -Wno-stack-usage # -Wstack-usage=1844674407370955161
+#PCC: -g: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
+PCC_FLAGS := -fpic #-g #-fpic 
+TCC_FLAGS := -g -bt100 #-b #-fpic #-g #-fpic 
+
+CC_FLAGS_SPEC := 
+CC_FLAGS_SPEC := $(CC_FLAGS_SPEC) $(if $(strip $(filter $(CC_NAME),clang)),$(CLANG_FLAGS),) 
+CC_FLAGS_SPEC := $(CC_FLAGS_SPEC) $(if $(strip $(filter $(CC_NAME),gcc)),$(GCC_FLAGS),) 
+CC_FLAGS_SPEC := $(CC_FLAGS_SPEC) $(if $(strip $(filter $(CC_NAME),pcc)),$(PCC_FLAGS),) 
+CC_FLAGS_SPEC := $(CC_FLAGS_SPEC) $(if $(strip $(filter $(CC_NAME),tcc)),$(TCC_FLAGS),) 
+
+
+CC_FLAGS := $(CC_FLAGS) $(CC_FLAGS_F) $(CC_FLAGS_W) $(CC_FLAGS_SPEC) $(CC_FLAGS_F_NO) $(CC_FLAGS_W_NO) 
+
+CFLAGS := $(CC_FLAGS) 
+
+#SUBDIRS:=$(shell cd src; ldir | newline2space)
+#SUBLIBS:=$(SUBDIRS)
+#SUBLIBS:=
+#SUBLIBS_A:=$(patsubst %,lib%.a,$(SUBLIBS))
+#SUBLIBS_A:=$(patsubst liblib%,lib%,$(SUBLIBS_A))
+#$(error $(SUBLIBS_A))
+
+#BISON_FLAGS := --report=all,state,look-ahead,itemset --token-table --debug -d #--graph 
+#BSD_YACC_FLAGS := -d -t -p yyanime -r -v 
+BISON_FLAGS :=
+
+#EDITLINE_CFLAGS := $(shell pkg-config libedit --cflags)
+#EDITLINE_LFLAGS := 
+#EDITLINE_LIBS := $(shell pkg-config libedit --libs) -bind_at_load
+#EDITLINE_CFLAGS := -I $(PROJECT_TOOLS)/libedit-20090923-3.0/destroot/include
+#EDITLINE_LIBS :=  $(PROJECT_TOOLS)/libedit-20090923-3.0/destroot/lib/libedit.a -ltermcap
+#EDITLINE_CFLAGS := 
+#EDITLINE_LIBS :=  #build/libedit-20090923-3.0/libedit-20090923-3.0--sys_macosx--endian_little--debug_yes--opt_no--inline_no--gc_no--prof_no.a -ltermcap
+
+# For some floating operations ('floorf') 
+MATH_LIB__LIBS_FLAGS := -lm 
+
+TCC_LIBS := #-ltcc 
+
+LIBS_SPEC := 
+LIBS_SPEC := $(LIBS_SPEC) $(if $(strip $(filter $(CC_NAME),tcc)),$(TCC_LIBS),) 
+
+LIBS := $(LIBS_SPEC) 
+
+PROG    := $(PROJECT_NAME)
+SRC_C   := $(patsubst src/%.c,%,$(wildcard src/*.c))
+SRC_H   := $(patsubst src/%.h,%,$(wildcard src/*.h))
+#SRC_Y  := $(patsubst src/%.y,%,$(wildcard src/*.y))
+SRC_Y   := $(patsubst src/%.y,%.tab,$(wildcard src/*.y)) $(patsubst src/%.y,%.code,$(wildcard src/*.y))
+SRC_L   := $(patsubst src/%.l,%,$(wildcard src/*.l))
+#SRC_CT := $(patsubst src/%.ct,%,$(wildcard src/*.ct))
+#SRC_C  := $(sort $(SRC_C) $(SRC_Y)) # removes duplicates
+SRC_C   := $(filter-out $(SRC_Y),$(SRC_C)) 
+SRC_C   := $(filter-out liste,$(SRC_C)) 
+SRC_C   := $(filter-out main,$(SRC_C)) 
+SRC_H   := $(filter-out liste,$(SRC_H)) 
+SRC_H   := $(filter-out main,$(SRC_H)) 
+OBJ     := $(patsubst %,build/%.o, $(SRC_C) $(SRC_Y) $(SRC_L))
+LIB     := build/$(PROG).a
+BIN     := build/$(PROG).exe
+#BIN_STRIPPED := build/$(PROG)$(FLAVOR)_stripped.exe
+#BIN_STRIPPED := build/$(PROG)_stripped.exe
+#FILES  := $(patsubst src/%.c,%, $(SRC))
+
+#$(info SRC_C: $(SRC_C))
+#$(info SRC_H: $(SRC_H))
+
+
+
+
+
+
+# FUN_LOCAL_FLAGS := function local_flags { \
+#   case $$1 in  \
+#     parser.c) \
+#       echo -Wno-redundant-decls -Wno-switch-default \
+#       ;; \
+#     coeurs.cpp) \
+#       echo $(if $(filter $(GCC_VERSION_MAJOR),4), -Wno-sequence-point) \
+#       ;; \
+#   esac \
+# }
+
+
+
+
+
+
+.PHONY: build.sh
+build.sh: 
+	echo "#!/bin/sh" > $@
+	echo "" >> $@
+	echo "rm -Rf build 2>&1" >> $@
+	echo "" >> $@
+	echo "mkdir -p build 2>&1" >> $@
+#	$(foreach sublib_i,$(SUBLIBS), \
+	  echo "mkdir -p build/$(sublib_i) 2>&1" >> $@; \
+	)
+	echo "" >> $@
+	echo "" >> $@
+#	$(foreach sublib_i,$(SUBLIBS), \
+	  $(foreach sublib_i_name,$(patsubst liblib%,lib%,lib$(sublib_i).a), \
+	    $(foreach file_c,$(wildcard src/$(sublib_i)/*.c), \
+	    $(foreach file_o,$(patsubst src/%.c,%.o,$(file_c)), \
+	      echo "$(CC) $(CFLAGS)  `$(FUN_LOCAL_FLAGS) ; local_flags $(file_c)`  -c $(file_c) -o build/$(file_o) 2>&1" >> $@; \
+	    ) \
+	    ) \
+	  ) \
+	  echo "" >> $@; \
+	  echo "" >> $@; \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+#	$(foreach sublib_i,$(SUBLIBS), \
+	  $(foreach sublib_i_name,$(patsubst liblib%,lib%,lib$(sublib_i).a), \
+	  echo "ar -r -c build/$(sublib_i)/$(sublib_i_name)  $(patsubst src/%.c,build/%.o,$(wildcard src/$(sublib_i)/*.c)) 2>&1" >> $@; \
+	  echo "ranlib build/$(sublib_i)/$(sublib_i_name) 2>&1" >> $@; \
+	  echo "" >> $@; \
+	  ) \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	for i in $(SRC_Y); do \
+	  echo "bison $(BISON_FLAGS) src/$$i.y -o src/$$i.c 2>&1" >> $@; \
+	  echo "mv -f parser.c src/$$i.c 2>&1" >> $@; \
+	  echo "mv -f $$i.c src/$$i.c 2>&1" >> $@; \
+	done;
+#	for i in $(SRC_CT); do \
+	  echo "text2cstring src/$$i 2>&1" >> $@; \
+	done;
+	for i in $(SRC_C) $(SRC_Y); do \
+	  echo "$(CC) $(CFLAGS) -c src/$$i.c -o build/$$i.o  2>&1" >> $@; \
+	done;
+#	  echo "$(CC) $(CFLAGS) -c src/$$i.c -o build/$$i.o -aux-info build/$$i.aux 2>&1" >> $@; 
+	echo "ar -r -c $(LIB) $(OBJ) 2>&1" >> $@
+	echo "ranlib $(LIB) 2>&1" >> $@
+#	echo "$(CC) -o $(BIN) $(LIBS) $(LIB) 2>&1" >> $@
+#	echo "$(CC) -o $(BIN) $(LIB) 2>&1" >> $@
+	echo "$(CC) -o $(BIN) $(LIB) $(LIBS) 2>&1" >> $@
+	echo "" >> $@
+	echo "rm -f run" >> $@
+	echo "ln -s $(BIN) run" >> $@
+	echo "chmod +x run" >> $@
+	echo "" >> $@
+	chmod +x build.sh
+
+
+
+.PHONY: Makefile
+Makefile: 
+	echo "" > $@
+#	echo "default: Makefile build run $(BIN)" >> $@
+#	echo "default: Makefile build $(LIB) $(BIN) run " >> $@
+	echo "default: Makefile build build_ci build_i build_o $(LIB) $(BIN) run " >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "SHELL:= /bin/sh" >> $@
+	echo ".SHELLFLAGS: -u -e  " >> $@
+	echo "#MAKEFLAGS:= $(MAKEFLAGS) --warn-undefined-variables " >> $@
+	echo "#MAKEFLAGS:= $(filter-out  --warn-undefined-variables,$(MAKEFLAGS)) " >> $@
+	echo ".SUFFIXES: " >> $@
+	echo "#.SILENT:" >> $@
+	echo ".NOTPARALLEL:" >> $@
+	echo ".EXPORT_ALL_VARIABLES:" >> $@
+	echo ".SECONDARY:" >> $@
+	echo ".PRECIOUS:" >> $@
+	echo ".ONESHELL:" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "clean:" >> $@
+	echo "	rm -Rf build 2>&1" >> $@
+	echo "" >> $@
+	echo "clean-all: clean" >> $@
+	echo "	rm -Rf destroot run rundir *~ .*~ src/*~ src/*.output COPYING_at_start_of_c_files $(patsubst %,src/%.c,$(SRC_Y)) $(patsubst %,src/%.c,$(SRC_L)) 2>&1" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "Makefile: Makefile-gen.mkf" >> $@
+	echo "	@echo \"--- \\\"Makefile-gen.mkf\\\" changed. Please type './configure' (or 'romake -f Makefile-gen.mkf') to update this Makefile ---\"" >> $@
+	echo "	@false" >> $@
+	echo "" >> $@
+	echo "build:" >> $@
+	echo "	mkdir -p build 2>&1 " >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "install: destroot_do" >> $@
+	echo "" >> $@
+	echo "destroot_do:" >> $@
+#	echo "	chmod -Rf a+w destroot" >> $@
+	echo "	rm -Rf destroot" >> $@
+	echo "	mkdir -p destroot" >> $@
+	echo "	mkdir -p destroot/bin" >> $@
+	echo "	cp -fp build/*.exe destroot/bin/$(PROG)" >> $@
+	echo "	mkdir -p destroot/lib" >> $@
+	echo "	cp -fp build/$(PROG).a destroot/lib/$(PROG).a" >> $@
+	echo "	mkdir -p destroot/include" >> $@
+	echo "#	cp -fp src/decimal.h destroot/include/" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "run: $(BIN)" >> $@
+	echo "	rm -f run" >> $@
+	echo "	ln -s $(BIN) run" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "$(BIN): $(LIB) build/main.o " >> $@
+	echo "	$(CC) -o $(BIN) build/main.o $(LIB) $(LIBS) 2>&1" >> $@
+#	echo "	$(CC) -o $(BIN) build/main.o $(LIB) 2>&1" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "$(LIB): $(OBJ)" >> $@
+	echo "	ar -r -c $(LIB) $(OBJ) 2>&1" >> $@
+	echo "	ranlib $(LIB) 2>&1" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	$(foreach file_y,$(patsubst src/%,%,$(wildcard src/*.y)), \
+	  $(foreach file_c,$(patsubst %.y,%.c,$(file_y)), \
+	    $(foreach file_noext,$(patsubst %.y,%,$(file_y)), \
+	      echo "#src/$(file_c): src/$(file_y) " >> $@; \
+	      echo "src/$(file_noext).tab.h src/$(file_noext).tab.c src/$(file_noext).code.c: src/$(file_y) " >> $@; \
+	      echo "#	bison $(BISON_FLAGS) src/$(file_y) -o src/$(file_c) 2>&1" >> $@; \
+	      echo "#	yacc $(BSD_YACC_FLAGS) -o src/$(file_c) src/$(file_y) 2>&1" >> $@; \
+	      echo "	yacc $(BSD_YACC_FLAGS) -b src/$(file_noext) src/$(file_y) 2>&1" >> $@; \
+	      echo "#	mv -f parser.c src/$(file_c) 2>&1 || true " >> $@; \
+	      echo "#	mv -f $(file_c) src/$(file_c) 2>&1 || true" >> $@; \
+	      echo "#	test -e src/$(file_c) 2>&1" >> $@; \
+	      echo "" >> $@; \
+	    ) \
+	  ) \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	$(foreach file_l,$(patsubst src/%,%,$(wildcard src/*.l)), \
+	  $(foreach file_c,$(patsubst %.l,%.c,$(file_l)), \
+	      echo "src/$(file_c): src/$(file_l) " >> $@; \
+	      echo "	flex -Pyyanime -Cfa -p  -o src/$(file_c) src/$(file_l) 2>&1" >> $@; \
+	      echo "	test -e src/$(file_c) 2>&1" >> $@; \
+	      echo "" >> $@; \
+	    ) \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+#	$(foreach file_h,$(patsubst src/%,%,$(wildcard src/*.h)), \
+	  echo "src/$(file_h): $(patsubst %,src/%,$(shell cat src/$(file_h) | ./tools/bin/c-file-local-include-list)) " >> $@; \
+	  echo "	touch -m -c src/$(file_h) " >> $@; \
+	  echo "" >> $@; \
+	)
+	echo "" >> $@
+	$(foreach file_h,$(patsubst src/%,%,$(wildcard src/*.h)), \
+	  echo "build/$(file_h): src/$(file_h) " >> $@; \
+	  echo "	ln src/$(file_h) build/$(file_h) " >> $@; \
+	  echo "" >> $@; \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "build_ci: build $(patsubst src/%,build/%,$(wildcard src/*.ci)) " >> $@; 
+	echo "" >> $@
+	$(foreach file_ci,$(patsubst src/%,%,$(wildcard src/*.ci)), \
+	  echo "build/$(file_ci): src/$(file_ci) " >> $@; \
+	  echo "	ln src/$(file_ci) build/$(file_ci) " >> $@; \
+	  echo "" >> $@; \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	$(foreach file_c,$(patsubst src/%,%,$(wildcard src/*.c)), \
+	  echo "build/$(file_c): src/$(file_c) " >> $@; \
+	  echo "	ln src/$(file_c) build/$(file_c) " >> $@; \
+	  echo "" >> $@; \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+#	$(foreach file_ci,$(patsubst src/%,%,$(wildcard src/*.ci)), \
+	  echo "src/$(file_ci): $(patsubst %,src/%,$(shell cat src/$(file_ci) | ./tools/bin/c-file-local-include-list)) " >> $@; \
+	  echo "	touch -m -c src/$(file_ci) " >> $@; \
+	  echo "" >> $@; \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "build_i: build $(patsubst src/%.c,build/%.i,$(wildcard src/*.c)) " >> $@; 
+	echo "" >> $@
+	$(foreach file_c,$(sort $(patsubst src/%,%,$(wildcard src/*.c)) $(patsubst src/%.y,%.tab.c,$(wildcard src/*.y)) $(patsubst src/%.y,%.code.c,$(wildcard src/*.y)) $(patsubst src/%.l,%.c,$(wildcard src/*.l)) $(patsubst src/%.ct,%.c,$(wildcard src/*.ct))), \
+	  $(foreach file_i,$(patsubst %.c,%.i,$(file_c)), \
+	  $(foreach file_h,$(patsubst %.c,%.h,$(file_c)), \
+	  $(foreach file_aux,$(patsubst %.c,%.aux,$(file_c)), \
+	      echo "build/$(file_i): build/$(file_c) $(patsubst src/%,build/%,$(wildcard src/lib*.ci)) $(patsubst %,build/%,$(shell cat src/$(file_c) | ./tools/bin/c-file-local-include-list)) " >> $@; \
+	      echo "	$(CC) $(CFLAGS) -E build/$(file_c) -o build/$(file_i)  2>&1" >> $@; \
+	      echo "" >> $@; \
+	    ) \
+	    ) \
+	  ) \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "build_o: build $(patsubst src/%.c,build/%.o,$(wildcard src/*.c)) " >> $@; 
+	echo "" >> $@
+	$(foreach file_c,$(sort $(patsubst src/%,%,$(wildcard src/*.c)) $(patsubst src/%.y,%.tab.c,$(wildcard src/*.y)) $(patsubst src/%.y,%.code.c,$(wildcard src/*.y)) $(patsubst src/%.l,%.c,$(wildcard src/*.l)) $(patsubst src/%.ct,%.c,$(wildcard src/*.ct))), \
+	  $(foreach file_o,$(patsubst %.c,%.o,$(file_c)), \
+	  $(foreach file_i,$(patsubst %.c,%.i,$(file_c)), \
+	  $(foreach file_h,$(patsubst %.c,%.h,$(file_c)), \
+	  $(foreach file_aux,$(patsubst %.c,%.aux,$(file_c)), \
+	      echo "build/$(file_o): build/$(file_c) $(patsubst src/%,build/%,$(wildcard src/lib*.ci)) $(patsubst %,build/%,$(shell cat src/$(file_c) | ./tools/bin/c-file-local-include-list)) " >> $@; \
+	      echo "	$(CC) $(CFLAGS) -c build/$(file_c) -o build/$(file_o)  2>&1" >> $@; \
+	      echo "" >> $@; \
+	    ) \
+	    ) \
+	    ) \
+	  ) \
+	)
+#	  $(foreach c_local_includes,$(shell cat src/$(file_c) | ./tools/bin/c-file-local-include-list), 
+#	      echo "build/$(file_o): src/$(file_c) $(patsubst %,src/%,$(c_local_includes)) " >> $@; 
+#	      echo "build/$(file_o): src/$(file_c) src/$(file_h) $(patsubst %,src/%.h,$(SRC_H))" >> $@; 
+#	      echo "	$(CC) $(CFLAGS) -c src/$(file_c) -o build/$(file_o) -aux-info build/$(file_aux) 2>&1" >> $@; 
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@

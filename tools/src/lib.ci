@@ -30,8 +30,14 @@ enum {  UINT16_MAX__E = (1   <<  0) + (1   <<  1) + (1   <<  2) + (1   <<  3) + 
 #endif
 
 #ifndef MIN
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#  define MIN(a,b) (((a) < (b)) ? (a) : (b))
 #endif 
+
+#define LOCAL_ALLOCA__DECLARE(LOCAL_ALLOCA_SIZEOF)			\
+  enum { LOCAL_ALLOCA__BYTESIZE = (LOCAL_ALLOCA_SIZEOF) }; char local_alloca__mem[LOCAL_ALLOCA__BYTESIZE]; uint16_t local_alloca__left = LOCAL_ALLOCA__BYTESIZE; uint16_t local_alloca__used = 0; uint16_t local_alloca__requested; 
+
+#define LOCAL_ALLOCA(REQUESTED_SIZEOF)					\
+  (local_alloca__requested = (REQUESTED_SIZEOF), ((local_alloca__requested > local_alloca__left) ? NULL : (local_alloca__left -= local_alloca__requested, local_alloca__used += local_alloca__requested,  local_alloca__mem + local_alloca__used - local_alloca__requested))) 
 
 static void bytecopy(const char * byte_src, char * byte_dest, const int bytesize) { 
   for (int i = 0; i < bytesize; i++) { 
