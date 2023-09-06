@@ -45,7 +45,49 @@ for i in tools/src/* ; do
     ln tools/src/${FILE} ./tar-version-src/${MY_TARVERSION}/tools/src/${FILE}
 done;
 
-bsdtar czf ./tar-version-src/${MY_TARVERSION}.tgz --uname "" --gname "" -C ./tar-version-src/ ./${MY_TARVERSION}
 
-rm -Rf ./tar-version-src/${MY_TARVERSION}
+if ! ls ./tar-version-src/*.tgz > /dev/null 2>&1  ; then 
+#if ! ls *.tgz 2>/dev/null ; then 
+    bsdtar czf ./tar-version-src/${MY_TARVERSION}.tgz --uname "" --gname "" -C ./tar-version-src/ ./${MY_TARVERSION}
+    rm -Rf ./tar-version-src/${MY_TARVERSION}
+    exit 0; 
+fi; 
+
+
+if false; then 
+echo $*
+echo $#
+echo $0 
+echo $1 
+exit 0; 
+fi; 
+
+if test $# -ge 1 ; then 
+    if test "$1" = "nodiff" ; then 
+	bsdtar czf ./tar-version-src/${MY_TARVERSION}.tgz --uname "" --gname "" -C ./tar-version-src/ ./${MY_TARVERSION}
+	rm -Rf ./tar-version-src/${MY_TARVERSION}
+    exit 0; 
+    fi; 
+fi; 
+
+
+
+LAST_TARVERSION=$(ls ./tar-version-src/*.tgz | sort | tail -1) 
+LAST_TARVERSION=$(basename ${LAST_TARVERSION} .tgz)
+
+#echo ${LAST_TARVERSION}
+
+rm -Rf ./tar-version-src/${LAST_TARVERSION} 
+
+bsdtar xzf ./tar-version-src/${LAST_TARVERSION}.tgz -C ./tar-version-src/ 
+
+
+# diff(1) returns non-zero status on success. 
+set +e 
+diff -u -r ./tar-version-src/${LAST_TARVERSION} ./tar-version-src/${MY_TARVERSION} | gzip -f > ./tar-version-src/${MY_TARVERSION}.zdiff
+#diff -u -r ./tar-version-src/${LAST_TARVERSION} ./tar-version-src/${MY_TARVERSION} > ./tar-version-src/${MY_TARVERSION}.diff
+set -e 
+
+rm -Rf ./tar-version-src/${LAST_TARVERSION} 
+rm -Rf ./tar-version-src/${MY_TARVERSION} 
 
