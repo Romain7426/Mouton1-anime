@@ -17,12 +17,41 @@ const uint8_t ANIME__EXPRESSION_NESTEDNESS_MAX__compiled_value = (uint8_t) ANIME
 const uint8_t ANIME__LONGEST_INFIX_EXPRESSION__compiled_value  = (uint8_t) ANIME__LONGEST_INFIX_EXPRESSION; 
 
 #define PROGRAM_NAME "Anime (lib part of ‘Mouton1’ — whose purpose is to read anime data description files into C data structures)" 
+#undef  PROGRAM_NAME
+#define PROGRAM_NAME "Mouton1_-_Anime" 
 static const char program_name[] = PROGRAM_NAME; 
 enum { program_name__cstrlen = ARRAY_SIZE(program_name) - 1 }; 
-#define PROGRAM_COPYRIGHT_YEAR1 "2004"
-#define PROGRAM_COPYRIGHT_YEAR2 "2021"
+#define PROGRAM_COPYRIGHT_YEAR1 "2003"
+#define PROGRAM_COPYRIGHT_YEAR2 "2023"
 #define PROGRAM_URL "https://github.com/Romain7426/Mouton1-anime" 
 
+#if 1
+const char anime_copyright[] = 
+"_Software_       : " PROGRAM_NAME "                                    " "\n"
+"_License_        : ISC-like license                                   " "\n"
+"                   https://en.wikipedia.org/wiki/ISC_license          " "\n"
+"_URL_            : " PROGRAM_URL "        " "\n"
+"_Copyright years_: " PROGRAM_COPYRIGHT_YEAR1 " - " PROGRAM_COPYRIGHT_YEAR2 " " "\n"
+"_Description_    : Lib of ‘Mouton1’, whose purpose is to read anime files into structured arrays of bytes. " "\n"
+"                                                                        " "\n"
+"Mouton1 — Anime " "\n"
+"Copyright (c) " PROGRAM_COPYRIGHT_YEAR1 " - " PROGRAM_COPYRIGHT_YEAR2 " " "\n"
+"                                                                        " "\n"
+"Permission to use, copy, modify, and distribute this software for any   " "\n"
+"purpose with or without fee is hereby granted without any restrictions. " "\n"
+"                                                                        " "\n"
+"THE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES" "\n"
+"WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF        " "\n"
+"MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR " "\n"
+"ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES  " "\n"
+"WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN   " "\n"
+"ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF " "\n"
+"OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.          " "\n"
+"                                                                        " "\n"
+"NB: We do not care of what you do with this code as long as             " "\n"
+"    you do not prevent us nor others from using it.                     " "\n"
+;
+#else 
 const char anime_copyright[] = 
 "_Software_: " PROGRAM_NAME "\n"
 "_License_: " "ISC License" "\n"
@@ -57,6 +86,7 @@ PROGRAM_NAME "\n"
 "NB: We do not care of what you do with this code as long as " "\n" 
 "    you do not prevent us nor others from using it." "\n" 
 ;
+#endif
 enum {           anime_copyright__strlen__const_value = ARRAY_SIZE(anime_copyright) - 1 }; 
 const uint16_t   anime_copyright__strlen = (uint16_t) anime_copyright__strlen__const_value; 
 const char     * anime_copyright__get(void) { return anime_copyright; }; 

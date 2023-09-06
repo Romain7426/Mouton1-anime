@@ -2,10 +2,11 @@ _Software_       : Mouton1_-_Anime
 _License_        : ISC-like license                                   
                    https://en.wikipedia.org/wiki/ISC_license          
 _URL_            : https://github.com/Romain7426/Mouton1-anime        
-_Copyright years_: 2003 - 2021
+_Copyright years_: 2003 - 2023
+_Description_    : Lib of ‘Mouton1’, whose purpose is to read anime files into structured arrays of bytes. 
                                                                         
 Mouton1 — Anime 
-Copyright (c) 2003 - 2021 
+Copyright (c) 2003 - 2023 
                                                                         
 Permission to use, copy, modify, and distribute this software for any   
 purpose with or without fee is hereby granted without any restrictions. 
