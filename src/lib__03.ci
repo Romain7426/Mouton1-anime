@@ -23,12 +23,25 @@ static char hexdigit(const int v) {
   return (v < 10) ? (v + '0') : (v - 10 + 'A'); 
 }; 
  
-static char * strcopy(const char * cstr) {
+static char * strcpy_malloc(const char * cstr) {
   if (cstr == NULL) return NULL; 
   const int cstr_len = strlen(cstr); 
   char * copy_cstr = malloc((cstr_len+1) * (sizeof(char))); 
   return strcpy(copy_cstr, cstr);
 }; 
+
+#define strcopy        strcpy_malloc 
+#define strcopy_malloc strcpy_malloc 
+
+static int16_t strcpy_buffer(const char * cstr, char * buffer, const int16_t buffer_bytesize) { 
+  if (NULL == cstr) return -1; 
+  if (NULL == buffer) return -2; 
+  const int16_t cstr_bytesize = 1 + strlen(cstr); 
+  if (cstr_bytesize > buffer_bytesize) return -3; 
+  bcopy(cstr, buffer, cstr_bytesize); 
+  return cstr_bytesize; 
+}; 
+
 
 
 // =================================================================================================== 
@@ -625,6 +638,234 @@ static int dputf(const int out_stream, const double x) {
   return retval; 
 #endif 
 }; 
+
+
+// =================================================================================================== 
+// BUFFERED WRITE STREAM 
+
+enum { BUFFERED_WRITE_STREAM__COUNT = 16 }; 
+static int     buffered_write_stream__pipe    [BUFFERED_WRITE_STREAM__COUNT][2] = {}; // RL: [0] is output (read end), [1] is input (write end) 
+static int     buffered_write_stream__write_fd[BUFFERED_WRITE_STREAM__COUNT]    = {}; 
+static char *  buffered_write_stream__buffer         [BUFFERED_WRITE_STREAM__COUNT] = {}; 
+static int16_t buffered_write_stream__buffer_bytesize[BUFFERED_WRITE_STREAM__COUNT] = {}; 
+static int16_t buffered_write_stream__buffer_used    [BUFFERED_WRITE_STREAM__COUNT] = {}; 
+
+static int buffered_write_stream__init_huh = false; 
+static int buffered_write_stream__handler_installed_huh = false; 
+
+static void (* buffered_write_stream__former_handler)(int) = NULL; 
+static void buffered_write_stream__handler(const int signal_id) { 
+  // RL: Dans cette routine, nous appelons write(2) qui génère des SIGIO. 
+  //     Donc nous devons désactiver le mask, et réinstaller le former_handler. 
+  // RL: Symétriquement, notre handler devra être réinstallé à la sortie. 
+  //     En revanche, le masque est remis automatiquement à chaque génération du signal SIGIO. 
+  // RL: #include <signal.h> 
+  { 
+    sigset_t sigset[1]; 
+    sigemptyset(sigset);
+    sigaddset(sigset, SIGIO);
+    signal(SIGIO, buffered_write_stream__former_handler); 
+    sigprocmask(SIG_UNBLOCK, sigset, NULL); 
+  }; 
+  goto label__body;
+
+  label__exit: { 
+    signal(SIGIO, buffered_write_stream__handler); 
+    return; 
+  }; 
+ 
+  label__pas_nous: {
+    if (NULL == buffered_write_stream__former_handler) goto label__exit; 
+    buffered_write_stream__former_handler(signal_id); 
+    goto label__exit; 
+  }; 
+  
+  label__body: { 
+    // RL: Ici, nous avons un problème: nous ne savons pas qui généra le signal. 
+    //     En particulier, était-ce le nôtre ou un autre? 
+    //     Donc il faut tester. 
+    //     Et pour tester, pas le choix, il faut faire un read(2). 
+    //     Et cette lecture doit être non bloquante, et donc le flag O_NONBLOCK doit avoir été allumé en amont. 
+    //     Sinon, on reste bloqué ici. 
+    
+    // RL: Pour une raison quelconque, le buffer est peut-être déjà plein. 
+    int my_stream_id; 
+    for (my_stream_id = 0; my_stream_id < BUFFERED_WRITE_STREAM__COUNT; my_stream_id++) { 
+      if (-1 == buffered_write_stream__write_fd[my_stream_id]) continue; 
+      if (buffered_write_stream__buffer_bytesize[my_stream_id] == buffered_write_stream__buffer_used[my_stream_id]) { 
+	write(buffered_write_stream__write_fd[my_stream_id], buffered_write_stream__buffer[my_stream_id], buffered_write_stream__buffer_used[my_stream_id]); 
+	buffered_write_stream__buffer_used[my_stream_id] = 0; 
+      }; 
+    }; 
+
+    int at_least_one_found_huh = false; 
+    
+    // RL: Polling 
+    for (my_stream_id = 0; my_stream_id < BUFFERED_WRITE_STREAM__COUNT; my_stream_id++) { 
+      const int my_fd = buffered_write_stream__write_fd[my_stream_id]; 
+      if (-1 == my_fd) continue; 
+      int * my_pipe = *(buffered_write_stream__pipe + my_stream_id); 
+      char * my_buffer = buffered_write_stream__buffer[my_stream_id]; 
+      int16_t my_used = buffered_write_stream__buffer_used[my_stream_id]; 
+      const int16_t my_bytesize = buffered_write_stream__buffer_bytesize[my_stream_id]; 
+      const ssize_t read_nb = read(my_pipe[0], my_buffer + my_used, my_bytesize - my_used); 
+      if (0 >= read_nb) continue; 
+      
+      buffered_write_stream__buffer_used[my_stream_id] += read_nb; 
+      my_used = buffered_write_stream__buffer_used[my_stream_id]; 
+
+      at_least_one_found_huh = true; 
+      
+      for (;;) { 
+	// RL: On flush dès que le buffer est plein. 
+	if (my_bytesize == my_used) { 
+	  write(my_fd, my_buffer, my_bytesize); 
+	  buffered_write_stream__buffer_used[my_stream_id] = 0; 
+	  my_used = 0; 
+	}; 
+	
+	// RL: On continue à lire tant que il y a des données. 
+	const ssize_t read_nb = read(my_pipe[0], my_buffer + my_used, my_bytesize - my_used); 
+	if (0 >= read_nb) break; 
+	buffered_write_stream__buffer_used[my_stream_id] += read_nb; 
+	my_used = buffered_write_stream__buffer_used[my_stream_id]; 
+      }; 
+
+    }; 
+
+    if (!at_least_one_found_huh) goto label__pas_nous; 
+    
+    goto label__exit; 
+  }; 
+}; 
+
+static int buffered_write_stream__open(const char *path, const int flags, char * buffer, const int16_t buffer_bytesize) { 
+  int my_stream_id; 
+  if (!buffered_write_stream__init_huh) goto label__init; 
+  if (!buffered_write_stream__handler_installed_huh) goto label__install_handler; 
+  goto label__body; 
+
+ label__error__installing_SIGIO_handler_failed: {
+    return -1; 
+  }; 
+  
+ label__install_handler: { 
+    buffered_write_stream__former_handler = signal(SIGIO, buffered_write_stream__handler); 
+    if (SIG_ERR == buffered_write_stream__former_handler) goto label__error__installing_SIGIO_handler_failed; 
+    buffered_write_stream__handler_installed_huh = true; 
+    goto label__body; 
+  }; 
+
+  label__init: { 
+    for (int i = 0; i < BUFFERED_WRITE_STREAM__COUNT; i++) { 
+      buffered_write_stream__write_fd[i] = -1; 
+    }; 
+    buffered_write_stream__init_huh = true; 
+    goto label__install_handler; 
+  }; 
+
+ label__error__no_slot_left: { 
+    return -2; 
+  }; 
+  
+  label__error__making_pipe_failed: {
+    close(buffered_write_stream__write_fd[my_stream_id]); 
+    buffered_write_stream__write_fd[my_stream_id] = -1; 
+    return -3; 
+  }; 
+
+  label__error__buffer_is_null: {
+    return -4; 
+  }; 
+
+  label__error__buffer_bytesize_is_not_positive: {
+    return -5; 
+  }; 
+
+  label__error__open_failed: { 
+    return -6; 
+  }; 
+
+ label__body: { 
+    if (NULL == buffer) goto label__error__buffer_is_null; 
+    if (0 >= buffer_bytesize) goto label__error__buffer_bytesize_is_not_positive; 
+    
+    my_stream_id = 0; 
+    for (;;) { 
+      if (BUFFERED_WRITE_STREAM__COUNT <= my_stream_id) break; 
+      if (-1 == buffered_write_stream__write_fd[my_stream_id]) break; 
+      my_stream_id++; 
+    }; 
+    if (BUFFERED_WRITE_STREAM__COUNT <= my_stream_id) goto label__error__no_slot_left; 
+    
+    buffered_write_stream__write_fd[my_stream_id] = open(path, flags, (mode_t) 0666); 
+    if (-1 == buffered_write_stream__write_fd[my_stream_id]) goto label__error__open_failed; 
+
+
+    int * my_pipe = *(buffered_write_stream__pipe + my_stream_id); 
+    if (-1 == pipe(my_pipe)) goto label__error__making_pipe_failed; 
+    fcntl(my_pipe[0], F_SETOWN, getpid()); // RL: Qui recevra le signal SIGIO? 
+    fcntl(my_pipe[0], F_SETFL, O_ASYNC | O_NONBLOCK); // RL: Générer le signal SIGIO + Ne pas bloquer en cas de poll. 
+
+    // RL: Inutile. 
+    // RL: Utile uniquement quand on veut réassigner stdout. 
+    //dup2(pipe_write_fd, fileno(stdout)); 
+
+    buffered_write_stream__buffer         [my_stream_id] = buffer; 
+    buffered_write_stream__buffer_bytesize[my_stream_id] = buffer_bytesize; 
+    buffered_write_stream__buffer_used    [my_stream_id] = 0; 
+    
+    return my_pipe[1]; 
+  }; 
+  
+}; 
+
+static int buffered_write_stream__close(const int pipe1) { 
+  goto label__body; 
+  
+  label__error__pipe1_neg: { 
+    return -1; 
+  }; 
+
+  label__error__not_init: { 
+    return -2; 
+  }; 
+
+  label__error__handler_not_installed: { 
+    return -3; 
+  }; 
+
+  label__error__not_found: { 
+    return -4; 
+  }; 
+
+
+  label__body: { 
+    if (0 > pipe1) goto label__error__pipe1_neg; 
+    if (!buffered_write_stream__init_huh) goto label__error__not_init; 
+    if (!buffered_write_stream__handler_installed_huh) goto label__error__handler_not_installed; 
+
+    int my_stream_id = 0; 
+    for (;;) { 
+      if (BUFFERED_WRITE_STREAM__COUNT <= my_stream_id) break; 
+      if (-1 == buffered_write_stream__write_fd[my_stream_id]) continue; 
+      if (pipe1 == buffered_write_stream__pipe[my_stream_id][1]) break; 
+      my_stream_id++; 
+    }; 
+    if (BUFFERED_WRITE_STREAM__COUNT <= my_stream_id) goto label__error__not_found; 
+    
+    close(buffered_write_stream__write_fd[my_stream_id]); 
+    close(buffered_write_stream__pipe[my_stream_id][0]); 
+    close(pipe1); 
+    buffered_write_stream__buffer[my_stream_id] = NULL; 
+    buffered_write_stream__buffer_bytesize[my_stream_id] = -1; 
+    buffered_write_stream__buffer_used[my_stream_id] = -1; 
+    buffered_write_stream__write_fd[my_stream_id] = -1; 
+    
+    return 0; 
+  }; 
+}; 
+
 
 
 // =================================================================================================== 

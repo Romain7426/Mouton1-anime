@@ -16,6 +16,7 @@
 #include <ctype.h>
 //#include <sys/types.h>
 #include <time.h>
+#include <signal.h> 
 #include "lib__02__header.ci"
 #include "lib__03.ci"
 #include "lib__04__string_stack.ci"
