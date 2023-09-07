@@ -83,10 +83,16 @@ bsdtar xzf ./tar-version-src/${LAST_TARVERSION}.tgz -C ./tar-version-src/
 
 
 # diff(1) returns non-zero status on success. 
+PROJECT_TOP_DIR=${PWD}
 set +e 
-diff -u -r ./tar-version-src/${LAST_TARVERSION} ./tar-version-src/${MY_TARVERSION} | gzip -f > ./tar-version-src/${MY_TARVERSION}.zdiff
 #diff -u -r ./tar-version-src/${LAST_TARVERSION} ./tar-version-src/${MY_TARVERSION} > ./tar-version-src/${MY_TARVERSION}.diff
+#diff -u -r ./tar-version-src/${LAST_TARVERSION} ./tar-version-src/${MY_TARVERSION} | gzip -f > ./tar-version-src/${MY_TARVERSION}.zdiff
+#cd ./tar-version-src && diff -u -r ./${LAST_TARVERSION} ./${MY_TARVERSION} | gzip -f > ./${MY_TARVERSION}.zdiff
+cd ./tar-version-src && diff -u -r -N -P ./${LAST_TARVERSION} ./${MY_TARVERSION} | gzip -f > ./${MY_TARVERSION}.zdiff
 set -e 
+cd ${PROJECT_TOP_DIR}
+
+echo "${LAST_TARVERSION}" > ./tar-version-src/${MY_TARVERSION}.orig
 
 rm -Rf ./tar-version-src/${LAST_TARVERSION} 
 rm -Rf ./tar-version-src/${MY_TARVERSION} 
