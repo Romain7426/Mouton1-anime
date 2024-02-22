@@ -51,7 +51,10 @@ typedef uint24_unpacked_t uint24_t;
 
 
 
-#define ASSERT_COMPILE(a) { int tab[((a) ? 1 : (-1))]; }; 
+#define ASSERT_COMPILE_LOCAL(a) { int tab[((a) ? 1 : (-1))]; }; 
+#define ASSERT_COMPILE_TOPLEVEL_OLD_001(a) static int glue(tab,__LINE__)[((a) ? 1 : (-1))];  
+#define ASSERT_COMPILE_TOPLEVEL(cond) static void glue(check_and_assert__,__LINE__)(void) { enum { tab_size = ((cond) ? 1 : (-1)) }; int tab[tab_size]; };  
+
 #if 0 
 // Does not work as the compiler complains about "That does not declare anything". 
 // The glue trick does not work as the __FILE__ macro returns a string, and not an ident. 
@@ -63,14 +66,14 @@ ASSERT_STATIC(1 == sizeof(int8_t));
 #endif 
 
 static void assert_compile__check_type_size(void) {
-  ASSERT_COMPILE(1 == sizeof(int8_t)); 
-  ASSERT_COMPILE(1 == sizeof(uint8_t)); 
-  ASSERT_COMPILE(2 == sizeof(int16_t)); 
-  ASSERT_COMPILE(2 == sizeof(uint16_t)); 
-  ASSERT_COMPILE(4 == sizeof(int32_t)); 
-  ASSERT_COMPILE(4 == sizeof(uint32_t)); 
-  ASSERT_COMPILE(8 == sizeof(int64_t)); 
-  ASSERT_COMPILE(8 == sizeof(uint64_t)); 
+  ASSERT_COMPILE_LOCAL(1 == sizeof(int8_t)); 
+  ASSERT_COMPILE_LOCAL(1 == sizeof(uint8_t)); 
+  ASSERT_COMPILE_LOCAL(2 == sizeof(int16_t)); 
+  ASSERT_COMPILE_LOCAL(2 == sizeof(uint16_t)); 
+  ASSERT_COMPILE_LOCAL(4 == sizeof(int32_t)); 
+  ASSERT_COMPILE_LOCAL(4 == sizeof(uint32_t)); 
+  ASSERT_COMPILE_LOCAL(8 == sizeof(int64_t)); 
+  ASSERT_COMPILE_LOCAL(8 == sizeof(uint64_t)); 
 }; 
 
 
@@ -146,6 +149,10 @@ enum { INT64_MIN  = (~INT64_MAX) };
 #endif 
 #ifndef INT_MIN 
 enum { INT_MIN    =   (~INT_MAX) }; 
+#endif 
+
+#ifndef SATURATED_CAST_TO_INT16
+#define SATURATED_CAST_TO_INT16(a) ((((int)(a)) >= INT16_MAX) ? ((int16_t) INT16_MAX) : ((((int)(a)) <= INT16_MIN) ? ((int16_t) INT16_MIN) : ((int16_t) ((int)(a))))) 
 #endif 
 
 #if 0 
@@ -362,6 +369,8 @@ enum { EBADF = 9 };
 # define BOOL_ABS(a) (((a)>0)?(a):(-(a)))
 #endif 
 
+//#include <unistd.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/unistd.h.html */ /* https://en.wikipedia.org/wiki/Unistd.h */ 
+//#ifndef __bool_true_false_are_defined /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/stdbool.h.html */ 
 #ifndef false
 enum { false = (0 != 0) }; 
 enum { true = (0 == 0) }; 
@@ -369,12 +378,13 @@ enum { undecided_boolean = 1+MAX(BOOL_ABS(false),BOOL_ABS(true)) };
 #define false false
 #define true true
 #define undecided_boolean undecided_boolean
+#  define __bool_true_false_are_defined 1
 #endif
 
 static void assert_compile__check_boolean_all_different(void) {
-  ASSERT_COMPILE(false             != true             ); 
-  ASSERT_COMPILE(true              != undecided_boolean); 
-  ASSERT_COMPILE(undecided_boolean != false            ); 
+  ASSERT_COMPILE_LOCAL(false             != true             ); 
+  ASSERT_COMPILE_LOCAL(true              != undecided_boolean); 
+  ASSERT_COMPILE_LOCAL(undecided_boolean != false            ); 
 }; 
 
 

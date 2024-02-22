@@ -60,12 +60,7 @@ static void program_options__bzero(void) {
   };
 };
 
-static void main_arg_print(const int argc, const char * argv[], const int stdlog_d) {
-  dputs(stdlog_d, "argc: "); dputn(stdlog_d, argc); dputs(stdlog_d, "\n"); 
-  for (int i = 0; i < argc; i++) {
-    dputs(stdlog_d, "argv["); dputn(stdlog_d, i); dputs(stdlog_d, "] = "); dputs(stdlog_d, argv[i]); dputs(stdlog_d, "\n"); 
-  }; 
-}; 
+
 
 static int program_options__parse(const int argc, const char * argv[]) {
   program_options__bzero();

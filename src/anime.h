@@ -29,6 +29,14 @@ extern const char     * anime_example__get(void);
 extern void             anime_example__print(const int stduser_d); 
 
 
+enum {               anime_bytesize = (1 << 13) + (1 << 12) }; 
+extern const int16_t anime_bytesize_actual; 
+
+static void anime__check_and_assert(const int8_t debug_print_huh, const int stderr_d); 
+
+
+
+
 enum { anime_actions_size = 15 }; 
 enum { anime_events_size  = 15 }; 
 enum { anime_membres_size = 15 }; 
@@ -223,8 +231,10 @@ extern void         anime__print_f         (const anime_t * this, FILE * out_str
 extern void         anime__print_d         (const anime_t * this, const int fd); 
 extern anime_t *    anime__make            (const int stdlog_d); 
 extern anime_t *    anime__make_r          (anime_t * this, const int stdlog_d); 
+extern anime_t *    anime__make_b          (char * anime_buffer, const int16_t anime_buffer_bytesize, int16_t * anime_buffer_bytesize_used_r, const int stdlog_d); 
 extern void         anime__delete          (anime_t * this);  
 extern void         anime__delete_r        (anime_t * this);  
+extern void         anime__delete_b        (anime_t * this);  
 extern void         anime__bzero           (anime_t * this);  
 extern const char * anime__strcopy         (anime_t * this, const char * cstr); 
 
@@ -244,5 +254,15 @@ extern int_anime_error_t anime__print_field_value_by_name(const anime_t * this, 
 
 
 extern const char * anime__convert_token_cstring_to_regular_string(anime_t * this, const char * cstr); 
+
+
+static void anime__check_and_assert(const int8_t debug_print_huh, const int stderr_d) { 
+  if (debug_print_huh) { 
+    dprintf(stderr_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s>()>}: anime_bytesize: %d" "\n",  __func__, (int) anime_bytesize); 
+    dprintf(stderr_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s>()>}: anime_bytesize_actual: %d" "\n",  __func__, (int) anime_bytesize_actual); 
+  }; 
+  assert(anime_bytesize >= anime_bytesize_actual); 
+}; 
+
 
 #endif /* ANIME_H */

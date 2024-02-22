@@ -130,7 +130,8 @@ const char     * anime_example__get(void) { return anime_example; };
 void             anime_example__print(const int stduser_d) { if (stduser_d > 0) { write(stduser_d, anime_example, anime_example__strlen__const_value); write(stduser_d, "\n", 1); }; }; 
 
 
-
+enum { ANIME_BYTESIZE_ACTUAL = sizeof(anime_t) }; 
+const int16_t anime_bytesize_actual = ANIME_BYTESIZE_ACTUAL; 
 
 anime_t * anime__make(const int stdlog_d) {  
   MALLOC_BZERO(anime_t,this); 
@@ -154,6 +155,18 @@ anime_t * anime__make_r(anime_t * this, const int stdlog_d) {
   this -> racines_size = anime_racines_size; 
   return this; 
 };  
+
+anime_t * anime__make_b(char * anime_buffer, const int16_t anime_buffer_bytesize, int16_t * anime_buffer_bytesize_used_r, const int stdlog_d) { 
+  if (((size_t) anime_buffer_bytesize) < (sizeof(anime_t))) return NULL; 
+  anime_t * this = (anime_t *) anime_buffer; 
+  anime__make_r(this, stdlog_d); 
+  if (NULL != anime_buffer_bytesize_used_r) *anime_buffer_bytesize_used_r = (sizeof(anime_t)); 
+  return this; 
+}; 
+
+void anime__delete_b(anime_t * this) { 
+  anime__delete_r(this); 
+}; 
 
 void anime__delete_r(anime_t * this) { 
 #if 0 
