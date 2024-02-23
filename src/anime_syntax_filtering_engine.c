@@ -1,5 +1,6 @@
 #include "anime_global.h"
 #include "anime.h"
+#include "anime_type.h"
 #include "anime_token_type.h" 
 #include "anime_token.h" 
 #include "anime_syntax_filtering_engine.h"

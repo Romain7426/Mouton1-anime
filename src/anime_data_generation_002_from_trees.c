@@ -1,5 +1,6 @@
 #include "anime_global.h"
 #include "anime.h"
+#include "anime_type.h"
 #include "anime_token.h"
 #include "anime_token_type.h"
 #include "anime_token_input_buffering.h"
@@ -17,7 +18,12 @@ int anime_data_generation_002_from_trees(const anime_tree_env_t * tree_env, cons
   if (  -1 ==   tree_env -> filled_huh) { return ANIME__DATA_GENERATION__TREE_ENV__BEING_FILLED; }; 
   if (   1 !=   tree_env -> filled_huh) { return ANIME__DATA_GENERATION__TREE_ENV__NOT_FILLED  ; }; 
   
-  anime__bzero(anime_data); 
+  //anime__bzero(anime_data); 
+  anime_data -> actions_nb = 0; 
+  anime_data -> events_nb = 0; 
+  anime_data -> membres_nb = 0; 
+  anime_data -> racines_nb = 0; 
+
   anime_data -> filled_huh = -1; 
   
   if (0 >= tree_env -> memory__array_nb) { goto error_not_enough_trees; }; 
@@ -484,12 +490,17 @@ int anime_data_generation_002_from_trees(const anime_tree_env_t * tree_env, anim
   int error__expected_token_type; 
   const char * error__expected_token_value; 
   
-  anime__bzero(anime_data); 
+  //anime__bzero(anime_data); 
+  anime_data -> actions_nb = 0; 
+  anime_data -> events_nb = 0; 
+  anime_data -> membres_nb = 0; 
+  anime_data -> racines_nb = 0; 
+
   anime_data -> filled_huh = -1; 
 
   if (0 >= anime_token__get_count(token_env)) { goto error_not_enough_tokens; }; 
-  anime_data -> filename = anime__strcopy(anime_data, anime_token__get_srcfile_cstr(token_env, 0)); 
-  
+  anime_data -> filename = anime__string_stack__push_lookup(anime_data, anime_token__get_srcfile_cstr(token_env, 0)); 
+    
   do { 
     CHECK_IDENT("physique"); CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
       CHECK_IDENT("zone"); CHECK_IDENT("de"); CHECK_IDENT("choc"); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
@@ -519,9 +530,9 @@ int anime_data_generation_002_from_trees(const anime_tree_env_t * tree_env, anim
       
 	token_i++; 
 	if (anime_data -> membres_nb >= anime_membres_size) { break; }; 
-	READ_IDENT(); anime_data -> membres_nom[anime_data -> membres_nb] = anime__strcopy(anime_data, identval); CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
+	READ_IDENT(); anime_data -> membres_nom[anime_data -> membres_nb] = anime__string_stack__push_lookup(anime_data, identval); CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
 	  CHECK_IDENT("fils"   ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
-	  CHECK_IDENT("image"  ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_STRING(); anime_data -> membres_image[anime_data -> membres_nb] = anime__strcopy(anime_data, strval); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	  CHECK_IDENT("image"  ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_STRING(); anime_data -> membres_image[anime_data -> membres_nb] = anime__string_stack__push_lookup(anime_data, strval); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("largeur"); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); LOOKAHEAD_THEN_READ_SIGN(); READ_FLOAT(); anime_data -> membres_largeur[anime_data -> membres_nb] = floatval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("hauteur"); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); LOOKAHEAD_THEN_READ_SIGN(); READ_FLOAT(); anime_data -> membres_hauteur[anime_data -> membres_nb] = floatval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("angle"); CHECK_IDENT("max"); CHECK_IDENT("y"); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); LOOKAHEAD_THEN_READ_SIGN(); READ_FLOAT(); anime_data -> membres_angle_max_y[anime_data -> membres_nb] = floatval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
@@ -544,7 +555,7 @@ int anime_data_generation_002_from_trees(const anime_tree_env_t * tree_env, anim
 	if (!(lookahead_match_huh)) { break; }; 
 	token_i++; { 
 	  if (anime_data -> racines_nb >= anime_racines_size) { break; }; 
-	  CHECK_IDENT("qui"  ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_IDENT(); anime_data -> racines_qui[anime_data -> racines_nb] = anime__strcopy(anime_data, identval); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	  CHECK_IDENT("qui"  ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_IDENT(); anime_data -> racines_qui[anime_data -> racines_nb] = anime__string_stack__push_lookup(anime_data, identval); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("x"    ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); LOOKAHEAD_THEN_READ_SIGN(); READ_FLOAT(); anime_data -> racines_x[anime_data -> racines_nb] = floatval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("y"    ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); LOOKAHEAD_THEN_READ_SIGN(); READ_FLOAT(); anime_data -> racines_y[anime_data -> racines_nb] = floatval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("z"    ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); LOOKAHEAD_THEN_READ_SIGN(); READ_FLOAT(); anime_data -> racines_z[anime_data -> racines_nb] = floatval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 

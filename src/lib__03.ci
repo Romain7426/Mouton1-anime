@@ -43,6 +43,108 @@ static int16_t strcpy_buffer(const char * cstr, char * buffer, const int16_t buf
 }; 
 
 
+// =================================================================================================== 
+// ENDIANNESS 
+
+#ifndef ENDIANNESS
+#  error ENDIANNESS is not defined 
+#endif 
+
+#define ENDIANNESS__SWAP__UINT8(a) (a) 
+#define ENDIANNESS__SWAP__UINT16(a) (  ((char *)(&(a)))[0] ^= ((char *)(&(a)))[1], ((char *)(&(a)))[1] ^= ((char *)(&(a)))[0], ((char *)(&(a)))[0] ^= ((char *)(&(a)))[1], (a)  ) 
+#define ENDIANNESS__SWAP__UINT32(a) (  ((char *)(&(a)))[0] ^= ((char *)(&(a)))[3], ((char *)(&(a)))[3] ^= ((char *)(&(a)))[0], ((char *)(&(a)))[0] ^= ((char *)(&(a)))[3], ((char *)(&(a)))[2] ^= ((char *)(&(a)))[1], ((char *)(&(a)))[1] ^= ((char *)(&(a)))[2], ((char *)(&(a)))[2] ^= ((char *)(&(a)))[1], (a)  ) 
+#define ENDIANNESS__SWAP__UINT64(a) (  ((char *)(&(a)))[0] ^= ((char *)(&(a)))[7], ((char *)(&(a)))[7] ^= ((char *)(&(a)))[0], ((char *)(&(a)))[0] ^= ((char *)(&(a)))[7], ((char *)(&(a)))[6] ^= ((char *)(&(a)))[1], ((char *)(&(a)))[1] ^= ((char *)(&(a)))[6], ((char *)(&(a)))[6] ^= ((char *)(&(a)))[1], ((char *)(&(a)))[2] ^= ((char *)(&(a)))[5], ((char *)(&(a)))[5] ^= ((char *)(&(a)))[2], ((char *)(&(a)))[2] ^= ((char *)(&(a)))[5], ((char *)(&(a)))[3] ^= ((char *)(&(a)))[4], ((char *)(&(a)))[4] ^= ((char *)(&(a)))[3], ((char *)(&(a)))[3] ^= ((char *)(&(a)))[4], (a)  ) 
+#define ENDIANNESS__IDENTITY(a) (a) 
+
+#if ENDIANNESS == little
+#  define ENDIANNESS__NATIVE_TO_LITTLE__UINT8  ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_LITTLE__UINT16 ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_LITTLE__UINT32 ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_LITTLE__UINT64 ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_BIG__UINT8  ENDIANNESS__SWAP__UINT8
+#  define ENDIANNESS__NATIVE_TO_BIG__UINT16 ENDIANNESS__SWAP__UINT16
+#  define ENDIANNESS__NATIVE_TO_BIG__UINT32 ENDIANNESS__SWAP__UINT32
+#  define ENDIANNESS__NATIVE_TO_BIG__UINT64 ENDIANNESS__SWAP__UINT64
+#elif ENDIANNESS == big 
+#  define ENDIANNESS__NATIVE_TO_LITTLE__UINT8  ENDIANNESS__SWAP__UINT8
+#  define ENDIANNESS__NATIVE_TO_LITTLE__UINT16 ENDIANNESS__SWAP__UINT16
+#  define ENDIANNESS__NATIVE_TO_LITTLE__UINT32 ENDIANNESS__SWAP__UINT32
+#  define ENDIANNESS__NATIVE_TO_LITTLE__UINT64 ENDIANNESS__SWAP__UINT64
+#  define ENDIANNESS__NATIVE_TO_BIG__UINT8  ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_BIG__UINT16 ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_BIG__UINT32 ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_BIG__UINT64 ENDIANNESS__IDENTITY
+#else 
+#  error unknown endianness 
+#endif 
+
+static void endianness__check_and_assert(void) { 
+  { 
+    char buffer[2]; 
+    buffer[0] = 0; 
+    buffer[1] = 0; 
+    *((int16_t *) buffer) = 1; 
+#if ENDIANNESS == little
+    assert(1 == buffer[0]); 
+#elif ENDIANNESS == big 
+    assert(1 == buffer[0]); 
+#else 
+    assert(false); 
+#endif 
+  }; 
+
+  { 
+    char buffer[2]; 
+    buffer[0] = 11; 
+    buffer[1] = 77; 
+    //dprintf(stderr_d, "buffer avant = %d\n", (int) *((int16_t *) buffer)); 
+    *((int16_t *) buffer) = ENDIANNESS__SWAP__UINT16(*((int16_t *) buffer)); 
+    //dprintf(stderr_d, "buffer après = %d\n", (int) *((int16_t *) buffer)); 
+    assert(11 == buffer[1]); 
+    assert(77 == buffer[0]); 
+  }; 
+
+  { 
+    char buffer[4]; 
+    buffer[0] = 11; 
+    buffer[1] = 77; 
+    buffer[2] = 101; 
+    buffer[3] = 42; 
+    //dprintf(stderr_d, "buffer avant = %d\n", (int) *((int32_t *) buffer)); 
+    *((int32_t *) buffer) = ENDIANNESS__SWAP__UINT32(*((int32_t *) buffer)); 
+    //dprintf(stderr_d, "buffer après = %d\n", (int) *((int32_t *) buffer)); 
+    assert(11  == buffer[3]); 
+    assert(77  == buffer[2]); 
+    assert(101 == buffer[1]); 
+    assert(42  == buffer[0]); 
+  }; 
+
+  { 
+    char buffer[8]; 
+    buffer[0] = 11; 
+    buffer[1] = 77; 
+    buffer[2] = 101; 
+    buffer[3] = 42; 
+    buffer[4] = 3; 
+    buffer[5] = 0; 
+    buffer[6] = 82; 
+    buffer[7] = 4; 
+    //dprintf(stderr_d, "buffer avant = %lld\n", (long long int) *((int64_t *) buffer)); 
+    *((int64_t *) buffer) = ENDIANNESS__SWAP__UINT64(*((int64_t *) buffer)); 
+    //dprintf(stderr_d, "buffer après = %lld\n", (long long int) *((int64_t *) buffer)); 
+    assert(11  == buffer[7]); 
+    assert(77  == buffer[6]); 
+    assert(101 == buffer[5]); 
+    assert(42  == buffer[4]); 
+    assert(3   == buffer[3]); 
+    assert(0   == buffer[2]); 
+    assert(82  == buffer[1]); 
+    assert(4   == buffer[0]); 
+  }; 
+}; 
+
+
+
 
 // =================================================================================================== 
 // CSTRING 

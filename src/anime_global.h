@@ -23,6 +23,11 @@
 #include "lib__05__error_state.ci"
 #include "lib__06__exception.ci"
 
+#define BUFFERED_OUTSTREAM__H 
+#include "lib__07__buffered_outstream.ci"
+#undef BUFFERED_OUTSTREAM__H 
+
+
 #define PREFIX anime
 #define CDIR ".."
 #define HDIR "../../include"
@@ -158,6 +163,8 @@ extern void anime_parser_reset(void);
 #ifndef MAX8 
 # define MAX8 max8 
 #endif 
+
+
 
 
 

@@ -47,8 +47,8 @@ CC           := $(if $(strip $(wildcard CC)),$(shell cat CC),$(shell which cc))
 endif
 CC_NAME      := $(shell mkdir -p tmp && $(CC) ./tools/src/compiler-detect.c -o tmp/compiler-detect.exe && ./tmp/compiler-detect.exe) 
 UNAME        := $(shell uname)
-#ENDIAN       := $(shell ./tools/bin/endianness-detect)
-ENDIAN       := $(shell mkdir -p tmp && $(CC) ./tools/src/endianness-detect.c -o tmp/endianness-detect.exe && ./tmp/endianness-detect.exe) 
+ENDIAN       := $(shell ./tools/bin/endianness-detect)
+#ENDIAN       := $(shell mkdir -p tmp && $(CC) ./tools/src/endianness-detect.c -o tmp/endianness-detect.exe && ./tmp/endianness-detect.exe) 
 ARCH         := $(shell arch)
 MACHINE      := $(shell machine)
 HARDWARE     := $(shell uname -m)
@@ -106,7 +106,7 @@ $(info LONGDOUBLESIZE : $(LONGDOUBLESIZE) )
 endif 
 
 
-CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -O0 
+CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -D ENDIANNESS="$(ENDIAN)" -O0 
 
 #       -aux-info filename
 #           Output to the given filename prototyped declarations for all functions declared and/or defined in a translation
