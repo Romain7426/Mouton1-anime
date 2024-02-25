@@ -1,3 +1,6 @@
+#ifndef LIB__04__STRING_STACK_CI
+#define LIB__04__STRING_STACK_CI
+
 // =================================================================================================== 
 // STRING STACK 
 // My big table of strings 
@@ -63,10 +66,6 @@ static str_t string__push_or_lookup(const char * cstr) {
 
 static str_t cstr2str(const char * cstr) {
   return string__push_or_lookup(cstr);
-}; 
-
-static int dput_str(const int filedes, const str_t str) {
-  return dputs(filedes, string__srcval_array + str); 
 }; 
 
 static int string__length(const str_t str) {
@@ -203,3 +202,11 @@ static str_t string__concat5(const str_t str1, const str_t str2, const str_t str
 }; 
 
 
+
+#if 0 
+static int dput_str(const int filedes, const str_t str) {
+  return dputs(filedes, string__srcval_array + str); 
+}; 
+#endif 
+
+#endif /* LIB__04__STRING_STACK_CI */

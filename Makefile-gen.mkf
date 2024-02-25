@@ -36,16 +36,45 @@ clean:
 #PROJECT_NAME := $(shell ./tools/bin/filename_without_path $$PWD)
 PROJECT_NAME := anime
 DATETIME_UTC := $(shell TZ="UTC" date "+%Z[%z] %Y_%m_%d-%Hh%Mm%Ss %A")
+
+# RL: GMake fournit automatiquement une variable CC, même si il n’y en a nulle pas. 
+# RL: Il faut donc ignorer cette variable, et ne considérer que l’environnement. 
 #CC           := $(if $(strip $(CC)),$(if $(strip $(filter $(CC),cc)),$(shell which cc),$(CC)),$(shell which cc))
-#$(info $(origin CC)) # returns "undefined" or something else 
+#$(info $(origin CC)) # returns "default" "undefined" or something else 
+ifeq (0,1)
+$(info CC = "$(CC)") 
 ifdef CC
-#$(info CC is defined)
+$(info CC is defined)
 CC           := $(if $(strip $(filter $(CC),cc)),$(shell which cc),$(CC))
 else
-#$(info CC is undefined)
+$(info CC is undefined)
 CC           := $(if $(strip $(wildcard CC)),$(shell cat CC),$(shell which cc))
 endif
-CC_NAME      := $(shell mkdir -p tmp && $(CC) ./tools/src/compiler-detect.c -o tmp/compiler-detect.exe && ./tmp/compiler-detect.exe) 
+endif
+
+# RL: 1. CC dans l’environnement. 
+# RL: 2. CC dans le fichier. 
+# RL: 3. CC par défault
+# Else, cc. 
+CC_ENV     := $(strip $(shell env | grep "^CC=" | head -1 | cut -f 2 -d "="))
+CC_FILE    := $(strip $(if $(strip $(wildcard CC)),$(shell cat CC),))
+CC_DEFAULT := $(strip $(shell which cc))
+#$(info CC_ENV     = "$(CC_ENV)")
+#$(info CC_FILE    = "$(CC_FILE)")
+#$(info CC_DEFAULT = "$(CC_DEFAULT)")
+CC         :=
+CC    	   := $(if $(CC),$(CC),$(CC_ENV))
+CC    	   := $(if $(CC),$(CC),$(CC_FILE))
+CC         := $(if $(CC),$(CC),$(CC_DEFAULT))
+#$(info CC = "$(CC)") 
+
+CC           := $(strip $(CC))
+CC_TOOLS     := $(strip $(shell ./tools/bin/tools-compiled-with-cc_name))
+ifneq ("$(CC)","$(CC_TOOLS)")
+  $(error CC [$(CC)] et CC_TOOLS [$(CC_TOOLS)] sont distincts. Il faut recompiler les outils avec le même compilateur. ) 
+endif
+CC_NAME      := $(shell ./tools/bin/compiler-detect)
+#CC_NAME      := $(shell mkdir -p tmp && $(CC) ./tools/src/compiler-detect.c -o tmp/compiler-detect.exe && ./tmp/compiler-detect.exe) 
 UNAME        := $(shell uname)
 ENDIAN       := $(shell ./tools/bin/endianness-detect)
 #ENDIAN       := $(shell mkdir -p tmp && $(CC) ./tools/src/endianness-detect.c -o tmp/endianness-detect.exe && ./tmp/endianness-detect.exe) 
@@ -69,11 +98,20 @@ endif
 HW_IDX := $(shell tools/bin/list-match $(HARDWARE) $(HW_LIST) $(HARDWARE))
 #INTSIZE := $(word $(HW_IDX), $(INTSIZE_LIST) unknown_intsize)
 
-#INTSIZE := $(shell tools/bin/intsize)
-#PTRSIZE := $(shell tools/bin/ptrsize)
-
-INTSIZE  := $(shell mkdir -p tmp && $(CC) ./tools/src/intsize.c -o tmp/intsize.exe && ./tmp/intsize.exe) 
-PTRSIZE  := $(shell mkdir -p tmp && $(CC) ./tools/src/ptrsize.c -o tmp/ptrsize.exe && ./tmp/ptrsize.exe) 
+ifeq (0,0)
+INTSIZE         := $(shell ./tools/bin/intsize)
+PTRSIZE         := $(shell ./tools/bin/ptrsize)
+CHARSIZE        := $(shell ./tools/bin/charsize)
+SHORTINTSIZE    := $(shell ./tools/bin/shortintsize)
+LONGINTSIZE     := $(shell ./tools/bin/longintsize)
+LONGLONGINTSIZE := $(shell ./tools/bin/longlongintsize)
+ENUMSIZE        := $(shell ./tools/bin/enumsize)
+FLOATSIZE       := $(shell ./tools/bin/floatsize)
+DOUBLESIZE      := $(shell ./tools/bin/doublesize)
+LONGDOUBLESIZE  := $(shell ./tools/bin/longdoublesize)
+else
+INTSIZE         := $(shell mkdir -p tmp && $(CC) ./tools/src/intsize.c -o tmp/intsize.exe && ./tmp/intsize.exe) 
+PTRSIZE         := $(shell mkdir -p tmp && $(CC) ./tools/src/ptrsize.c -o tmp/ptrsize.exe && ./tmp/ptrsize.exe) 
 CHARSIZE        := $(shell mkdir -p tmp && $(CC) ./tools/src/charsize.c        -o tmp/charsize.exe        && ./tmp/charsize.exe       ) 
 SHORTINTSIZE    := $(shell mkdir -p tmp && $(CC) ./tools/src/shortintsize.c    -o tmp/shortintsize.exe    && ./tmp/shortintsize.exe   ) 
 LONGINTSIZE     := $(shell mkdir -p tmp && $(CC) ./tools/src/longintsize.c     -o tmp/longintsize.exe     && ./tmp/longintsize.exe    ) 
@@ -82,7 +120,7 @@ ENUMSIZE        := $(shell mkdir -p tmp && $(CC) ./tools/src/enumsize.c        -
 FLOATSIZE       := $(shell mkdir -p tmp && $(CC) ./tools/src/floatsize.c       -o tmp/floatsize.exe       && ./tmp/floatsize.exe      ) 
 DOUBLESIZE      := $(shell mkdir -p tmp && $(CC) ./tools/src/doublesize.c      -o tmp/doublesize.exe      && ./tmp/doublesize.exe     ) 
 LONGDOUBLESIZE  := $(shell mkdir -p tmp && $(CC) ./tools/src/longdoublesize.c  -o tmp/longdoublesize.exe  && ./tmp/longdoublesize.exe ) 
-
+endif
 
 #$(info DATETIME_UTC  : $(DATETIME_UTC)) 
 #$(info PROJECT_NAME: $(PROJECT_NAME)) 
@@ -95,7 +133,7 @@ $(info INTSIZE     : $(INTSIZE))
 $(info PTRSIZE     : $(PTRSIZE))
 $(info ENUMSIZE    : $(ENUMSIZE)) 
 ifeq "a" "b"
-$(info ENDIANNESS  : $(ENDIAN))
+$(info ENDIANNESS     : $(ENDIAN)         )
 $(info CHARSIZE       : $(CHARSIZE)       ) 
 $(info SHORTINTSIZE   : $(SHORTINTSIZE)   ) 
 $(info LONGINTSIZE    : $(LONGINTSIZE)    ) 
@@ -105,8 +143,20 @@ $(info DOUBLESIZE     : $(DOUBLESIZE)     )
 $(info LONGDOUBLESIZE : $(LONGDOUBLESIZE) ) 
 endif 
 
+CC_CONFIG:=
 
-CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -D ENDIANNESS="$(ENDIAN)" -O0 
+STDLIB_PROVIDES_ARC4RANDOM_HUH := $(shell echo "#include <stdlib.h>\nint main(int argc, char * argv[]) { return arc4random(); }; " | $(CC) -x c -std=c99 -O0 - -o - > /dev/null 2>&1 ; echo $$?)
+ifeq ($(STDLIB_PROVIDES_ARC4RANDOM_HUH),0) 
+  STDLIB_PROVIDES_ARC4RANDOM_HUH := yes
+  CC_CONFIG:=$(CC_CONFIG) -D STDLIB_PROVIDES_ARC4RANDOM
+else 
+  STDLIB_PROVIDES_ARC4RANDOM_HUH := no
+endif 
+$(info STDLIB_PROVIDES_ARC4RANDOM_HUH: $(STDLIB_PROVIDES_ARC4RANDOM_HUH))
+
+
+
+CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -D ENDIANNESS="$(ENDIAN)" $(CC_CONFIG) -O0 
 
 #       -aux-info filename
 #           Output to the given filename prototyped declarations for all functions declared and/or defined in a translation

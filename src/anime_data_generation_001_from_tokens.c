@@ -170,7 +170,7 @@ int anime_data_generation_001_from_tokens(const anime_token_env_t * token_env, a
 	if (!(lookahead_match_huh)) { break; }; 
       
 	token_i++; 
-	if (anime_data -> membres_nb >= anime_membres_size) { break; }; 
+	if (anime_data -> membres_nb >= ANIME_MEMBRES_SIZE) { break; }; 
 	READ_IDENT(); anime_data -> membres_nom[anime_data -> membres_nb] = anime__string_stack__push_lookup(anime_data, identval); CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
 	  CHECK_IDENT("fils"   ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("image"  ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_STRING(); anime_data -> membres_image[anime_data -> membres_nb] = anime__string_stack__push_lookup(anime_data, strval); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
@@ -195,7 +195,7 @@ int anime_data_generation_001_from_tokens(const anime_token_env_t * token_env, a
 	LOOKAHEAD_SUGAR(ANIME_TOKEN_OPENBRACE); 
 	if (!(lookahead_match_huh)) { break; }; 
 	token_i++; { 
-	  if (anime_data -> racines_nb >= anime_racines_size) { break; }; 
+	  if (anime_data -> racines_nb >= ANIME_RACINES_SIZE) { break; }; 
 	  CHECK_IDENT("qui"  ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_IDENT(); anime_data -> racines_qui[anime_data -> racines_nb] = anime__string_stack__push_lookup(anime_data, identval); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("x"    ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); LOOKAHEAD_THEN_READ_SIGN(); READ_FLOAT(); anime_data -> racines_x[anime_data -> racines_nb] = floatval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("y"    ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); LOOKAHEAD_THEN_READ_SIGN(); READ_FLOAT(); anime_data -> racines_y[anime_data -> racines_nb] = floatval; CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 

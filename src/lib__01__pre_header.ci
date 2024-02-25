@@ -1,80 +1,31 @@
-typedef signed char		int8_t;
-typedef int8_t                  int08_t;
-typedef unsigned char		uint8_t;
-typedef	short			int16_t;
-typedef	unsigned short		uint16_t;
-typedef int			int32_t;
-typedef unsigned int		uint32_t;
-typedef long long		int64_t;
-typedef unsigned long long	uint64_t;
-typedef __SIZE_TYPE__ size_t;  // SIZEOF(…) 
-typedef long ssize_t; 
-typedef int64_t off_t;
+#ifndef LIB__01__PRE_HEADER_CI
+#define LIB__01__PRE_HEADER_CI
 
-typedef unsigned int uint_t;
+// RL: Les enum-s doivent être définis avant les macros, sinon des conflits se produisent. 
+// RL: Or les enum-s sont bons à avoir pour en disposer dans le débugueur. 
+// RL: En conséquence, ce fichier doit être inclu avant tout autre header. 
+// RL: Ce fichier ne devrait contenir rien d’autre. 
+// RL: Ce fichier devrait être aussi petit que possible. 
 
-typedef signed char      int24_packed_t[3];
-typedef int32_t          int24_unpacked_t;
-typedef int24_unpacked_t int24_t;
 
-typedef unsigned char     uint24_packed_t[3];
-typedef uint32_t          uint24_unpacked_t;
-typedef uint24_unpacked_t uint24_t;
 
-#ifdef ENDIAN_BIG 
-#define INT24_PACKED_ASSIGN_UNPACKED(a,v) { signed char * p = (a); const int24_unpacked_t u = (v); const signed char * q = (const signed char *)&u; q++; *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
-#error 
-#else 
-#define INT24_PACKED_ASSIGN_UNPACKED(a,v) { signed char * p = (a); const int24_unpacked_t u = (v); const signed char * q = (const signed char *)&u; *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
-#define INT24_PACKED_READ(a,v) { v = 0; signed char * p = (signed char *)&v; const signed char * q = (a); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
-#define INT24_PACKED_WRITE(a,v) { const signed char * INT24_PACKED_WRITE_p = (const signed char *)&v; signed char * q = (signed char *)(a); *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; } 
-#define UINT24_PACKED_READ(a,v) { v = 0; unsigned char * p = (unsigned char *)&v; const unsigned char * q = (a); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
-#define UINT24_PACKED_WRITE(a,v) { const unsigned char * INT24_PACKED_WRITE_p = (const unsigned char *)&v; unsigned char * q = (unsigned char *)(a); *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; } 
-#endif 
-#define INT24_PACKED_ASSIGN_PACKED(a1,a2) { signed char * p = (a1); const signed char * q = (a2); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
-
-#ifndef STRINGIFY
-#define STRINGIFY(s) STRINGIFY_AUX(s)
-#define STRINGIFY_AUX(s) #s
-#endif 
-
-#define xglue(a,b) a ## b
-#define glue(a,b) xglue(a,b)
-#if 0
-#define glue3(a,b,c) glue(glue(a,b),c)
-#else
-#define xglue3(a,b,c) a##b##c
-#define glue3(a,b,c) xglue3(a,b,c)
+//#include <unistd.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/unistd.h.html */ /* https://en.wikipedia.org/wiki/Unistd.h */ 
+//#ifndef __bool_true_false_are_defined /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/stdbool.h.html */ 
+#ifndef false
+enum { false = (0 != 0) }; 
+enum { true = (0 == 0) }; 
+#  define BOOL_MAX(a,b) (((a)>(b))?(a):(b)) 
+#  define BOOL_ABS(a) (((a)>0)?(a):(-(a)))
+enum { undecided_boolean = 1+BOOL_MAX(BOOL_ABS(false),BOOL_ABS(true)) }; 
+#  undef BOOL_ABS
+#  undef BOOL_MAX
+#  define false false
+#  define true true
+#  define undecided_boolean undecided_boolean
+enum { __bool_true_false_are_defined = 1 }; 
+#  define __bool_true_false_are_defined __bool_true_false_are_defined
 #endif
-#define xglue4(a,b,c,d) a##b##c##d
-#define glue4(a,b,c,d) xglue4(a,b,c,d)
 
-
-
-#define ASSERT_COMPILE_LOCAL(a) { int tab[((a) ? 1 : (-1))]; }; 
-#define ASSERT_COMPILE_TOPLEVEL_OLD_001(a) static int glue(tab,__LINE__)[((a) ? 1 : (-1))];  
-#define ASSERT_COMPILE_TOPLEVEL(cond) static void glue(check_and_assert__,__LINE__)(void) { enum { tab_size = ((cond) ? 1 : (-1)) }; int tab[tab_size]; };  
-
-#if 0 
-// Does not work as the compiler complains about "That does not declare anything". 
-// The glue trick does not work as the __FILE__ macro returns a string, and not an ident. 
-#define ASSERT_STATIC(cond) struct glue4(assert_static_struct__,__FILE__,__,__LINE__) ASSERT_COMPILE((cond)); 
-#define ASSERT_STATIC_(cond) struct { int :((cond) ? 0 : (-1)); }; 
-#define ASSERT_STATIC_MESSAGE(cond,msg) struct ASSERT_COMPILE((cond)); 
-#define STATIC_ASSERT ASSERT_STATIC
-ASSERT_STATIC(1 == sizeof(int8_t)); 
-#endif 
-
-static void assert_compile__check_type_size(void) {
-  ASSERT_COMPILE_LOCAL(1 == sizeof(int8_t)); 
-  ASSERT_COMPILE_LOCAL(1 == sizeof(uint8_t)); 
-  ASSERT_COMPILE_LOCAL(2 == sizeof(int16_t)); 
-  ASSERT_COMPILE_LOCAL(2 == sizeof(uint16_t)); 
-  ASSERT_COMPILE_LOCAL(4 == sizeof(int32_t)); 
-  ASSERT_COMPILE_LOCAL(4 == sizeof(uint32_t)); 
-  ASSERT_COMPILE_LOCAL(8 == sizeof(int64_t)); 
-  ASSERT_COMPILE_LOCAL(8 == sizeof(uint64_t)); 
-}; 
 
 
 #ifndef INT8_MAX
@@ -82,23 +33,29 @@ static void assert_compile__check_type_size(void) {
 //enum { INT8_MAX  = ~(1   <<  7) }; // RL: Would be right on 8-bits integer. 
 //enum { INT8_MAX  = -(1   <<  7) }; // RL: Would be wrong on 8-bits integer. 
 enum { INT8_MAX  = (1   <<  0) + (1   <<  1) + (1   <<  2) + (1   <<  3) + (1   <<  4) + (1   <<  5) + (1   <<  6) }; 
+//enum { INT8_MAX  = (1   <<  7) - 1 }; 
 #endif 
 #ifndef UINT8_MAX
-enum { UINT8_MAX  = (1   <<  0) + (1   <<  1) + (1   <<  2) + (1   <<  3) + (1   <<  4) + (1   <<  5) + (1   <<  6) + (1   <<  7) }; 
+//enum { UINT8_MAX  = (1   <<  0) + (1   <<  1) + (1   <<  2) + (1   <<  3) + (1   <<  4) + (1   <<  5) + (1   <<  6) + (1   <<  7) }; 
+enum { UINT8_MAX  = INT8_MAX + (1   <<  7) }; 
 #endif 
 #ifndef INT16_MAX
 enum { INT16_MAX = (1   <<  0) + (1   <<  1) + (1   <<  2) + (1   <<  3) + (1   <<  4) + (1   <<  5) + (1   <<  6) + (1   <<  7) + 
                    (1   <<  8) + (1   <<  9) + (1   << 10) + (1   << 11) + (1   << 12) + (1   << 13) + (1   << 14) }; 
 #endif
-#ifndef INT24_MAX
+#ifndef UINT16_MAX
+enum { UINT16_MAX = INT16_MAX + (1   << 15) }; 
+#endif
+#ifndef INT24_MAX 
 enum { INT24_MAX = (1L  <<  0) + (1L  <<  1) + (1L  <<  2) + (1L  <<  3) + (1L  <<  4) + (1L  <<  5) + (1L  <<  6) + (1L  <<  7) + 
                    (1L  <<  8) + (1L  <<  9) + (1L  << 10) + (1L  << 11) + (1L  << 12) + (1L  << 13) + (1L  << 14) + (1L  << 15) + 
                    (1L  << 16) + (1L  << 17) + (1L  << 18) + (1L  << 19) + (1L  << 20) + (1L  << 21) + (1L  << 22) }; 
 #endif 
-#ifndef UINT24_MAX
-enum { UINT24_MAX = (1L  <<  0) + (1L  <<  1) + (1L  <<  2) + (1L  <<  3) + (1L  <<  4) + (1L  <<  5) + (1L  <<  6) + (1L  <<  7) + 
+#ifndef UINT24_MAX 
+/*enum { UINT24_MAX = (1L  <<  0) + (1L  <<  1) + (1L  <<  2) + (1L  <<  3) + (1L  <<  4) + (1L  <<  5) + (1L  <<  6) + (1L  <<  7) + 
                     (1L  <<  8) + (1L  <<  9) + (1L  << 10) + (1L  << 11) + (1L  << 12) + (1L  << 13) + (1L  << 14) + (1L  << 15) + 
-                    (1L  << 16) + (1L  << 17) + (1L  << 18) + (1L  << 19) + (1L  << 20) + (1L  << 21) + (1L  << 22) + (1L  << 23) }; 
+                    (1L  << 16) + (1L  << 17) + (1L  << 18) + (1L  << 19) + (1L  << 20) + (1L  << 21) + (1L  << 22) + (1L  << 23) }; */
+enum { UINT24_MAX = INT24_MAX + (1   << 23) }; 
 #endif 
 #ifndef INT32_MAX
 enum { INT32_MAX = (1L  <<  0) + (1L  <<  1) + (1L  <<  2) + (1L  <<  3) + (1L  <<  4) + (1L  <<  5) + (1L  <<  6) + (1L  <<  7) + 
@@ -106,6 +63,9 @@ enum { INT32_MAX = (1L  <<  0) + (1L  <<  1) + (1L  <<  2) + (1L  <<  3) + (1L  
                    (1L  << 16) + (1L  << 17) + (1L  << 18) + (1L  << 19) + (1L  << 20) + (1L  << 21) + (1L  << 22) + (1L  << 23) + 
                    (1L  << 24) + (1L  << 25) + (1L  << 26) + (1L  << 27) + (1L  << 28) + (1L  << 29) + (1L  << 30) }; 
 #endif 
+#ifndef UINT32_MAX
+enum { UINT32_MAX = INT32_MAX + (1L  << 31) }; 
+#endif
 #ifndef INT48_MAX
 enum { INT48_MAX = (1LL <<  0) + (1LL <<  1) + (1LL <<  2) + (1LL <<  3) + (1LL <<  4) + (1LL <<  5) + (1LL <<  6) + (1LL <<  7) + 
                    (1LL <<  8) + (1LL <<  9) + (1LL << 10) + (1LL << 11) + (1LL << 12) + (1LL << 13) + (1LL << 14) + (1LL << 15) + 
@@ -114,6 +74,9 @@ enum { INT48_MAX = (1LL <<  0) + (1LL <<  1) + (1LL <<  2) + (1LL <<  3) + (1LL 
                    (1LL << 32) + (1LL << 33) + (1LL << 34) + (1LL << 35) + (1LL << 36) + (1LL << 37) + (1LL << 38) + (1LL << 39) + 
                    (1LL << 40) + (1LL << 41) + (1LL << 42) + (1LL << 43) + (1LL << 44) + (1LL << 45) + (1LL << 46) }; 
 #endif 
+#ifndef UINT48_MAX
+enum { UINT48_MAX = INT48_MAX + (1LL << 31) }; 
+#endif
 #ifndef INT64_MAX
 enum { INT64_MAX = (1LL <<  0) + (1LL <<  1) + (1LL <<  2) + (1LL <<  3) + (1LL <<  4) + (1LL <<  5) + (1LL <<  6) + (1LL <<  7) + 
                    (1LL <<  8) + (1LL <<  9) + (1LL << 10) + (1LL << 11) + (1LL << 12) + (1LL << 13) + (1LL << 14) + (1LL << 15) + 
@@ -124,13 +87,16 @@ enum { INT64_MAX = (1LL <<  0) + (1LL <<  1) + (1LL <<  2) + (1LL <<  3) + (1LL 
                    (1LL << 48) + (1LL << 49) + (1LL << 50) + (1LL << 51) + (1LL << 52) + (1LL << 53) + (1LL << 54) + (1LL << 55) + 
                    (1LL << 56) + (1LL << 57) + (1LL << 58) + (1LL << 59) + (1LL << 60) + (1LL << 61) + (1LL << 62) }; 
 #endif 
+#ifndef UINT64_MAX
+enum { UINT64_MAX = INT64_MAX + (1LL << 63) }; 
+#endif
  
 enum { INT_BYTESIZE = sizeof(int) }; 
 enum { INT_BITSIZE = (INT_BYTESIZE << 3) }; 
 #ifndef INT_MAX 
 enum { INT_MAX = (8 == INT_BITSIZE ? INT8_MAX : 16 == INT_BITSIZE ? INT16_MAX : 32 == INT_BITSIZE ? INT32_MAX : 64 == INT_BITSIZE ? INT64_MAX : -1) }; 
 #endif 
-static int INT_MAX__ASSERT_DEFINED[INT_MAX > 0 ? 1 : -1] = {}; 
+static char INT_MAX__ASSERT_DEFINED[INT_MAX > 0 ? 1 : -1] = {}; 
 
 #ifndef INT8_MIN
 enum { INT8_MIN   =  (~INT8_MAX) }; 
@@ -151,26 +117,26 @@ enum { INT64_MIN  = (~INT64_MAX) };
 enum { INT_MIN    =   (~INT_MAX) }; 
 #endif 
 
-#ifndef SATURATED_CAST_TO_INT16
-#define SATURATED_CAST_TO_INT16(a) ((((int)(a)) >= INT16_MAX) ? ((int16_t) INT16_MAX) : ((((int)(a)) <= INT16_MIN) ? ((int16_t) INT16_MIN) : ((int16_t) ((int)(a))))) 
+#ifndef UINT8_MIN
+enum { UINT8_MIN   =  0 }; 
+#endif 
+#ifndef UINT16_MIN
+enum { UINT16_MIN  = 0 }; 
+#endif 
+#ifndef UINT24_MIN
+enum { UINT24_MIN  = 0 }; 
+#endif 
+#ifndef UINT32_MIN
+enum { UINT32_MIN  = 0 }; 
+#endif 
+#ifndef UINT64_MIN
+enum { UINT64_MIN  = 0 }; 
+#endif 
+#ifndef UINT_MIN 
+enum { UINT_MIN    = 0 }; 
 #endif 
 
-#if 0 
-#ifdef	_STDIO_H_
-#ifdef stderr 
-static FILE * stderr_FILE = stderr; 
-//#undef stderr 
-#endif 
-#ifdef stdin
-static FILE * stdin_FILE = stdin; 
-//#undef stdin 
-#endif 
-#ifdef stdout 
-static FILE * stdout_FILE = stdout; 
-//#undef stdout 
-#endif 
-#endif 
-#endif 
+
 
 enum {  stdin_d  = 0 }; 
 enum { stdout_d = 1 }; 
@@ -181,299 +147,8 @@ enum { stderr__fdes = stderr_d };
 enum {  stdin__fileno =  stdin_d }; 
 enum { stdout__fileno = stdout_d }; 
 enum { stderr__fileno = stderr_d }; 
-//enum { stdin  =  stdin_d }; 
-//enum { stdout = stdout_d }; 
-//enum { stderr = stderr_d }; 
 
-
-#ifndef	_STDIO_H_
-
-#ifndef NULL 
-#define NULL ((void *) 0) 
-#endif 
 enum { EOF = (-1) }; 
 enum { EOL = '\n' }; 
-enum { F_OK = 0, X_OK = (1 << 0), W_OK = (1 << 1), R_OK = (1 << 2)}; 
 
-enum { O_RDONLY   = 0x0000 }; 
-enum { O_WRONLY   = 0x0001 }; 
-enum { O_RDWR     = 0x0002 }; 
-enum { O_ACCMODE  = 0x0003 }; 
-enum { O_NONBLOCK = 0x0004 }; 
-enum { O_APPEND   = 0x0008 }; 
-enum { O_TRUNC    = 0x0400 }; 
-
-#ifndef __TINYC__ 
-
-#define	O_SHLOCK	0x0010		/* open with shared file lock */
-#define	O_EXLOCK	0x0020		/* open with exclusive file lock */
-#define	O_ASYNC		0x0040		/* signal pgrp when data ready */
-#define	O_FSYNC		O_SYNC		/* source compatibility: do not use */
-#define O_NOFOLLOW  	0x0100		/* don't follow symlinks */
-#define	O_CREAT		0x0200		/* create if nonexistant */
-#define	O_EXCL		0x0800		/* error if already exists */
-
-#define AT_FDCWD		-2
-#define AT_EACCESS		0x0010	/* Use effective ids in access check */
-#define AT_SYMLINK_NOFOLLOW	0x0020	/* Act on the symlink itself not the target */
-#define AT_SYMLINK_FOLLOW	0x0040	/* Act on target of symlink */
-#define AT_REMOVEDIR		0x0080	/* Path refers to directory */
-
-#define	O_EVTONLY	0x8000		/* descriptor requested for event notifications only */
-#define	O_NOCTTY	0x20000		/* don't assign controlling terminal */
-#define O_DIRECTORY	0x100000
-#define O_SYMLINK	0x200000	/* allow open of a symlink */
-#define	O_CLOEXEC	0x1000000	/* implicitly set FD_CLOEXEC */
-
-#define	FAPPEND		O_APPEND	/* kernel/compat */
-#define	FASYNC		O_ASYNC		/* kernel/compat */
-#define	FFSYNC		O_FSYNC		/* kernel */
-#define	FFDSYNC		O_DSYNC		/* kernel */
-#define	FNONBLOCK	O_NONBLOCK	/* kernel */
-#define	FNDELAY		O_NONBLOCK	/* compat */
-#define	O_NDELAY	O_NONBLOCK	/* compat */
-
-#define	F_DUPFD		0		/* duplicate file descriptor */
-#define	F_GETFD		1		/* get file descriptor flags */
-#define	F_SETFD		2		/* set file descriptor flags */
-#define	F_GETFL		3		/* get file status flags */
-#define	F_SETFL		4		/* set file status flags */
-#define	F_GETOWN	5		/* get SIGIO/SIGURG proc/pgrp */
-#define F_SETOWN	6		/* set SIGIO/SIGURG proc/pgrp */
-#define	F_GETLK		7		/* get record locking information */
-#define	F_SETLK		8		/* set record locking information */
-#define	F_SETLKW	9		/* F_SETLK; wait if blocked */
-#define F_SETLKWTIMEOUT 10		/* F_SETLK; wait if blocked, return on timeout */
-#define F_FLUSH_DATA    40
-#define F_CHKCLEAN      41              /* Used for regression test */
-#define F_PREALLOCATE   42		/* Preallocate storage */
-#define F_SETSIZE       43		/* Truncate a file without zeroing space */	
-#define F_RDADVISE      44              /* Issue an advisory read async with no copy to user */
-#define F_RDAHEAD       45              /* turn read ahead off/on for this fd */
-#define F_NOCACHE       48              /* turn data caching off/on for this fd */
-#define F_LOG2PHYS	49		/* file offset to device offset */
-#define F_GETPATH       50              /* return the full path of the fd */
-#define F_FULLFSYNC     51		/* fsync + ask the drive to flush to the media */
-#define F_PATHPKG_CHECK 52              /* find which component (if any) is a package */
-#define F_FREEZE_FS     53              /* "freeze" all fs operations */
-#define F_THAW_FS       54              /* "thaw" all fs operations */
-#define	F_GLOBAL_NOCACHE 55		/* turn data caching off/on (globally) for this file */
-#define F_ADDSIGS	59		/* add detached signatures */
-#define F_ADDFILESIGS	61		/* add signature from same file (used by dyld for shared libs) */
-#define F_NODIRECT	62		/* used in conjunction with F_NOCACHE to indicate that DIRECT, synchonous writes */
-#define F_GETPROTECTIONCLASS	63		/* Get the protection class of a file from the EA, returns int */
-#define F_SETPROTECTIONCLASS	64		/* Set the protection class of a file for the EA, requires int */
-#define F_LOG2PHYS_EXT  65		/* file offset to device offset, extended */
-#define	F_GETLKPID		66		/* get record locking information, per-process */
-#define F_SETBACKINGSTORE	70	/* Mark the file as being the backing store for another filesystem */
-#define F_GETPATH_MTMINFO	71 	/* return the full path of the FD, but error in specific mtmd circumstances */
-#define F_GETCODEDIR		72	/* Returns the code directory, with associated hashes, to the caller */
-#define F_SETNOSIGPIPE		73	/* No SIGPIPE generated on EPIPE */
-#define F_GETNOSIGPIPE		74	/* Status of SIGPIPE for this fd */
-#define F_TRANSCODEKEY		75 	/* For some cases, we need to rewrap the key for AKS/MKB */
-#define F_SINGLE_WRITER		76	/* file being written to a by single writer... if throttling enabled, writes */
-#define F_GETPROTECTIONLEVEL	77	/* Get the protection version number for this filesystem */
-#define F_FINDSIGS		78	/* Add detached code signatures (used by dyld for shared libs) */
-#define	F_DUPFD_CLOEXEC		67	/* mark the dup with FD_CLOEXEC */
-
-/* file descriptor flags (F_GETFD, F_SETFD) */
-#define	FD_CLOEXEC	1		/* close-on-exec flag */
-
-/* record locking flags (F_GETLK, F_SETLK, F_SETLKW) */
-#define	F_RDLCK		1		/* shared or read lock */
-#define	F_UNLCK		2		/* unlock */
-#define	F_WRLCK		3		/* exclusive or write lock */
-
-/* lock operations for flock(2) */
-#define	LOCK_SH		0x01		/* shared file lock */
-#define	LOCK_EX		0x02		/* exclusive file lock */
-#define	LOCK_NB		0x04		/* don't block when locking */
-#define	LOCK_UN		0x08		/* unlock file */
-
-#endif /* __TINYC__ */ 
-
-enum { SEEK_SET = 0 }; 
-enum { SEEK_CUR = 1 }; 
-enum { SEEK_END = 2 }; 
- 
-enum { EBADF = 9 }; 
-
-#endif 
-
-
-
-
-#ifndef min 
-# define min(a,b) (((a)<(b))?(a):(b)) 
-#endif 
-#ifndef MIN 
-# define MIN min 
-#endif 
-
-#ifndef max 
-# define max(a,b) (((a)>(b))?(a):(b)) 
-#endif 
-#ifndef MAX 
-# define MAX max 
-#endif 
-
-#ifndef max3 
-# define max3(a1,a2,a3) (((a3)>(a2))?(MAX((a1),(a3))):(MAX((a1),(a2)))) 
-#endif 
-#ifndef MAX3 
-# define MAX3 max3 
-#endif 
-
-#ifndef max4 
-# define max4(a1,a2,a3,a4) MAX3((a1),(a2),(((a4)>(a3))?(a4):(a3))) 
-#endif 
-#ifndef MAX4 
-# define MAX4 max4 
-#endif 
-
-#ifndef max5 
-# define max5(a1,a2,a3,a4,a5) MAX4((a1),(a2),(a3),(MAX((a4),(a5)))) 
-#endif 
-#ifndef MAX5 
-# define MAX5 max5 
-#endif 
-
-#ifndef max6 
-# define max6(a1,a2,a3,a4,a5,a6) MAX5((a1),(a2),(a3),(a4),(MAX((a5),(a6)))) 
-#endif 
-#ifndef MAX6 
-# define MAX6 max6 
-#endif 
-
-#ifndef max7 
-# define max7(a1,a2,a3,a4,a5,a6,a7) MAX6((a1),(a2),(a3),(a4),(a5),(MAX((a6),(a7)))) 
-#endif 
-#ifndef MAX7 
-# define MAX7 max7 
-#endif 
-
-#ifndef max8
-# define max8(a1,a2,a3,a4,a5,a6,a7,a8) MAX7((a1),(a2),(a3),(a4),(a5),(a6),(MAX((a7),(a8)))) 
-#endif 
-#ifndef MAX8 
-# define MAX8 max8 
-#endif 
-
-#ifndef not 
-# define not(a) (!(a)) 
-#endif 
-
-
-
-#ifndef BOOL_ABS 
-# define BOOL_ABS(a) (((a)>0)?(a):(-(a)))
-#endif 
-
-//#include <unistd.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/unistd.h.html */ /* https://en.wikipedia.org/wiki/Unistd.h */ 
-//#ifndef __bool_true_false_are_defined /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/stdbool.h.html */ 
-#ifndef false
-enum { false = (0 != 0) }; 
-enum { true = (0 == 0) }; 
-enum { undecided_boolean = 1+MAX(BOOL_ABS(false),BOOL_ABS(true)) }; 
-#define false false
-#define true true
-#define undecided_boolean undecided_boolean
-#  define __bool_true_false_are_defined 1
-#endif
-
-static void assert_compile__check_boolean_all_different(void) {
-  ASSERT_COMPILE_LOCAL(false             != true             ); 
-  ASSERT_COMPILE_LOCAL(true              != undecided_boolean); 
-  ASSERT_COMPILE_LOCAL(undecided_boolean != false            ); 
-}; 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//extern void assert(int); 
-extern char * strcpy(char *restrict dst, const char *restrict src);
-//extern char * strncpy(char *restrict dst, const char *restrict src, size_t n);
-extern size_t strlcpy(char * restrict dst, const char * restrict src, size_t size); // Src must be a true c-string (id est null terminated). 
-extern size_t strlcat(char * restrict dst, const char * restrict src, size_t size);
-extern void bzero(void *s, size_t n);
-extern ssize_t write(int fildes, const void *buf, size_t nbyte); 
-extern size_t strlen(const char *s);
-extern size_t strnlen(const char *s, size_t maxlen);
-extern void * memset(void *b, int c, size_t len); 
-extern void * alloca(size_t size);
-extern int  asprintf(char **ret, const char *format, ...);
-extern void free(void *ptr);
-extern void * malloc(size_t size);
-extern int access(const char *path, int amode);
-//extern int stat(const char *restrict path, struct stat *restrict buf);
-extern int bcmp(const void *s1, const void *s2, size_t n); 
-extern void bcopy(const void *src, void *dst, size_t len); 
-extern void * memcpy(void *restrict dst, const void *restrict src, size_t n);
-extern void srandomdev(void);
-extern long random(void);
-extern int open(const char *path, int oflag, ...);
-extern ssize_t read(int fildes, void *buf, size_t nbyte);
-extern int close(int fildes); 
-extern void abort(void);
-extern off_t lseek(int fildes, off_t offset, int whence);
-extern int strcmp(const char *s1, const char *s2);
-extern int strncmp(const char *s1, const char *s2, size_t len);
-extern int strcasecmp(const char *s1, const char *s2);
-extern int strcasencmp(const char *s1, const char *s2, size_t len);
-extern int atoi(const char *str); 
-extern void exit(int status);
-extern int isatty(int fd); 
-extern int snprintf(char * str, size_t size, const char * format, ...); 
-extern int tolower(int c); 
-extern int fcntl(int fd, int cmd, ...); 
-
-#ifndef errno
-int *__errno(void);
-#define	errno (*__errno())
-#endif /* errno */
-
- 
-
-#define IDIV_ROUNDUP(dividend,divisor) (((dividend) / (divisor)) + ((0 == (dividend % divisor)) ? 0 : 1)) 
-
-//extern int fputs(const char *restrict s, FILE *restrict stream);
-//extern int fputc(int c, FILE *stream);
-//extern int dputs(const int handle, const char * restrict s);
-//extern int dputc(const int handle, const int c);
-
-static int dputc(const int handle, const int c) {
-  return write(handle, &c, 1); 
-}; 
-
-static int dputs(const int handle, const char *restrict s) { 
-  return write(handle, s, strlen(s)); 
-}; 
-
-#if 0 
-void assert(int test) {
-  if (!(test)) abort(); 
-}; 
-#endif 
-
-#ifndef assert 
-#define assert(b) {if (!(b)) { dputs(stderr_d, __FUNCTION__); abort(); };};
-//#define assert_message(b,m) {if (!(b)) { dputs(stderr, __FUNCTION__ ": "); dputs(stderr, STRINGIFY(__LINE__) ": "); dputs(stderr, m); dputs(stderr, "\n"); abort(); };};
-//#define assert_message(b,m) {if (!(b)) { dputs(stderr, __FUNCTION__ ": "); dputs(stderr, m); dputs(stderr, "\n"); abort(); };};
-//#define assert_message(b,m) {if (!(b)) { dputs(stderr, __FUNCTION__); dputs(stderr, m); dputs(stderr, "\n"); abort(); };};
-#endif 
-#define assert_message(b,m) {if (!(b)) { dputs(stderr_d, __FILE__); dputs(stderr_d, ": <"); dputs(stderr_d, __FUNCTION__); dputs(stderr_d, ">: "); dputs(stderr_d, STRINGIFY(__LINE__)); dputs(stderr_d, ": "); dputs(stderr_d, m); dputs(stderr_d, "\n"); abort(); };};
-
-#define ASSERT_DEBUG_STOP assert 
-#define ASSERT_DEBUG_ABORT_IF_TRUE(e) assert(!(e)); if (e) 
-
-//extern int main(const int argc, const char * argv[]);
-
+#endif /* LIB__01__PRE_HEADER_CI */

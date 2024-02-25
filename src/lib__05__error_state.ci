@@ -1,11 +1,8 @@
+#ifndef LIB__05__ERROR_STATE_CI
+#define LIB__05__ERROR_STATE_CI
+
 // --------------------------------------------------------------------------------------------------- 
 // ERROR STATE 
-
-static void error_state_print(const int error_state[], const int error_state_array_size) {
-  for (int i = 0; i < error_state_array_size; i++) {
-    dputs(stderr_d, "error_state["); dputn(stderr_d, i); dputs(stderr_d, "] = "); dputn(stderr_d, error_state[i]); dputc(stderr_d, '\n'); 
-  }; 
-}; 
 
 static void error_state__assign3(int error_state[], const int a1, const int a2, const int a3) {
   error_state[0] = a1; 
@@ -27,3 +24,14 @@ struct error_state_t {
 typedef struct error_state_t error_state_t[1]; 
 
 
+
+
+#if 0 
+static void error_state_print(const int error_state[], const int error_state_array_size) {
+  for (int i = 0; i < error_state_array_size; i++) {
+    dputs(stderr_d, "error_state["); dputn(stderr_d, i); dputs(stderr_d, "] = "); dputn(stderr_d, error_state[i]); dputc(stderr_d, '\n'); 
+  }; 
+}; 
+#endif
+
+#endif /* LIB__05__ERROR_STATE_CI */

@@ -1,45 +1,194 @@
+#ifndef LIB__02__HEADER_CI
+#define LIB__02__HEADER_CI
 
-#ifndef alloca
-#if 0
-#define alloca(bytesize_) { size_t bytesize = (bytesize_); char a[bytesize]; &a } 
-// Because stack-allocated space is deallocated when the current function returns. 
-// The difficulty here that this expression is a GCC construct and is not portable. 
+// RL: Ce fichier est un header commun à tous lib-ci. 
+// RL: Quand on veut utiliser un lib-ci, ce fichier devrait toujours être inclu. 
+
+#ifndef SATURATED_CAST_TO_INT16
+#  define SATURATED_CAST_TO_INT16(a) ((((long long int)(a)) >= INT16_MAX) ? ((int16_t) INT16_MAX) : ((((long long int)(a)) <= INT16_MIN) ? ((int16_t) INT16_MIN) : ((int16_t) ((long long int)(a))))) 
+#endif 
+
+#if 1 
+#  include <stdint.h>  /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/stdint.h.html  */
 #else 
-#define alloca __builtin_alloca 
+typedef signed char		int8_t;
+typedef int8_t                  int08_t;
+typedef unsigned char		uint8_t;
+typedef	short			int16_t;
+typedef	unsigned short		uint16_t;
+typedef int			int32_t;
+typedef unsigned int		uint32_t;
+typedef long long		int64_t;
+typedef unsigned long long	uint64_t;
+typedef __SIZE_TYPE__ size_t;  // SIZEOF(…) 
+typedef long ssize_t; 
+typedef int64_t off_t;
+typedef unsigned int uint_t;
 #endif 
+
+typedef int8_t                  int08_t;
+
+typedef signed char      int24_packed_t[3];
+typedef int32_t          int24_unpacked_t;
+typedef int24_unpacked_t int24_t;
+
+typedef unsigned char     uint24_packed_t[3];
+typedef uint32_t          uint24_unpacked_t;
+typedef uint24_unpacked_t uint24_t;
+
+
+#ifndef ENDIANNESS 
+#  error ENDIANNESS is not defined 
+#else
+#define little 1
+#define big 2 
+#if ENDIANNESS == big
+#  define INT24_PACKED_ASSIGN_UNPACKED(a,v) { signed char * p = (a); const int24_unpacked_t u = (v); const signed char * q = (const signed char *)&u; q++; *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
+#  error NOT WRITTEN YET 
+#elif ENDIANNESS == little
+#  define INT24_PACKED_ASSIGN_UNPACKED(a,v) { signed char * p = (a); const int24_unpacked_t u = (v); const signed char * q = (const signed char *)&u; *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
+#  define INT24_PACKED_READ(a,v) { v = 0; signed char * p = (signed char *)&v; const signed char * q = (a); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
+#  define INT24_PACKED_WRITE(a,v) { const signed char * INT24_PACKED_WRITE_p = (const signed char *)&v; signed char * q = (signed char *)(a); *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; } 
+#  define UINT24_PACKED_READ(a,v) { v = 0; unsigned char * p = (unsigned char *)&v; const unsigned char * q = (a); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
+#  define UINT24_PACKED_WRITE(a,v) { const unsigned char * INT24_PACKED_WRITE_p = (const unsigned char *)&v; unsigned char * q = (unsigned char *)(a); *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; INT24_PACKED_WRITE_p++; q++; *q = *INT24_PACKED_WRITE_p; } 
+#else 
+#  error Unknown endianness: ENDIANNESS
+#endif 
+#undef little
+#undef big
+#endif 
+#define INT24_PACKED_ASSIGN_PACKED(a1,a2) { signed char * p = (a1); const signed char * q = (a2); *p = *q; p++; q++; *p = *q; p++; q++; *p = *q; } 
+
+
+
+#ifndef STRINGIFY
+#  define STRINGIFY(s) STRINGIFY_AUX(s)
+#  define STRINGIFY_AUX(s) #s
+#endif 
+
+#ifndef glue2 
+#  define xglue2(a,b) a ## b
+#  define glue2(a,b) xglue(a,b)
+#endif 
+#ifndef glue3
+#  define xglue3(a,b,c) a##b##c
+#  define glue3(a,b,c) xglue3(a,b,c)
+#endif
+#ifndef glue4 
+#  define xglue4(a,b,c,d) a##b##c##d
+#  define glue4(a,b,c,d) xglue4(a,b,c,d)
+#endif 
+#ifndef glue 
+#  define glue glue2 
+#endif 
+#ifndef xglue 
+#  define xglue xglue2 
+#endif 
+
+#define ASSERT_COMPILE__LOCAL(a) { int tab[((a) ? 1 : (-1))]; }; 
+#define ASSERT_COMPILE__TOPLEVEL(cond) static void glue(check_and_assert_at_compile_time__,__LINE__)(void) { enum { tab_size = ((cond) ? 1 : (-1)) }; int tab[tab_size]; };  
+#define ASSERT_DEBUG_ABORT_IF_TRUE(e) assert(!(e)); if (true) 
+
+
+static void assert_compile__check_boolean_all_different(void) {
+  ASSERT_COMPILE__LOCAL(false             != true             ); 
+  ASSERT_COMPILE__LOCAL(true              != undecided_boolean); 
+  ASSERT_COMPILE__LOCAL(undecided_boolean != false            ); 
+}; 
+
+static void assert_at_compile_time__check_type_size(void) {
+  ASSERT_COMPILE__LOCAL(1 == sizeof(int8_t)); 
+  ASSERT_COMPILE__LOCAL(1 == sizeof(uint8_t)); 
+  ASSERT_COMPILE__LOCAL(2 == sizeof(int16_t)); 
+  ASSERT_COMPILE__LOCAL(2 == sizeof(uint16_t)); 
+  ASSERT_COMPILE__LOCAL(4 == sizeof(int32_t)); 
+  ASSERT_COMPILE__LOCAL(4 == sizeof(uint32_t)); 
+  ASSERT_COMPILE__LOCAL(8 == sizeof(int64_t)); 
+  ASSERT_COMPILE__LOCAL(8 == sizeof(uint64_t)); 
+}; 
+
+
+
+#ifndef min 
+#  define min(a,b) (((a)<(b))?(a):(b)) 
+#endif 
+#ifndef MIN 
+#  define MIN min 
+#endif 
+
+#ifndef max 
+#  define max(a,b) (((a)>(b))?(a):(b)) 
+#endif 
+#ifndef MAX 
+#  define MAX max 
+#endif 
+
+#ifndef max3 
+#  define max3(a1,a2,a3) (((a3)>(a2))?(MAX((a1),(a3))):(MAX((a1),(a2)))) 
+#endif 
+#ifndef MAX3 
+#  define MAX3 max3 
+#endif 
+
+#ifndef max4 
+#  define max4(a1,a2,a3,a4) MAX3((a1),(a2),(((a4)>(a3))?(a4):(a3))) 
+#endif 
+#ifndef MAX4 
+#  define MAX4 max4 
+#endif 
+
+#ifndef max5 
+#  define max5(a1,a2,a3,a4,a5) MAX4((a1),(a2),(a3),(MAX((a4),(a5)))) 
+#endif 
+#ifndef MAX5 
+#  define MAX5 max5 
+#endif 
+
+#ifndef max6 
+#  define max6(a1,a2,a3,a4,a5,a6) MAX5((a1),(a2),(a3),(a4),(MAX((a5),(a6)))) 
+#endif 
+#ifndef MAX6 
+#  define MAX6 max6 
+#endif 
+
+#ifndef max7 
+#  define max7(a1,a2,a3,a4,a5,a6,a7) MAX6((a1),(a2),(a3),(a4),(a5),(MAX((a6),(a7)))) 
+#endif 
+#ifndef MAX7 
+#  define MAX7 max7 
+#endif 
+
+#ifndef max8
+#  define max8(a1,a2,a3,a4,a5,a6,a7,a8) MAX7((a1),(a2),(a3),(a4),(a5),(a6),(MAX((a7),(a8)))) 
+#endif 
+#ifndef MAX8 
+#  define MAX8 max8 
+#endif 
+
+#ifndef not 
+#  define not(a) (!(a)) 
 #endif 
 
 
-#ifdef stderr 
-static FILE * stderr_FILE = stderr; 
-//#undef stderr 
-#endif 
-#ifdef stdin
-static FILE * stdin_FILE = stdin; 
-//#undef stdin 
-#endif 
-#ifdef stdout 
-static FILE * stdout_FILE = stdout; 
-//#undef stdout 
-#endif 
+#define IDIV_ROUNDUP(dividend,divisor) (((dividend) / (divisor)) + ((0 == (dividend % divisor)) ? 0 : 1)) 
 
 
 #ifndef abs 
-# define abs(a) (((a)>0)?(a):(-(a)))
+#  define abs(a) (((a)>0)?(a):(-(a)))
 #endif 
 #ifndef ABS 
-# define ABS abs
+#  define ABS abs
 #endif
 
-//#if defined(BSD)  
-#if defined(__OpenBSD__)  
-//extern uint32_t arc4random(void); 
+
+#ifdef STDLIB_PROVIDES_ARC4RANDOM
 #  define random arc4random 
 #endif 
 
+
 // ((VALUE) <  0) ? LOG2(-(VALUE)) : // RL: Does not work. Seems like there's no recursivity in macros. 
 //  ((VALUE) == 0) ? -1 :				
-#define LOG2_POS(VALUE)						\
+#define LOG2_POSITIVE(VALUE)						\
   ((VALUE) <  0) ? -2 :						\
   ((VALUE) == 0) ? ((~0) << ((sizeof((VALUE)) << 3) - 1)) :	\
   ((VALUE) >>  0) == 1 ?  0 :					\
@@ -109,11 +258,11 @@ static FILE * stdout_FILE = stdout;
     ((VALUE) >> 63) == 1 ? 63 :					\
     64 
  
-#define LOG2(VALUE) ((VALUE) < 0 ? LOG2_POS(-(VALUE)) : LOG2_POS(VALUE)) 
+#define LOG2(VALUE) ((VALUE) < 0 ? LOG2_POSITIVE(-(VALUE)) : LOG2_POSITIVE(VALUE)) 
 
 
-#define LOG2_UINT8_POS UINT8_LOG2_POS 
-#define UINT8_LOG2_POS(VALUE)					\
+#define LOG2_UINT8_POS UINT8_LOG2_POSITIVE 
+#define UINT8_LOG2_POSITIVE(VALUE)					\
   ((VALUE) == 0) ? ((~0) << ((sizeof((VALUE)) << 3) - 1)) :	\
     ((VALUE) >>  0) == 1 ?  0 :					\
     ((VALUE) >>  1) == 1 ?  1 :					\
@@ -126,8 +275,8 @@ static FILE * stdout_FILE = stdout;
     8 
 
 #define LOG2_UINT8 UINT8_LOG2 
-//#define UINT8_LOG2(VALUE) ((VALUE) < 0 ? UINT8_LOG2_POS(-(VALUE)) : UINT8_LOG2_POS(VALUE)) 
-#define UINT8_LOG2 UINT8_LOG2_POS 
+//#define UINT8_LOG2(VALUE) ((VALUE) < 0 ? UINT8_LOG2_POSITIVE(-(VALUE)) : UINT8_LOG2_POSITIVE(VALUE)) 
+#define UINT8_LOG2 UINT8_LOG2_POSITIVE 
 
 
 
@@ -143,3 +292,4 @@ enum { RAND_MAX_1FIELD_HALF = RAND_MAX_1FIELD >> 1 } ;
  
  
  
+#endif /* LIB__02__HEADER_CI */

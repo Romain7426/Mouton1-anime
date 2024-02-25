@@ -1,5 +1,8 @@
 #include <unistd.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/unistd.h.html */ /* https://en.wikipedia.org/wiki/Unistd.h */ 
+#include <stdint.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/stdint.h.html */ 
 
+#define STRINGIFYX(s) #s
+#define STRINGIFY(s) STRINGIFYX(s) 
 
 #ifndef __bool_true_false_are_defined /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/stdbool.h.html */ 
 enum { true  = (0 == 0) }; 
@@ -125,9 +128,6 @@ static int cstring__equal_huh(const char * cstr1, const char * cstr2) {
   /* NOT REACHED */
 }; 
 
-enum { WRITE_BUF_SIZE = INT16_MAX }; 
-static char write_buffer[WRITE_BUF_SIZE] = {}; 
-enum { write_buffer_size = sizeof(write_buffer) }; 
 
 #define DIGIT_TO_STRING(d) (			\
 			    (d) == 0 ? "0" :	\
@@ -211,6 +211,10 @@ static int write_string4_ln(const int file_des, const char * cstr1, const char *
 }; 
 
 
+
+/////////////////////////////////////////////
+// WRITE_INT 
+
 #define LOG10_OF_2_AS_MACRO  0.301029995663981195213738894724493026768189881462108541310427461127108189274424509486927252118186172040684
 // log10(256) = log10(2^8) = 8 * log10(2) = 8 * 0.301029… = 2.408239968… ≤ 2.5 
 // => sizeof(n) * log10(256) ≤ 2.5 x sizeof(n) 
@@ -218,11 +222,11 @@ static int write_string4_ln(const int file_des, const char * cstr1, const char *
 enum { WRITE_LONG_LONG_INT_BUFFER__BYTESIZE_MIN = (((sizeof(long long int)) << 1) + ((sizeof(long long int)) >> 1) + 1 + 1) }; 
 static void write_long_long_int__compile_check(void) { 
   //ASSERT_COMPILE(WRITE_BUF_SIZE >= (((sizeof(long long int)) << 1) + ((sizeof(long long int)) >> 1) + 1 + 1)); 
-  ASSERT_COMPILE(WRITE_BUF_SIZE >= WRITE_LONG_LONG_INT_BUFFER__BYTESIZE_MIN); 
+  //ASSERT_COMPILE(WRITE_BUF_SIZE >= WRITE_LONG_LONG_INT_BUFFER__BYTESIZE_MIN); 
 }; 
 
 
-static int write_long_long_int_into_buffer(char * buffer, const int buffer_bytesize, long long int n) { 
+static int write_long_long_unsigned_int_into_buffer(char * buffer, const int buffer_bytesize, long long unsigned int n) { 
   if (0 >= buffer_bytesize) return 0; 
   goto label__body; 
   
@@ -232,9 +236,6 @@ static int write_long_long_int_into_buffer(char * buffer, const int buffer_bytes
   }; 
   
  label__body: { 
-    const int8_t neg_huh = (n < 0); 
-    if (neg_huh) n = -n; 
-    
     char * p; 
     p = buffer + buffer_bytesize; 
     
@@ -250,91 +251,90 @@ static int write_long_long_int_into_buffer(char * buffer, const int buffer_bytes
       p--; 
     }; 
     
-    if (neg_huh) { 
-      if (p == buffer) { goto label__error_buffer_too_small; }; 
-      p--; 
-      *p = '-'; 
-    }; 
-    
     const int bytecopied = (buffer + buffer_bytesize) - p; 
     
-    // Rotate to the front; 
-    //const int shift_bytesize = p - buffer; 
-    //bytecopy(p, buffer, shift_bytesize); 
-    if (p != buffer) { 
-      bytecopy(p, buffer, bytecopied); 
-    }; 
+    // RL: On décale le résultat au début du buffer. 
+    if (p != buffer) { bytecopy(p, buffer, bytecopied); }; 
     return bytecopied; 
   }; 
 }; 
 
-
-static int write_long_long_int_old(const int file_des, long long int n) { 
-  enum { BUF_SIZE = INT16_MAX }; 
-  static char buffer[BUF_SIZE] = {}; 
-  char * p; 
-  p = buffer + BUF_SIZE; 
-  p--; 
-  *p = '\0'; 
-  p--; 
-  for (;;) { 
-    *p = '0' + (n % 10); 
-    n = n / 10; 
-    if (0 == n) break; 
-    if (p == buffer) { return ~0; }; 
-    p--; 
+static int write_long_long_int_into_buffer(char * buffer, const int buffer_bytesize, const long long int n) { 
+  if (0 <= n) { 
+    return write_long_long_unsigned_int_into_buffer(buffer, buffer_bytesize, n); 
   }; 
-  const int len = BUF_SIZE - (p - buffer) - 1; 
-  write(file_des, p, len); 
-  return len; 
+  
+  if (NULL == buffer) return -1; 
+  if (1 >= buffer_bytesize) return -2; 
+  *buffer = '-'; 
+  const int len = write_long_long_unsigned_int_into_buffer(buffer+1, buffer_bytesize-1, -n); 
+  if (0 > len) return len; 
+  return 1+len; 
 }; 
 
-#define write_llint write_long_long_int
-static int write_long_long_int(const int file_des, long long int n) { 
-  //assert(BUF_SIZE >= (((sizeof(n)) << 1) + ((sizeof(n)) >> 1) + 1 + 1)); 
-  //if (BUF_SIZE <= 3) return 2; 
 
-#if 0   
-  if (0 == n) { 
-    write(file_des, "0", 1); 
-    return 1; 
-  }; 
-#endif 
-  
-  const int written_bytesize = write_long_long_int_into_buffer(write_buffer, WRITE_BUF_SIZE,  n); 
-#if 0
-  write_string(STDERR_FILENO, "written_bytesize = "); 
-  write_long_long_int_old(STDERR_FILENO, written_bytesize); 
-  write_eol(STDERR_FILENO); 
-#endif
-  
+#define write_llint write_long_long_int
+static int write_long_long_int(const int file_des, const long long int n) { 
+  char buffer[WRITE_LONG_LONG_INT_BUFFER__BYTESIZE_MIN]; 
+  const int written_bytesize = write_long_long_int_into_buffer(buffer, sizeof(buffer),  n); 
   if (0 >= written_bytesize) return written_bytesize; 
   
-  // removing last '\0' 
+  // RL: removing last '\0' (if any) 
   const int len = written_bytesize - 1; 
-  const char last_char = write_buffer[len]; 
+  const char last_char = buffer[len]; 
   if ('\0' == last_char) { 
-    write(file_des, write_buffer, len); 
+    write(file_des, buffer, len); 
     return len; 
   } 
   else { 
-    write(file_des, write_buffer, written_bytesize); 
+    write(file_des, buffer, written_bytesize); 
     return written_bytesize; 
   }; 
 }; 
 
+#define write_lluint write_long_long_unsigned int
+static int write_long_long_unsigned_int(const int file_des, const long long unsigned int n) { 
+  char buffer[WRITE_LONG_LONG_INT_BUFFER__BYTESIZE_MIN]; 
+  const int written_bytesize = write_long_long_unsigned_int_into_buffer(buffer, sizeof(buffer),  n); 
+  if (0 >= written_bytesize) return written_bytesize; 
+  
+  // RL: removing last '\0' (if any) 
+  const int len = written_bytesize - 1; 
+  const char last_char = buffer[len]; 
+  if ('\0' == last_char) { 
+    write(file_des, buffer, len); 
+    return len; 
+  } 
+  else { 
+    write(file_des, buffer, written_bytesize); 
+    return written_bytesize; 
+  }; 
+}; 
+
+#define write_llint_ln write_long_long_int_ln
+#define write_long_long_int_eol write_long_long_int_ln
 static int write_long_long_int_ln(const int file_des, const long long int n) { 
   const int len1 = write_long_long_int(file_des, n); 
   const int len2 = write_eol(file_des); 
   return len1 + len2; 
 }; 
 
-#define write_long_long_int_eol write_long_long_int_ln
-
-static void write__compile_check(void) { 
-  ASSERT_COMPILE(WRITE_BUF_SIZE >= 3); 
+#define write_lluint_ln write_long_long_unsigned_int_ln
+#define write_long_long_unsigned_int_eol write_long_long_unsigned_int_ln
+static int write_long_long_unsigned_int_ln(const int file_des, const long long unsigned int n) { 
+  const int len1 = write_long_long_unsigned_int(file_des, n); 
+  const int len2 = write_eol(file_des); 
+  return len1 + len2; 
 }; 
 
+
+
+
+
+
+
+////////////////////////////////////////
+// MISC 
 
 static int char_array0__number_huh(const char * token) { 
   if (NULL == token) return false; 
@@ -463,3 +463,73 @@ static int16_t llint__token_get_number_prefix_bytesize(const char * token, int8_
 
 
 
+#if 0 
+
+static int write_long_long_int_into_buffer___OLD(char * buffer, const int buffer_bytesize, long long int n) { 
+  if (0 >= buffer_bytesize) return 0; 
+  goto label__body; 
+  
+ label__error_buffer_too_small: { 
+    //write(STDERR_FILENO, "SMALL", 5); 
+    return ~0; 
+  }; 
+  
+ label__body: { 
+    const int8_t neg_huh = (n < 0); 
+    if (neg_huh) n = -n; 
+    
+    char * p; 
+    p = buffer + buffer_bytesize; 
+    
+    p--; 
+    *p = '\0'; 
+    
+    p--; 
+    for (;;) { 
+      *p = '0' + (n % 10); 
+      n /= 10; 
+      if (0 == n) break; 
+      if (p == buffer) { goto label__error_buffer_too_small; }; 
+      p--; 
+    }; 
+    
+    if (neg_huh) { 
+      if (p == buffer) { goto label__error_buffer_too_small; }; 
+      p--; 
+      *p = '-'; 
+    }; 
+    
+    const int bytecopied = (buffer + buffer_bytesize) - p; 
+    
+    // Rotate to the front; 
+    //const int shift_bytesize = p - buffer; 
+    //bytecopy(p, buffer, shift_bytesize); 
+    if (p != buffer) { 
+      bytecopy(p, buffer, bytecopied); 
+    }; 
+    return bytecopied; 
+  }; 
+}; 
+
+
+static int write_long_long_int_old(const int file_des, long long int n) { 
+  enum { BUF_SIZE = INT16_MAX }; 
+  static char buffer[BUF_SIZE] = {}; 
+  char * p; 
+  p = buffer + BUF_SIZE; 
+  p--; 
+  *p = '\0'; 
+  p--; 
+  for (;;) { 
+    *p = '0' + (n % 10); 
+    n = n / 10; 
+    if (0 == n) break; 
+    if (p == buffer) { return ~0; }; 
+    p--; 
+  }; 
+  const int len = BUF_SIZE - (p - buffer) - 1; 
+  write(file_des, p, len); 
+  return len; 
+}; 
+
+#endif 

@@ -10,12 +10,12 @@
 //#include "anime_data_generation_002_from_trees.h"
 #include "anime_data_generation_003_from_syntax_filtering.h"
 
-#include "anime_string.ci" 
-#include "anime_subr.ci" 
-#include "anime_error.ci" 
-#include "anime_print.ci" 
-#include "anime_print_field.ci" 
-#include "anime_consistency.ci" 
+#include "anime_module_string.ci" 
+#include "anime_module_subr.ci" 
+#include "anime_module_error.ci" 
+#include "anime_module_print.ci" 
+#include "anime_module_print_field.ci" 
+#include "anime_module_consistency.ci" 
 
 const uint8_t ANIME_VERSION_MAJOR__compiled_value    = (uint8_t) ANIME_VERSION_MAJOR; 
 const uint8_t ANIME_VERSION_MINOR__compiled_value    = (uint8_t) ANIME_VERSION_MINOR; 
@@ -106,22 +106,6 @@ const uint16_t   anime_url__strlen = anime_url__strlen__const_value;
 const char     * anime_url__get(void) { return anime_url; }; 
 void             anime_url__print(const int stduser_d) { if (stduser_d > 0) { write(stduser_d, anime_url, anime_url__strlen__const_value); write(stduser_d, "\n", 1); }; }; 
 
-
-#define DIGIT_TO_STRING(d) (			\
-			    (d) == 0 ? "0" :	\
-			    (d) == 1 ? "1" :	\
-			    (d) == 2 ? "2" :	\
-			    (d) == 3 ? "3" :	\
-			    (d) == 4 ? "4" :	\
-			    (d) == 5 ? "5" :	\
-			    (d) == 6 ? "6" :	\
-			    (d) == 7 ? "7" :	\
-			    (d) == 8 ? "8" :	\
-			    (d) == 9 ? "9" :	\
-			    "?")
-
-#define DIGIT_TO_CHAR(d) (((d) >= 0 && (d) <= 9) ? '0' + (d) : '?') 
-    
 const char       anime_version[] = { DIGIT_TO_CHAR(ANIME_VERSION_MAJOR), '.', DIGIT_TO_CHAR(ANIME_VERSION_MINOR), '.', DIGIT_TO_CHAR(ANIME_VERSION_REVISION), '\0' }; 
 enum {           anime_version__strlen__const_value = ARRAY_SIZE(anime_version) - 1 }; 
 const uint16_t   anime_version__strlen = anime_version__strlen__const_value; 
@@ -140,6 +124,7 @@ void             anime_example__print(const int stduser_d) { if (stduser_d > 0) 
 
 enum { ANIME_BYTESIZE_ACTUAL = sizeof(anime_t) }; 
 const int16_t anime_bytesize_actual = ANIME_BYTESIZE_ACTUAL; 
+ASSERT_COMPILE__TOPLEVEL(ANIME_BYTESIZE_ACTUAL <= ANIME_BYTESIZE); 
 
 anime_t * anime__make(const int stdlog_d) {  
   MALLOC_BZERO(anime_t,this); 
@@ -154,10 +139,10 @@ anime_t * anime__make_r(anime_t * this, const int stdlog_d) {
   this -> this_bytesize = ENDIANNESS__NATIVE_TO_LITTLE__UINT16(sizeof(*this)); 
   this -> this_typename_bytesize = sizeof(this -> this_typename); 
   strlcpy(this -> this_typename, "anime_t", sizeof(this -> this_typename)); 
-  this -> version_major = ANIME_VERSION_MAJOR; 
-  this -> version_minor = ANIME_VERSION_MINOR; 
+  this -> version_major    = ANIME_VERSION_MAJOR; 
+  this -> version_minor    = ANIME_VERSION_MINOR; 
   this -> version_revision = ANIME_VERSION_REVISION; 
-  this -> endianness_flag = ANIME__ENDIANNESS_NATIVE; 
+  this -> endianness_flag  = ANIME__ENDIANNESS_NATIVE; 
   
   this -> stdlog_d = stdlog_d; 
   this -> error_size = ANIME__ERROR_BUFFER_SIZE; 
@@ -166,23 +151,20 @@ anime_t * anime__make_r(anime_t * this, const int stdlog_d) {
   this -> string_stack_nb = 1; 
   this -> copyright = anime__string_stack__push_nolookup(this, anime_copyright); 
 
-#if 0 
-  this -> lexer_stack[0] = '\0'; 
-  this -> lexer_stack_nb = 1; 
-#else 
-  this -> lexer_lexeme_stack[0] = '\0';
-  this -> lexer_lexeme_stack__size = ANIME__LEXER_LEXEME_STACK_SIZE; 
-  this -> lexer_lexeme_stack__nb = 1; 
+  this -> lexeme_value_stack[0] = '\0';
+  this -> lexeme_value_stack__size = ANIME__LEXEME_VALUE_STACK_SIZE; 
+  this -> lexeme_value_stack__nb = 1; 
 
-  this -> lexer_stack__size = ANIME__LEXER_STACK_SIZE; 
-  this -> lexer_stack__nb   = 0; 
-#endif 
+  this -> lexeme_stack__size = ANIME__LEXEME_STACK_SIZE; 
+  this -> lexeme_stack__nb   = 0; 
 
+  this -> actions_size = ANIME_ACTIONS_SIZE; 
   this -> actions_nb   = 0; 
+  this -> events_size  = ANIME_EVENTS_SIZE;
   this -> events_nb    = 0; 
-  this -> membres_size = anime_membres_size; 
+  this -> membres_size = ANIME_MEMBRES_SIZE; 
   this -> membres_nb   = 0; 
-  this -> racines_size = anime_racines_size; 
+  this -> racines_size = ANIME_RACINES_SIZE; 
   this -> racines_nb   = 0; 
   
   return this; 
@@ -220,76 +202,112 @@ void anime__bzero(anime_t * this) {
 
 
 
-const char * anime__filename_get(const anime_t * this) { 
-  return anime__string_stack__get(this, this -> filename); 
-}; 
-
-int_anime_error_t  anime__error_id_get(const anime_t * this) { 
-  return this -> error_id; 
-}; 
- 
-const char * anime__error_cstr_get(const anime_t * this) { 
-  return this -> error_str; 
-}; 
-
-
+const char *      anime__filename_get      (const anime_t * this) { return anime__string_stack__get(this, this -> filename); }; 
+const char *      anime__copyright_get     (const anime_t * this) { return anime__string_stack__get(this, this -> copyright); }; 
+int_anime_error_t anime__error_id_get      (const anime_t * this) { return this -> error_id; }; 
+const char *      anime__error_cstr_get    (const anime_t * this) { return this -> error_str; }; 
+float             anime__choc_longueur__get(const anime_t * this) { return this -> choc_longueur; }; 
+float             anime__choc_largeur__get (const anime_t * this) { return this -> choc_largeur; }; 
+float             anime__choc_hauteur__get (const anime_t * this) { return this -> choc_hauteur; }; 
+float             anime__masse__get        (const anime_t * this) { return this -> masse; }; 
+int16_t           anime__vie__get          (const anime_t * this) { return this -> vie; }; 
+int8_t            anime__invincible__get   (const anime_t * this) { return this -> invincible; }; 
+int8_t            anime__hostile__get      (const anime_t * this) { return this -> hostile; }; 
 
 
+#define ANIME__ARRAY_GET__BODY(field_array,field_nb,field_i) { if (0 > field_i) return NULL; if (this -> field_nb <= field_i) return NULL; return anime__string_stack__get(this, this -> field_array[field_i]); } 
+
+int8_t       anime__actions_nb__get                  (const anime_t * this) { return this -> actions_nb; }; 
+const char * anime__actions_nom__get                 (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_nom,actions_nb,action_i); 
+const char * anime__actions_affichage__get           (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_affichage,actions_nb,action_i); 
+const char * anime__actions_icone__get               (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_icone,actions_nb,action_i); 
+const char * anime__actions_gestionnaire_fichier__get(const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_gestionnaire_fichier,actions_nb,action_i); 
+const char * anime__actions_gestionnaire_proc__get   (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_gestionnaire_proc,actions_nb,action_i); 
+
+int8_t       anime__events_nb__get                     (const anime_t * this) { return this -> events_nb; }; 
+const char * anime__events_nom__get                    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_nom,events_nb,event_i); 
+const char * anime__events_genere_type__get            (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_genere_type,events_nb,event_i); 
+const char * anime__events_genere_code_fichier__get    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_genere_code_fichier,events_nb,event_i); 
+const char * anime__events_genere_code_proc__get       (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_genere_code_proc,events_nb,event_i); 
+const char * anime__events_traitement_code_fichier__get(const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_traitement_code_fichier,events_nb,event_i); 
+const char * anime__events_traitement_code_proc__get   (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_traitement_code_proc,events_nb,event_i); 
+
+int8_t       anime__membres_nb__get         (const anime_t * this) { return this -> membres_nb; }; 
+const char * anime__membres_nom__get        (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_nom,membres_nb,membre_i); 
+const char * anime__membres_image__get      (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_image,membres_nb,membre_i); 
+const char * anime__membres_largeur__get    (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_largeur,membres_nb,membre_i); 
+const char * anime__membres_hauteur__get    (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_hauteur,membres_nb,membre_i); 
+const char * anime__membres_angle_max_y__get(const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_angle_max_y,membres_nb,membre_i); 
+
+int8_t       anime__racines_nb__get     (const anime_t * this) { return this -> racines_nb; }; 
+const char * anime__racines_qui__get    (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_qui,racines_nb,racine_i); 
+const char * anime__racines_x__get      (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_x,racines_nb,racine_i); 
+const char * anime__racines_y__get      (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_y,racines_nb,racine_i); 
+const char * anime__racines_z__get      (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_z,racines_nb,racine_i); 
+const char * anime__racines_angle_y__get(const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_angle_y,racines_nb,racine_i); 
+
+#undef ANIME__EVENTARRAY_GET__BODY
 
 
 
 
-void anime__actions_push(anime_t * this, const char * nom, const char * affichage, const char * icone, const char * gestionnaire_fichier, const char * gestionnaire_proc) {  
-  assert(this -> actions_nb < anime_actions_size); 
-  const int i = this -> actions_nb; 
-  this -> actions_array_nom      [i] = anime__string_stack__push_lookup(this, nom); 
-  this -> actions_array_affichage[i] = anime__string_stack__push_lookup(this, affichage); 
-  this -> actions_array_icone    [i] = anime__string_stack__push_lookup(this, icone); 
-  this -> actions_array_gestionnaire_fichier[i] = anime__string_stack__push_lookup(this, gestionnaire_fichier); 
-  this -> actions_array_gestionnaire_proc   [i] = anime__string_stack__push_lookup(this, gestionnaire_proc); 
+int8_t anime__actions_push(anime_t * this, const char * nom, const char * affichage, const char * icone, const char * gestionnaire_fichier, const char * gestionnaire_proc) {  
+  if (ANIME_ACTIONS_SIZE <= this -> actions_nb) return -1; 
+  const int8_t action_i = this -> actions_nb; 
+  this -> actions_array_nom                 [action_i] = anime__string_stack__push_lookup(this, nom); 
+  this -> actions_array_affichage           [action_i] = anime__string_stack__push_lookup(this, affichage); 
+  this -> actions_array_icone               [action_i] = anime__string_stack__push_lookup(this, icone); 
+  this -> actions_array_gestionnaire_fichier[action_i] = anime__string_stack__push_lookup(this, gestionnaire_fichier); 
+  this -> actions_array_gestionnaire_proc   [action_i] = anime__string_stack__push_lookup(this, gestionnaire_proc); 
   this -> actions_nb++; 
+  return action_i; 
 };  
 
-void anime__events_push(anime_t * this, const char * events_nom, const int events_genere_type, const char * events_genere_code_fichier, const char * events_genere_code_proc, const char * events_traitement_fichier, const char * events_traitement_proc) {  
-  assert(this -> events_nb < anime_events_size); 
-  const int i = this -> events_nb; 
-  this -> events_array_nom[i] = anime__string_stack__push_lookup(this, events_nom); 
-  this -> events_array_genere_type[i] = events_genere_type; 
-  this -> events_array_genere_code_fichier[i] = anime__string_stack__push_lookup(this, events_genere_code_fichier); 
-  this -> events_array_genere_code_proc[i] = anime__string_stack__push_lookup(this, events_genere_code_proc); 
-  this -> events_array_traitement_code_fichier[i] = anime__string_stack__push_lookup(this, events_traitement_fichier); 
-  this -> events_array_traitement_code_proc[i] = anime__string_stack__push_lookup(this, events_traitement_proc); 
+int8_t anime__events_push(anime_t * this, const char * events_nom, const int8_t events_genere_type, const char * events_genere_code_fichier, const char * events_genere_code_proc, const char * events_traitement_fichier, const char * events_traitement_proc) {  
+  if (ANIME_EVENTS_SIZE <= this -> events_nb) return -1; 
+  const int8_t event_i = this -> events_nb; 
+  this -> events_array_nom                    [event_i] = anime__string_stack__push_lookup(this, events_nom); 
+  this -> events_array_genere_type            [event_i] = events_genere_type; 
+  this -> events_array_genere_code_fichier    [event_i] = anime__string_stack__push_lookup(this, events_genere_code_fichier); 
+  this -> events_array_genere_code_proc       [event_i] = anime__string_stack__push_lookup(this, events_genere_code_proc); 
+  this -> events_array_traitement_code_fichier[event_i] = anime__string_stack__push_lookup(this, events_traitement_fichier); 
+  this -> events_array_traitement_code_proc   [event_i] = anime__string_stack__push_lookup(this, events_traitement_proc); 
   this -> events_nb++; 
+  return event_i; 
 };  
 
-void anime__membres_push(anime_t * this, const char * nom, const char * image, const float largeur, const float hauteur, const float angle_max_y) {  
-  assert(this -> membres_nb < anime_membres_size); 
-  const int i = this -> membres_nb; 
-  this -> membres_nom[i] = anime__string_stack__push_lookup(this, nom); 
-  this -> membres_image[i] = anime__string_stack__push_lookup(this, image); 
-  this -> membres_largeur[i] = largeur; 
-  this -> membres_hauteur[i] = hauteur; 
-  this -> membres_angle_max_y[i] = angle_max_y; 
+int8_t anime__membres_push(anime_t * this, const char * nom, const char * image, const float largeur, const float hauteur, const float angle_max_y) {  
+  if (ANIME_MEMBRES_SIZE <= this -> membres_nb) return -1; 
+  const int8_t membre_i = this -> membres_nb; 
+  this -> membres_nom        [membre_i] = anime__string_stack__push_lookup(this, nom); 
+  this -> membres_image      [membre_i] = anime__string_stack__push_lookup(this, image); 
+  this -> membres_largeur    [membre_i] = largeur; 
+  this -> membres_hauteur    [membre_i] = hauteur; 
+  this -> membres_angle_max_y[membre_i] = angle_max_y; 
   this -> membres_nb++; 
+  return membre_i; 
 };  
 
-int anime__membres_lookup(const anime_t * this, const char * nom) {  
-  for (int i = 0; i < this -> membres_nb; i++) { 
-    if (0 == strcmp(nom, anime__string_stack__get(this, this -> membres_nom[i]))) return i; 
+int8_t anime__racines_push(anime_t * this, const char * qui, const float x, const float y, const float z, const float angle_y) {  
+  if (ANIME_RACINES_SIZE <= this -> racines_nb) return -1; 
+  const int8_t racine_i = this -> racines_nb; 
+  this -> racines_qui    [racine_i] = anime__string_stack__push_lookup(this, qui); 
+  this -> racines_x      [racine_i] = x; 
+  this -> racines_y      [racine_i] = y; 
+  this -> racines_z      [racine_i] = z; 
+  this -> racines_angle_y[racine_i] = angle_y; 
+  this -> racines_nb++; 
+  return racine_i; 
+}; 
+
+
+int8_t anime__membres_lookup(const anime_t * this, const char * nom) {  
+  for (int membre_i = 0; membre_i < this -> membres_nb; membre_i++) { 
+    if (0 == strcmp(nom, anime__string_stack__get(this, this -> membres_nom[membre_i]))) return membre_i; 
   }; 
   return -1; 
 };  
  
-void anime__racines_push(anime_t * this, const char * qui, const float x, const float y, const float z, const float angle_y) {  
-  assert(this -> racines_nb < anime_racines_size); 
-  const int i = this -> racines_nb; 
-  this -> racines_qui[i] = anime__string_stack__push_lookup(this, qui); 
-  this -> racines_x[i] = x; 
-  this -> racines_y[i] = y; 
-  this -> racines_z[i] = z; 
-  this -> racines_angle_y[i] = angle_y; 
-  this -> racines_nb++; 
-}; 
 
 
 
@@ -300,83 +318,38 @@ void anime__racines_push(anime_t * this, const char * qui, const float x, const 
 
 
 
-
-
-#if 0 
-anime_t * anime__make_from_file(const char * filename, const char * log_filename) {  
-  MALLOC_BZERO(anime_t,this); 
-  const int retval = anime__fill_from_file(this, filename, log_filename); 
-  if (retval < 0) { 
-    free(this); 
-    return NULL; 
-  }; 
-  return this; 
-}; 
-#endif 
-
-
-
-//#define VLA__YES
-//#define ALLOCA__YES
-#define LOCAL_ALLOCA__YES
-
-#define LOCAL_ALLOCA__DECLARE(LOCAL_ALLOCA_SIZEOF)			\
-  enum { LOCAL_ALLOCA__BYTE_SIZE = (LOCAL_ALLOCA_SIZEOF) }; char local_alloca__mem[LOCAL_ALLOCA__BYTE_SIZE]; uint16_t local_alloca__left = LOCAL_ALLOCA__BYTE_SIZE; uint16_t local_alloca__used = 0; uint16_t local_alloca__requested; 
-
-#define LOCAL_ALLOCA(REQUESTED_SIZEOF)					\
-  (local_alloca__requested = (REQUESTED_SIZEOF), ((local_alloca__requested > local_alloca__left) ? NULL : (local_alloca__left -= local_alloca__requested, local_alloca__used += local_alloca__requested,  local_alloca__mem + local_alloca__used - local_alloca__requested))) 
 
 
 
 int_anime_error_t anime__fill_from_file(anime_t * this, const char * input_name, const int input_fd, const int stduser_d) { 
-  LOCAL_ALLOCA__DECLARE(UINT16_MAX); 
+  assert(false); 
+  return 0; 
+};
+
+int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d) { 
+#if 1 
+#else 
+  int buffer_pipe[2]; // RL: [0] is output (read end), [1] is input (write end) 
+  if (-1 == pipe(buffer_pipe)) { this -> error_id = ANIME__TOKEN_PARSER__CANNOT_MAKE_PIPE; return this -> error_id; }; 
+  // RL: Ici, il faudrait probablement faire de la concurrence… 
+  write(buffer_pipe[1], buffer, buffer_bytesize); 
+  this -> error_id = anime__fill_from_file(this, input_name, buffer_pipe[0], stduser_d); 
+  close(buffer_pipe[0]);
+  close(buffer_pipe[1]);
+#endif 
+  return this -> error_id;
+}; 
+
+int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, const int input_fd, const int stduser_d) { 
+  LOCAL_ALLOCA__DECLARE(uint16_t,UINT16_MAX); 
   int_anime_error_t         error_id; 
   anime_token_input_env_t   input_env[1]; 
   //dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
-#if defined VLA__YES
-  char                      token_env_b[anime_token_env__sizeof]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
-#elif defined ALLOCA__YES
-  char                    * token_env_b = alloca(anime_token_env__sizeof); 
-#elif defined LOCAL_ALLOCA__YES
   char                    * token_env_b = LOCAL_ALLOCA(anime_token_env__sizeof); 
-#endif 
   anime_token_env_t       * token_env; 
+  int input_i = -1; 
+  goto label__body; 
 
-#if 0
-  dputs_array(stderr_d, "TOKEN_ENV_SIZEOF = ", int_string(sizeof(token_env_b)), "\n"); 
-  dputs_array(stderr_d, "TOKEN_ENV_B IS NULL HUH = ", bool_string(token_env_b == NULL), "\n"); 
-  dputs_array(stderr_d, "local_alloca__requested = ", int_string(local_alloca__requested), "\n"); 
-  dputs_array(stderr_d, "anime_token_env__sizeof = ", int_string(anime_token_env__sizeof), "\n"); 
-  dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
-  dputs_array(stderr_d, "local_alloca__used = ", int_string(local_alloca__used), "\n"); 
-#endif 
-
-  
-  anime_token_input_env__make_r(input_env, this -> stdlog_d); 
-  
-  token_env = anime_token_env__make_b(anime_token_env__sizeof, token_env_b, NULL, this -> stdlog_d); 
-  assert(NULL != token_env); 
-  //dputs_array(stderr_d, "TOKEN_ENV IS NULL HUH = ", bool_string(token_env == NULL), "\n"); 
-  
-  this -> filename = anime__string_stack__push_lookup(this, input_name); 
-  
-  const int input_i = anime_token_input__stack_push__filedes(input_env, input_fd, input_name); 
-  if (input_i < 0) { goto error_label__input_error; }; 
-  
-  error_id = anime_token__parser(token_env, input_env, input_i, &this -> error_id, this -> error_size, this -> error_str); 
-  if (error_id != ANIME__OK) { return error_id; }; 
-  
-  if (this -> stdlog_d > 0) { anime_token__print_all_tokens(this -> stdlog_d, token_env); fflush(NULL); }; 
-  
-  assert(NULL != token_env); 
-  assert(NULL != this); 
-  error_id = anime_data_generation_003_from_syntax_filtering(token_env, this, stduser_d); 
-  if (error_id != ANIME__OK) { return error_id; }; 
-	
-  error_id = anime__consistency_check(this, stduser_d); 
-  return error_id; 
-  
-  
  error_label__input_error: { 
     this -> error_id = ANIME__TOKEN__INPUT__ERROR; 
     snprintf(this -> error_str, this -> error_size, "Error while initializing input buffer for tokenizing: %d", input_i); 
@@ -384,23 +357,55 @@ int_anime_error_t anime__fill_from_file(anime_t * this, const char * input_name,
     return this -> error_id; 
   }; 
   
+
+ label__body: { 
+#if 0
+    dputs_array(stderr_d, "TOKEN_ENV_SIZEOF = ", int_string(sizeof(token_env_b)), "\n"); 
+    dputs_array(stderr_d, "TOKEN_ENV_B IS NULL HUH = ", bool_string(token_env_b == NULL), "\n"); 
+    dputs_array(stderr_d, "local_alloca__requested = ", int_string(local_alloca__requested), "\n"); 
+    dputs_array(stderr_d, "anime_token_env__sizeof = ", int_string(anime_token_env__sizeof), "\n"); 
+    dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
+    dputs_array(stderr_d, "local_alloca__used = ", int_string(local_alloca__used), "\n"); 
+#endif 
+  
+    anime_token_input_env__make_r(input_env, this -> stdlog_d); 
+  
+    token_env = anime_token_env__make_b(anime_token_env__sizeof, token_env_b, NULL, this -> stdlog_d); 
+    assert(NULL != token_env); 
+    //dputs_array(stderr_d, "TOKEN_ENV IS NULL HUH = ", bool_string(token_env == NULL), "\n"); 
+  
+    this -> filename = anime__string_stack__push_lookup(this, input_name); 
+  
+    //const int input_i = anime_token_input__stack_push__filedes(input_env, input_fd, input_name); 
+    input_i = anime_token_input__stack_push__filedes(input_env, input_fd, input_name); 
+    if (input_i < 0) goto error_label__input_error; 
+  
+    error_id = anime_token__parser(token_env, input_env, input_i, &this -> error_id, this -> error_size, this -> error_str); 
+    if (error_id != ANIME__OK) { return error_id; }; 
+  
+    if (this -> stdlog_d > 0) { anime_token__print_all_tokens(this -> stdlog_d, token_env); fflush(NULL); }; 
+  
+    assert(NULL != token_env); 
+    assert(NULL != this); 
+    error_id = anime_data_generation_003_from_syntax_filtering(token_env, this, stduser_d); 
+    if (error_id != ANIME__OK) { return error_id; }; 
+	
+    error_id = anime__consistency_check(this, stduser_d); 
+    return error_id; 
+  };   
+    
 }; 
 
 
 
 
+#if 0 
 int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d) { 
-  LOCAL_ALLOCA__DECLARE(UINT16_MAX); 
+  LOCAL_ALLOCA__DECLARE(uint16_t,UINT16_MAX); 
   int_anime_error_t         error_id; 
   anime_token_input_env_t   input_env[1]; 
   //dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
-#if defined VLA__YES
-  char                      token_env_b[anime_token_env__sizeof]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
-#elif defined ALLOCA__YES
-  char                    * token_env_b = alloca(anime_token_env__sizeof); 
-#elif defined LOCAL_ALLOCA__YES
   char                    * token_env_b = LOCAL_ALLOCA(anime_token_env__sizeof); 
-#endif 
   anime_token_env_t       * token_env; 
 
 #if 0
@@ -439,7 +444,7 @@ int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_nam
 
     
     //const int input_i = anime_token_input__stack_push__filedes(input_env, input_fd, input_name); 
-    int input_i = anime_token_input__stack_push__memory(input_env, buffer_bytesize, buffer, input_name); 
+    input_i = anime_token_input__stack_push__memory(input_env, buffer_bytesize, buffer, input_name); 
     if (input_i < 0) { goto error_label__input_error; }; 
     
     error_id = anime_token__parser(token_env, input_env, input_i, &this -> error_id, this -> error_size, this -> error_str); 
@@ -457,5 +462,5 @@ int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_nam
   };
   
 }; 
-
+#endif 
 

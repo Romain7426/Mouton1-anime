@@ -29,7 +29,7 @@ extern const char     * anime_example__get(void);
 extern void             anime_example__print(const int stduser_d); 
 
 
-enum {               anime_bytesize = (1 << 14) }; 
+enum {               ANIME_BYTESIZE = (1 << 14) }; 
 extern const int16_t anime_bytesize_actual; 
 
 static void anime__check_and_assert(const int8_t debug_print_huh, const int stddebug_d); 
@@ -67,6 +67,7 @@ enum {
   ANIME__ERROR_SIZE_LOWER_THAN_1, 
   ANIME__NULL_INPUT_ENV, 
   ANIME__NULL_TOKEN_ENV, 
+  ANIME__TOKEN_PARSER__CANNOT_MAKE_PIPE, 
   ANIME__TOKEN_PARSER__ERROR_WHILE_READING_THE_INPUT_STREAM, 
   ANIME__TOKEN_PARSER__TOKEN_MATCHES_NO_PATTERN, 
   ANIME__TOKEN_PARSER__ERROR_TOKEN, 
@@ -150,20 +151,53 @@ extern void         anime__delete_b        (anime_t * this);
 extern void         anime__bzero           (anime_t * this);  
 extern const char * anime__strcopy         (anime_t * this, const char * cstr); 
 
-extern const char *             anime__filename_get(const anime_t * this); 
-extern       int_anime_error_t  anime__error_id_get(const anime_t * this); 
-extern const char *             anime__error_cstr_get(const anime_t * this); 
+extern const char *      anime__filename_get      (const anime_t * this); 
+extern const char *      anime__copyright_get     (const anime_t * this); 
+extern int_anime_error_t anime__error_id_get      (const anime_t * this); 
+extern const char *      anime__error_cstr_get    (const anime_t * this); 
+extern float             anime__choc_longueur__get(const anime_t * this); 
+extern float             anime__choc_largeur__get (const anime_t * this); 
+extern float             anime__choc_hauteur__get (const anime_t * this); 
+extern float             anime__masse__get        (const anime_t * this); 
+extern int16_t           anime__vie__get          (const anime_t * this); 
+extern int8_t            anime__invincible__get   (const anime_t * this); 
+extern int8_t            anime__hostile__get      (const anime_t * this); 
+
+extern int8_t       anime__actions_nb__get                  (const anime_t * this);
+extern const char * anime__actions_nom__get                 (const anime_t * this, const int8_t action_i);
+extern const char * anime__actions_affichage__get           (const anime_t * this, const int8_t action_i);
+extern const char * anime__actions_icone__get               (const anime_t * this, const int8_t action_i);
+extern const char * anime__actions_gestionnaire_fichier__get(const anime_t * this, const int8_t action_i);
+extern const char * anime__actions_gestionnaire_proc__get   (const anime_t * this, const int8_t action_i);
+
+extern int8_t       anime__events_nb__get                     (const anime_t * this);
+extern const char * anime__events_nom__get                    (const anime_t * this, const int8_t event_i);
+extern const char * anime__events_genere_type__get            (const anime_t * this, const int8_t event_i);
+extern const char * anime__events_genere_code_fichier__get    (const anime_t * this, const int8_t event_i);
+extern const char * anime__events_genere_code_proc__get       (const anime_t * this, const int8_t event_i);
+extern const char * anime__events_traitement_code_fichier__get(const anime_t * this, const int8_t event_i);
+extern const char * anime__events_traitement_code_proc__get   (const anime_t * this, const int8_t event_i);
+
+extern int8_t       anime__membres_nb__get         (const anime_t * this);
+extern const char * anime__membres_nom__get        (const anime_t * this, const int8_t membre_i);
+extern const char * anime__membres_image__get      (const anime_t * this, const int8_t membre_i);
+extern const char * anime__membres_largeur__get    (const anime_t * this, const int8_t membre_i);
+extern const char * anime__membres_hauteur__get    (const anime_t * this, const int8_t membre_i);
+extern const char * anime__membres_angle_max_y__get(const anime_t * this, const int8_t membre_i);
+
+extern int8_t       anime__racines_nb__get     (const anime_t * this);
+extern const char * anime__racines_qui__get    (const anime_t * this, const int8_t racine_i);
+extern const char * anime__racines_x__get      (const anime_t * this, const int8_t racine_i);
+extern const char * anime__racines_y__get      (const anime_t * this, const int8_t racine_i);
+extern const char * anime__racines_z__get      (const anime_t * this, const int8_t racine_i);
+extern const char * anime__racines_angle_y__get(const anime_t * this, const int8_t racine_i);
 
 
-extern void anime__actions_push  (      anime_t * this, const char * nom, const char * affichage, const char * icone, const char * gestionnaire_fichier, const char * gestionnaire_proc); 
-extern void anime__events_push   (      anime_t * this, const char * events_nom, const int events_genere_type, const char * events_genere_code_fichier, const char * events_genere_code_proc, const char * events_traitement_fichier, const char * events_traitement_proc); 
-extern void anime__membres_push  (      anime_t * this, const char * nom, const char * image, const float largeur, const float hauteur, const float angle_max_y); 
-extern int  anime__membres_lookup(const anime_t * this, const char * nom); 
-extern void anime__racines_push  (      anime_t * this, const char * qui, const float x, const float y, const float z, const float angle_y); 
 
 extern int_anime_error_t anime__consistency_check(anime_t * this, const int stduser_d); 
 
-extern int_anime_error_t anime__fill_from_file(anime_t * this, const char * input_name, const int input_fd, const int stduser_d); 
+extern int_anime_error_t anime__fill_from_fd    (anime_t * this, const char * input_name, const int input_fd, const int stduser_d); 
+extern int_anime_error_t anime__fill_from_file  (anime_t * this, const char * input_name, const int input_fd, const int stduser_d); 
 extern int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d); 
 
 extern int_anime_error_t anime__print_field_value_by_name(const anime_t * this, const char * field_name, const int stdprint_d, const int stduser_d, int_anime_error_t * error_id_r, const uint16_t error_size, char * error_str); 
@@ -173,13 +207,18 @@ extern int_anime_error_t anime__print_field_value_by_name(const anime_t * this, 
 extern const char * anime__convert_token_cstring_to_regular_string(anime_t * this, const char * cstr); 
 
 
+
+
+
+
+
 static void anime__check_and_assert(const int8_t debug_print_huh, const int stddebug_d) { 
-  if (anime_bytesize < anime_bytesize_actual) { 
+  if (ANIME_BYTESIZE < anime_bytesize_actual) { 
     if (debug_print_huh) { 
-      dprintf(stddebug_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s>()>}: anime_bytesize: %d" "\n",  __func__, (int) anime_bytesize); 
+      dprintf(stddebug_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s>()>}: anime_bytesize: %d" "\n",  __func__, (int) ANIME_BYTESIZE); 
       dprintf(stddebug_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s>()>}: anime_bytesize_actual: %d" "\n",  __func__, (int) anime_bytesize_actual); 
     }; 
-    assert(anime_bytesize >= anime_bytesize_actual); 
+    assert(false); 
   }; 
   
   assert(ANIME_VERSION_MAJOR == ANIME_VERSION_MAJOR__compiled_value); 

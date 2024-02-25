@@ -27,6 +27,14 @@
 #include "lib__07__buffered_outstream.ci"
 #undef BUFFERED_OUTSTREAM__H 
 
+#include "lib__08__cstring.ci"
+#include "lib__09__write_string.ci"
+#include "lib__10__local_alloca.ci"
+
+#ifdef BUFFER_TO_FD__H 
+#include "lib__11__buffer_to_fd.ci"
+#undef BUFFER_TO_FD__H 
+
 
 #define PREFIX anime
 #define CDIR ".."

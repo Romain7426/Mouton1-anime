@@ -1,3 +1,5 @@
+#ifndef LIB__06__EXCEPTION_STACK_CI
+#define LIB__06__EXCEPTION_STACK_CI
 
 // =================================================================================================== 
 // EXCEPTION STACK 
@@ -79,9 +81,11 @@ static void exception__pop(void) {
 
 static void exception__raise(const int exception_code_given, const char * exception_msg) {
   if (0 >= exception_stack__nb) {
+#if 0 
     dputs(stderr_d, "Exception raised while there is no handler to catch it." "\n"); 
     dputs(stderr_d, "\t" "Exception code: "); dputn(stderr_d, exception_code_given); dput_eol(stderr_d); 
     dputs(stderr_d, "\t" "Exception msg : "); dputs(stderr_d, (NULL == exception_msg) ? "<null>" : exception_msg); dput_eol(stderr_d); 
+#endif 
     abort(); 
   }; 
   const int exception_code_adjusted = (0 == exception_code_given) ? 1 : exception_code_given; 
@@ -91,3 +95,4 @@ static void exception__raise(const int exception_code_given, const char * except
 };
 
 
+#endif /* LIB__06__EXCEPTION_STACK_CI */

@@ -1,47 +1,8 @@
-#include <unistd.h>
+#include "lib.ci"
 
 // $ echo "" | cpp -dM 
 // https://clang.llvm.org/docs/LanguageExtensions.html#builtin-macros
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html#Common-Predefined-Macros
-
-#ifndef INT16_MAX
-enum { INT16_MAX = (1   <<  0) + (1   <<  1) + (1   <<  2) + (1   <<  3) + (1   <<  4) + (1   <<  5) + (1   <<  6) + (1   <<  7) + 
-                   (1   <<  8) + (1   <<  9) + (1   << 10) + (1   << 11) + (1   << 12) + (1   << 13) + (1   << 14) }; 
-#endif
-
-enum { BUF_SIZE = INT16_MAX }; 
-static char buffer[BUF_SIZE] = {}; 
- 
-
-static int write_int(long long int n) { 
-  char * p; 
-  p = buffer + BUF_SIZE; 
-  p--; 
-  *p = '\0';
-  p--; 
-  for (;;) { 
-    *p = '0' + (n % 10); 
-    n = n / 10; 
-    if (0 == n) break; 
-    if (p == buffer) { return ~0; }; 
-    p--; 
-  };   
-  const int len = BUF_SIZE - (p - buffer) - 1; 
-  write(STDOUT_FILENO, p, len); 
-  return 0; 
-}; 
-
-static int write_long_double(long double n) { 
-  char * p; 
-  p = buffer + BUF_SIZE; 
-  p--; 
-  *p = '\0';
-  p--; 
-  *p = '0';
-  const int len = BUF_SIZE - (p - buffer) - 1; 
-  write(STDOUT_FILENO, p, len); 
-  return 0; 
-}; 
 
 
 #if 0 
@@ -71,8 +32,6 @@ static int write_long_double(long double n) {
     write(STDOUT_FILENO, "\n", 1);			\
   }; 
 
-#define STRINGIFYX(s) #s
-#define STRINGIFY(s) STRINGIFYX(s) 
 #define WRITE_MACRO_VALUE_STRING2(__m__) {		\
     static const char s[] = #__m__;			\
     write(STDOUT_FILENO, s, sizeof(s) - 1);		\
@@ -84,8 +43,6 @@ static int write_long_double(long double n) {
 
 #else 
 
-#define STRINGIFYX(s) #s
-#define STRINGIFY(s) STRINGIFYX(s) 
 #define WRITE_MACRO_VALUE_STRING2(__m__) {		\
     static const char s[] = #__m__;			\
     write(STDOUT_FILENO, s, sizeof(s) - 1);		\

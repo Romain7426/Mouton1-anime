@@ -684,12 +684,12 @@ int_anime_error_t anime_data_generation_003_from_syntax_filtering(anime_token_en
 	  
 	  const uint8_t action_i = anime_data -> actions_nb; 
 	  
-	  if (action_i >= anime_actions_size) { 
+	  if (action_i >= ANIME_ACTIONS_SIZE) { 
 	    CHECK_IDENT("action"); 
 	    const int_anime_token_t action_token = token_i; 
 	    const int error_location_strlen = action_token <= 0 ? 0 : snprintf(anime_data -> error_str, ANIME__ERROR_BUFFER_SIZE, "{%s:%d:%d}: ", anime_token__get_srcfile_cstr(token_env, action_token - 1), anime_token__get_line1(token_env, action_token - 1), anime_token__get_column0(token_env, action_token - 1)); 
 	    const int error_location_written_len = MIN(ANIME__ERROR_BUFFER_SIZE - 1, error_location_strlen); 
-	    snprintf(anime_data -> error_str + error_location_written_len, ANIME__ERROR_BUFFER_SIZE - error_location_written_len, "WARNING: Too many 'action' fields — can store at most %u, and already storing %u — Extraneous 'action' fields will be ignored", (unsigned int)anime_actions_size, (unsigned int) anime_data -> actions_nb); 
+	    snprintf(anime_data -> error_str + error_location_written_len, ANIME__ERROR_BUFFER_SIZE - error_location_written_len, "WARNING: Too many 'action' fields — can store at most %u, and already storing %u — Extraneous 'action' fields will be ignored", (unsigned int)ANIME_ACTIONS_SIZE, (unsigned int) anime_data -> actions_nb); 
 	    if (stduser_d > 0) { dprintf(stduser_d, "%s" "\n", anime_data -> error_str); }; 
 	    if (anime_data -> stdlog_d > 0) { dprintf(anime_data -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, anime_data -> error_str); }; 
 	    MOVE_TO_NEXT_TOKEN(); // Skip to the opening parenthesis 

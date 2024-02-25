@@ -108,6 +108,7 @@ label__error__anime_buffer_is_too_small: {
     srandomdev(); 
     endianness__check_and_assert(); 
     int_buffered_outstream__error__check_and_assert(); 
+    int_buffer_to_fd__error__check_and_assert(); 
     anime__check_and_assert(/*debug_print_huh*/true, /*stderr_d*/stderr_d); 
     assert(isatty(stderr_d)); 
 
@@ -181,7 +182,7 @@ label__error__anime_buffer_is_too_small: {
 #endif 
 
     // PARSING INPUT FILE 
-    char a_anime_buffer[anime_bytesize]; 
+    char a_anime_buffer[ANIME_BYTESIZE]; 
     { 
       a_anime = anime__make_b(a_anime_buffer, (sizeof(a_anime_buffer)), /*anime_buffer_bytesize_used_r*/NULL, stdlog_d); 
       if (NULL == a_anime) { goto label__error__anime_buffer_is_too_small; } 
