@@ -227,10 +227,7 @@ static int anime_syntax_filtering__parenthesis__closing[] = {
   ANIME_TOKEN_CLOSEBRACE 
 }; 
 enum { anime_syntax_filtering__parenthesis__closing__size = ARRAY_SIZE(anime_syntax_filtering__parenthesis__closing) }; 
-
-static void assert_compile__dakjdds438sd(void) { 
-  ASSERT_COMPILE(anime_syntax_filtering__parenthesis__opening__size == anime_syntax_filtering__parenthesis__closing__size); 
-}; 
+ASSERT_COMPILE__TOPLEVEL(anime_syntax_filtering__parenthesis__opening__size == anime_syntax_filtering__parenthesis__closing__size); 
 
 enum { anime_syntax_filtering__parenthesis__stack_size = 48 }; // RL: Nestedness. 
 

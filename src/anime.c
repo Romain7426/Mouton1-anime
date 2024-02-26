@@ -16,6 +16,7 @@
 #include "anime_module_print.ci" 
 #include "anime_module_print_field.ci" 
 #include "anime_module_consistency.ci" 
+#include "anime_module_dump_and_restore.ci"
 
 const uint8_t ANIME_VERSION_MAJOR__compiled_value    = (uint8_t) ANIME_VERSION_MAJOR; 
 const uint8_t ANIME_VERSION_MINOR__compiled_value    = (uint8_t) ANIME_VERSION_MINOR; 
@@ -30,7 +31,7 @@ const uint8_t ANIME__LONGEST_INFIX_EXPRESSION__compiled_value  = (uint8_t) ANIME
 static const char program_name[] = PROGRAM_NAME; 
 enum { program_name__cstrlen = ARRAY_SIZE(program_name) - 1 }; 
 #define PROGRAM_COPYRIGHT_YEAR1 "2003"
-#define PROGRAM_COPYRIGHT_YEAR2 "2023"
+#define PROGRAM_COPYRIGHT_YEAR2 "2024"
 #define PROGRAM_URL "https://github.com/Romain7426/Mouton1-anime" 
 
 #if 1
@@ -126,6 +127,9 @@ enum { ANIME_BYTESIZE_ACTUAL = sizeof(anime_t) };
 const int16_t anime_bytesize_actual = ANIME_BYTESIZE_ACTUAL; 
 ASSERT_COMPILE__TOPLEVEL(ANIME_BYTESIZE_ACTUAL <= ANIME_BYTESIZE); 
 
+const int8_t ANIME_LINE_LEN_MAX__compiled_value = ANIME_LINE_LEN_MAX; 
+
+
 anime_t * anime__make(const int stdlog_d) {  
   MALLOC_BZERO(anime_t,this); 
   anime__make_r(this, stdlog_d); 
@@ -136,7 +140,7 @@ anime_t * anime__make(const int stdlog_d) {
 anime_t * anime__make_r(anime_t * this, const int stdlog_d) { 
   bzero(this, sizeof(*this)); 
   
-  this -> this_bytesize = ENDIANNESS__NATIVE_TO_LITTLE__UINT16(sizeof(*this)); 
+  this -> this_bytesize = ENDIANNESS__NATIVE_TO_LITTLE__UINT32(sizeof(*this)); 
   this -> this_typename_bytesize = sizeof(this -> this_typename); 
   strlcpy(this -> this_typename, "anime_t", sizeof(this -> this_typename)); 
   this -> version_major    = ANIME_VERSION_MAJOR; 
@@ -199,6 +203,10 @@ void anime__bzero(anime_t * this) {
   bzero(this, sizeof(*this)); 
   this -> malloced_flag = malloced_flag; 
 }; 
+
+
+
+
 
 
 
@@ -321,23 +329,41 @@ int8_t anime__membres_lookup(const anime_t * this, const char * nom) {
 
 
 
-int_anime_error_t anime__fill_from_file(anime_t * this, const char * input_name, const int input_fd, const int stduser_d) { 
+int_anime_error_t anime__fill_from_file(anime_t * this, const char * filepathname, const int stduser_d) { 
   assert(false); 
   return 0; 
 };
 
 int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d) { 
-#if 1 
-#else 
-  int buffer_pipe[2]; // RL: [0] is output (read end), [1] is input (write end) 
-  if (-1 == pipe(buffer_pipe)) { this -> error_id = ANIME__TOKEN_PARSER__CANNOT_MAKE_PIPE; return this -> error_id; }; 
-  // RL: Ici, il faudrait probablement faire de la concurrence… 
-  write(buffer_pipe[1], buffer, buffer_bytesize); 
-  this -> error_id = anime__fill_from_file(this, input_name, buffer_pipe[0], stduser_d); 
-  close(buffer_pipe[0]);
-  close(buffer_pipe[1]);
-#endif 
-  return this -> error_id;
+  goto label__body; 
+
+label__error__cannot_make_pipe: { 
+    this -> error_id = ANIME__TOKEN_PARSER__CANNOT_MAKE_PIPE; 
+    return this -> error_id; 
+  }; 
+
+label__pipe_buffer_size_ok: { 
+    int buffer_pipe[2]; // RL: [0] is output (read end), [1] is input (write end) 
+    if (-1 == pipe(buffer_pipe)) goto label__error__cannot_make_pipe; 
+    write(buffer_pipe[1], buffer, buffer_bytesize); 
+    this -> error_id = anime__fill_from_fd(this, input_name, buffer_pipe[0], stduser_d); 
+    close(buffer_pipe[0]);
+    close(buffer_pipe[1]);
+    return this -> error_id;
+  }; 
+
+ label__pipe_buffer_size_is_too_small: { 
+    const int my_buffer_fd = buffer_to_fd__open(buffer, buffer_bytesize); 
+    if (0 > my_buffer_fd) goto label__error__cannot_make_pipe; 
+    this -> error_id = anime__fill_from_fd(this, input_name, my_buffer_fd, stduser_d); 
+    buffer_to_fd__close(my_buffer_fd); 
+    return this -> error_id;
+  }; 
+
+label__body: {   
+    if (UINTMAX_C(PIPEBUFFERSIZE) <= (uintmax_t)buffer_bytesize) goto label__pipe_buffer_size_ok; 
+    goto label__pipe_buffer_size_is_too_small; 
+  }; 
 }; 
 
 int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, const int input_fd, const int stduser_d) { 
@@ -397,70 +423,4 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
 }; 
 
 
-
-
-#if 0 
-int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d) { 
-  LOCAL_ALLOCA__DECLARE(uint16_t,UINT16_MAX); 
-  int_anime_error_t         error_id; 
-  anime_token_input_env_t   input_env[1]; 
-  //dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
-  char                    * token_env_b = LOCAL_ALLOCA(anime_token_env__sizeof); 
-  anime_token_env_t       * token_env; 
-
-#if 0
-  dputs_array(stderr_d, "TOKEN_ENV_SIZEOF = ", int_string(sizeof(token_env_b)), "\n"); 
-  dputs_array(stderr_d, "TOKEN_ENV_B IS NULL HUH = ", bool_string(token_env_b == NULL), "\n"); 
-  dputs_array(stderr_d, "local_alloca__requested = ", int_string(local_alloca__requested), "\n"); 
-  dputs_array(stderr_d, "anime_token_env__sizeof = ", int_string(anime_token_env__sizeof), "\n"); 
-  dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
-  dputs_array(stderr_d, "local_alloca__used = ", int_string(local_alloca__used), "\n"); 
-#endif 
-
-  int input_i = -1; 
-  
-  goto label__body; 
-
-
- error_label__input_error: { 
-    this -> error_id = ANIME__TOKEN__INPUT__ERROR; 
-    snprintf(this -> error_str, this -> error_size, "Error while initializing input buffer for tokenizing: %d", input_i); 
-    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, this -> error_str); }; 
-    return this -> error_id; 
-  }; 
-  
-
-
-  label__body: { 
-    if (0 >= buffer_bytesize) return -1; 
-  
-    anime_token_input_env__make_r(input_env, this -> stdlog_d); 
-    
-    token_env = anime_token_env__make_b(anime_token_env__sizeof, token_env_b, NULL, this -> stdlog_d); 
-    assert(NULL != token_env); 
-    //dputs_array(stderr_d, "TOKEN_ENV IS NULL HUH = ", bool_string(token_env == NULL), "\n"); 
-    
-    this -> filename = anime__string_stack__push_lookup(this, input_name); 
-
-    
-    //const int input_i = anime_token_input__stack_push__filedes(input_env, input_fd, input_name); 
-    input_i = anime_token_input__stack_push__memory(input_env, buffer_bytesize, buffer, input_name); 
-    if (input_i < 0) { goto error_label__input_error; }; 
-    
-    error_id = anime_token__parser(token_env, input_env, input_i, &this -> error_id, this -> error_size, this -> error_str); 
-    if (error_id != ANIME__OK) { return error_id; }; 
-    
-    if (this -> stdlog_d > 0) { anime_token__print_all_tokens(this -> stdlog_d, token_env); fflush(NULL); }; 
-    
-    assert(NULL != token_env); 
-    assert(NULL != this); 
-    error_id = anime_data_generation_003_from_syntax_filtering(token_env, this, stduser_d); 
-    if (error_id != ANIME__OK) { return error_id; }; 
-    
-    error_id = anime__consistency_check(this, stduser_d); 
-    return error_id; 
-  };
-  
-}; 
-#endif 
 

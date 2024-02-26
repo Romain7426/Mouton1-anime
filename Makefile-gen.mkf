@@ -76,8 +76,7 @@ endif
 CC_NAME      := $(shell ./tools/bin/compiler-detect)
 #CC_NAME      := $(shell mkdir -p tmp && $(CC) ./tools/src/compiler-detect.c -o tmp/compiler-detect.exe && ./tmp/compiler-detect.exe) 
 UNAME        := $(shell uname)
-ENDIAN       := $(shell ./tools/bin/endianness-detect)
-#ENDIAN       := $(shell mkdir -p tmp && $(CC) ./tools/src/endianness-detect.c -o tmp/endianness-detect.exe && ./tmp/endianness-detect.exe) 
+ENDIANNESS   := $(shell ./tools/bin/endianness-detect)
 ARCH         := $(shell arch)
 MACHINE      := $(shell machine)
 HARDWARE     := $(shell uname -m)
@@ -109,6 +108,7 @@ ENUMSIZE        := $(shell ./tools/bin/enumsize)
 FLOATSIZE       := $(shell ./tools/bin/floatsize)
 DOUBLESIZE      := $(shell ./tools/bin/doublesize)
 LONGDOUBLESIZE  := $(shell ./tools/bin/longdoublesize)
+PIPEBUFFERSIZE  := $(shell ./tools/bin/pipe-get-buffer-bytesize)
 else
 INTSIZE         := $(shell mkdir -p tmp && $(CC) ./tools/src/intsize.c -o tmp/intsize.exe && ./tmp/intsize.exe) 
 PTRSIZE         := $(shell mkdir -p tmp && $(CC) ./tools/src/ptrsize.c -o tmp/ptrsize.exe && ./tmp/ptrsize.exe) 
@@ -143,7 +143,10 @@ $(info DOUBLESIZE     : $(DOUBLESIZE)     )
 $(info LONGDOUBLESIZE : $(LONGDOUBLESIZE) ) 
 endif 
 
+
 CC_CONFIG:=
+CC_CONFIG:=$(CC_CONFIG) -D ENDIANNESS="$(ENDIANNESS)"
+CC_CONFIG:=$(CC_CONFIG) -D PIPEBUFFERSIZE="$(PIPEBUFFERSIZE)"
 
 STDLIB_PROVIDES_ARC4RANDOM_HUH := $(shell echo "#include <stdlib.h>\nint main(int argc, char * argv[]) { return arc4random(); }; " | $(CC) -x c -std=c99 -O0 - -o - > /dev/null 2>&1 ; echo $$?)
 ifeq ($(STDLIB_PROVIDES_ARC4RANDOM_HUH),0) 
@@ -156,7 +159,7 @@ $(info STDLIB_PROVIDES_ARC4RANDOM_HUH: $(STDLIB_PROVIDES_ARC4RANDOM_HUH))
 
 
 
-CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -D ENDIANNESS="$(ENDIAN)" $(CC_CONFIG) -O0 
+CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -O0 $(CC_CONFIG) 
 
 #       -aux-info filename
 #           Output to the given filename prototyped declarations for all functions declared and/or defined in a translation

@@ -11,6 +11,12 @@
 // agglomerate
 
 
+// RL: OBJECTIFS: 
+//  -- ldd ne retourne aucune dépendance. (On compilerait donc avec libc; et avec crt0) /usr/lib/libc.a /usr/lib/crt0.o 
+//  -- KISS: keep it short and simple 
+//  -- 
+
+
 // RLE: Modèle: commande + traitement + log 
 //  -- Commande = user => TTY (+ ligne de commande) 
 //  -- Traitement = data => PIPE (+ fichiers) 
@@ -44,6 +50,10 @@ int main(const int argc, const char * argv[]) {
     if (stdlog_d > 0) { dprintf(stdlog_d, "Exit value = [ %d ] %s " "\n", error_id, int_anime_error__get_cstr(error_id)); }; 
     if (stdlog_d > 0) { main__stdlog_close(stdlog_d); }; 
     return error_id; 
+  }; 
+  
+ label__error__generic: { 
+    goto label__exit; 
   }; 
   
  label__error__options_parsing_failed: { 
@@ -181,21 +191,27 @@ label__error__anime_buffer_is_too_small: {
     dprintf(stderr_d, "ANIME__OK = %d [ %s ]" "\n", ANIME__OK, int_anime_error__get_cstr(ANIME__OK));
 #endif 
 
-    // PARSING INPUT FILE 
+    // ALLOCATING MEMORY 
     char a_anime_buffer[ANIME_BYTESIZE]; 
-    { 
-      a_anime = anime__make_b(a_anime_buffer, (sizeof(a_anime_buffer)), /*anime_buffer_bytesize_used_r*/NULL, stdlog_d); 
-      if (NULL == a_anime) { goto label__error__anime_buffer_is_too_small; } 
-      
-      error_id = anime__fill_from_file(a_anime, input_file_name, stddata_in_d, stduser_out_d); 
+    a_anime = anime__make_b(a_anime_buffer, (sizeof(a_anime_buffer)), /*anime_buffer_bytesize_used_r*/NULL, stdlog_d); 
+    if (NULL == a_anime) { goto label__error__anime_buffer_is_too_small; } 
+    
+    // PARSING INPUT FILE 
+    if (program_options[PROGRAM_OPTIONS_INDEX__RESTORE] > 0) { 
+      error_id = anime__restore_from_fd(a_anime, stddata_in_d); 
+      if (0 > error_id) goto label__error__generic; 
+    }
+    else { 
+      error_id = anime__fill_from_fd(a_anime, input_file_name, stddata_in_d, stduser_out_d); 
       if (error_id != ANIME__OK) { goto label__error__cannot_parse_input_file; }; 
-      
       close(stddata_in_d); 
       stddata_in_d = -1; 
-      
       if (stduser_out_d > 0) dprintf(stduser_out_d, "<%s>: " "OK" "\n", anime__filename_get(a_anime)); 
+    }; 
 
-      if (program_options[PROGRAM_OPTIONS_INDEX__PRINT] > 0) { if (stduser_out_d > 0) anime__print_d(a_anime, stduser_out_d); }; 
+    // PRINT? 
+    if (program_options[PROGRAM_OPTIONS_INDEX__PRINT] > 0) { 
+      if (stduser_out_d > 0) anime__print_d(a_anime, stduser_out_d); 
     }; 
     
     
@@ -210,6 +226,12 @@ label__error__anime_buffer_is_too_small: {
 	if (stduser_out_d > 0) { dprintf(stduser_out_d, "<%s>: " "%s[%d]: " "%s" "\n", anime__filename_get(a_anime), error_id > 0 ? "Warning" : "Error", error_id, error_str); }; 
 	continue; 
       }; 
+    }; 
+
+    // DUMP?
+    if (program_options[PROGRAM_OPTIONS_INDEX__DUMP] > 0) { 
+      error_id = anime__dump_to_fd(a_anime, stddata_out_d); 
+      if (0 > error_id) goto label__error__generic; 
     }; 
     
     // BYE 

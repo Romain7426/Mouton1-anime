@@ -30,7 +30,7 @@ mkdir -p ./tar-version-src/${MY_TARVERSION}/src
 mkdir -p ./tar-version-src/${MY_TARVERSION}/tools
 mkdir -p ./tar-version-src/${MY_TARVERSION}/tools/src
 
-for i in COPYING Makefile-gen.mkf README.eng.md README.fra.md README.md configure.sh dynamic_list_of_functions_for_the_linker.txt ./tools-compile.sh ; do 
+for i in COPYING Makefile-gen.mkf README.eng.md README.fra.md README.md configure.sh list_of_dynamic_functions_for_the_linker.txt ./tools-compile.sh ; do 
     FILE=$(basename ${i})
     ln ./${FILE} ./tar-version-src/${MY_TARVERSION}/${FILE}
 done;

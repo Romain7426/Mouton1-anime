@@ -25,22 +25,31 @@
 
 #define BUFFERED_OUTSTREAM__H 
 #include "lib__07__buffered_outstream.ci"
-#undef BUFFERED_OUTSTREAM__H 
+#undef  BUFFERED_OUTSTREAM__H 
 
 #include "lib__08__cstring.ci"
 #include "lib__09__write_string.ci"
 #include "lib__10__local_alloca.ci"
 
-#ifdef BUFFER_TO_FD__H 
+#define BUFFER_TO_FD__H 
 #include "lib__11__buffer_to_fd.ci"
-#undef BUFFER_TO_FD__H 
+#undef  BUFFER_TO_FD__H 
 
 
 #define PREFIX anime
-#define CDIR ".."
-#define HDIR "../../include"
-#define CONCAT(s,t) s ## t
+//#define CDIR ".."
+//#define HDIR "../../include"
 
+
+#define MALLOC_BZERO(ctype_t,this) ctype_t * this = NULL; this = (ctype_t *) malloc(sizeof(*this)); bzero(this, sizeof(*this)); 
+
+
+
+
+
+
+#if 0 
+#define CONCAT(s,t) s ## t
 #ifndef STRINGIFY
 #define STRINGIFY(s) STRINGIFY_AUX(s)
 #define STRINGIFY_AUX(s) #s
@@ -53,15 +62,12 @@
 // Beware of a string like "bob\0and\0mary", with which the preprocessor STRLEN will never behave like the compile-one (12 vs 3). 
 // Therefore this one is kind of more accurate. 
 
-
-
-
 enum booleen {faux = 0, vrai = -1};
 typedef enum booleen booleen;
 
-
-
 #define ASSERT_COMPILE(a) { int tab[((a) ? 1 : (-1))]; }; 
+
+#endif 
 
 
 
@@ -85,6 +91,10 @@ extern void yyanimerestart(FILE *new_file);
 extern void anime_parser_reset(void);
 #endif 
 
+
+
+#if 0 
+
 #define pi 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117068 
 #define e 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427 
 
@@ -107,7 +117,6 @@ extern void anime_parser_reset(void);
   //putc('\n', yyanimeout); 
 #define message anime_mess 
 
-#define MALLOC_BZERO(ctype_t,this) ctype_t * this = NULL; this = (ctype_t *) malloc(sizeof(*this)); bzero(this, sizeof(*this)); 
 
 
 
@@ -171,7 +180,7 @@ extern void anime_parser_reset(void);
 #ifndef MAX8 
 # define MAX8 max8 
 #endif 
-
+#endif 
 
 
 

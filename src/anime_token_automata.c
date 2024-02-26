@@ -1004,12 +1004,9 @@ anime_token_automata_t anime_token_automata[] = {
  
 
 enum { anime_token_automata__size_ = ARRAY_SIZE(anime_token_automata) }; 
-
+ASSERT_COMPILE__TOPLEVEL(anime_token_automata__size_ <= UINT8_MAX); 
 const uint8_t anime_token_automata__size = anime_token_automata__size_; 
 
-static void assert_compile__dkushdsuf2387645kjh4r(void) {
-  ASSERT_COMPILE(anime_token_automata__size_ <= 255); 
-}; 
 
 
 #elif 0 

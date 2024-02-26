@@ -36,10 +36,8 @@ static const char * anime_parser_automaton_state__cstr[] = {
 };
 
 enum { anime_parser_automaton_state__size = ARRAY_SIZE(anime_parser_automaton_state__cstr) }; 
-static void assert_compile__dkushdsuf2387645kjhsdfr(void) {
-  ASSERT_COMPILE(ANIME_PARSER__AUTOMATON_STATE__COUNT <= INT8_MAX); //127); // 256 // INT8_MAX 
-  ASSERT_COMPILE(anime_parser_automaton_state__size == ANIME_PARSER__AUTOMATON_STATE__COUNT + 1); 
-}; 
+ASSERT_COMPILE__TOPLEVEL(ANIME_PARSER__AUTOMATON_STATE__COUNT <= INT8_MAX); //127); // 256 // INT8_MAX 
+ASSERT_COMPILE__TOPLEVEL(anime_parser_automaton_state__size == ANIME_PARSER__AUTOMATON_STATE__COUNT + 1); 
 
 const char * anime_parser_automaton_state__get_cstr(const int automaton_state) { 
   return anime_parser_automaton_state__cstr[automaton_state]; 
@@ -3772,10 +3770,8 @@ static int anime_parser__parenthesis__closing[] = {
   ANIME_TOKEN_CLOSEBRACE 
 }; 
 enum { anime_parser__parenthesis__closing__size = ARRAY_SIZE(anime_parser__parenthesis__closing) }; 
+ASSERT_COMPILE__TOPLEVEL(anime_parser__parenthesis__opening__size == anime_parser__parenthesis__closing__size); 
 
-static void assert_compile__dakjdds438sd(void) { 
-  ASSERT_COMPILE(anime_parser__parenthesis__opening__size == anime_parser__parenthesis__closing__size); 
-}; 
 #endif
 
 enum { anime_parser__parenthesis__stack_size = 48 }; // RL: Nestedness. 

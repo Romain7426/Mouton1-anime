@@ -14,10 +14,8 @@ static const char * anime_token_input__type_cstr_tab[] = {
 }; 
  
 enum { anime_token_input__type_cstr_tab__size = ARRAY_SIZE(anime_token_input__type_cstr_tab) }; 
+ASSERT_COMPILE__TOPLEVEL(anime_token_input__type_cstr_tab__size == ANIME_TOKEN_INPUT__TYPE__COUNT + 1); 
 
-static void assert_compile__dkushdsuf2387645kjhsdfr2(void) { 
-  ASSERT_COMPILE(anime_token_input__type_cstr_tab__size == ANIME_TOKEN_INPUT__TYPE__COUNT + 1); 
-}; 
 
 
 const char * anime_token_input_env__strcopy(anime_token_input_env_t * this, const char * cstr) { 

@@ -28,9 +28,11 @@ extern const uint16_t   anime_example__strlen;
 extern const char     * anime_example__get(void); 
 extern void             anime_example__print(const int stduser_d); 
 
-
 enum {               ANIME_BYTESIZE = (1 << 14) }; 
 extern const int16_t anime_bytesize_actual; 
+
+enum { ANIME_LINE_LEN_MAX = INT8_MAX - 1 - 1 - 1 }; // \r\n\0 
+extern const int8_t ANIME_LINE_LEN_MAX__compiled_value; 
 
 static void anime__check_and_assert(const int8_t debug_print_huh, const int stddebug_d); 
 
@@ -123,6 +125,11 @@ enum {
   ANIME__MAIN__CANNOT_OPEN_INPUT_FILE, 
   ANIME__TOKEN__PARSER__ERROR, 
   ANIME__TOKEN__INPUT__ERROR, 
+  ANIME__DUMP__BUFFER_TOO_SMALL, 
+  ANIME__DUMP__DUMPING_TO_TTY, 
+  ANIME__RESTORE__READING_FROM_TTY, 
+  ANIME__RESTORE__ERROR_WHILE_READING_INPUT,
+  ANIME__RESTORE__INPUT_TOO_SMALL,
   // Warnings 
   ANIME__NULL_STRUCT = 1, 
   ANIME__EMPTY_STRUCTURE, 
@@ -130,6 +137,9 @@ enum {
   ANIME__HAS_BREAKING_UNCONSISTENCIES, 
   ANIME__HAS_NON_BREAKING_UNCONSISTENCIES, 
   ANIME__SYNTAX_FILTERING__TOKEN_ENV_HAS_ZERO_TOKEN, 
+  ANIME__DUMP__ENDIANNESS_IS_UNSPECIFIED, 
+  ANIME__RESTORE__ENDIANNESS_IS_UNSPECIFIED, 
+  ANIME__RESTORE__ENDIANNESS_IS_NATIVE, 
 }; 
 
 typedef int8_t int_anime_error_t;
@@ -150,6 +160,11 @@ extern void         anime__delete_r        (anime_t * this);
 extern void         anime__delete_b        (anime_t * this);  
 extern void         anime__bzero           (anime_t * this);  
 extern const char * anime__strcopy         (anime_t * this, const char * cstr); 
+
+extern int_anime_error_t anime__dump_to_fd(const anime_t * this, const int stddata_out_d); 
+extern int_anime_error_t anime__dump_to_buffer(const anime_t * this, char * buffer, const int16_t buffer_bytesize, int16_t * used_bytesize_r);
+extern int_anime_error_t anime__restore_from_fd(anime_t * this, const int stddata_in_d);
+extern int_anime_error_t anime__restore_from_buffer(anime_t * this, const char * buffer, const int16_t buffer_bytesize, int16_t * used_bytesize_r);
 
 extern const char *      anime__filename_get      (const anime_t * this); 
 extern const char *      anime__copyright_get     (const anime_t * this); 
@@ -197,8 +212,8 @@ extern const char * anime__racines_angle_y__get(const anime_t * this, const int8
 extern int_anime_error_t anime__consistency_check(anime_t * this, const int stduser_d); 
 
 extern int_anime_error_t anime__fill_from_fd    (anime_t * this, const char * input_name, const int input_fd, const int stduser_d); 
-extern int_anime_error_t anime__fill_from_file  (anime_t * this, const char * input_name, const int input_fd, const int stduser_d); 
 extern int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d); 
+extern int_anime_error_t anime__fill_from_file  (anime_t * this, const char * filepathname, const int stduser_d); 
 
 extern int_anime_error_t anime__print_field_value_by_name(const anime_t * this, const char * field_name, const int stdprint_d, const int stduser_d, int_anime_error_t * error_id_r, const uint16_t error_size, char * error_str); 
 
@@ -220,7 +235,9 @@ static void anime__check_and_assert(const int8_t debug_print_huh, const int stdd
     }; 
     assert(false); 
   }; 
-  
+
+  assert(ANIME_LINE_LEN_MAX == ANIME_LINE_LEN_MAX__compiled_value); 
+
   assert(ANIME_VERSION_MAJOR == ANIME_VERSION_MAJOR__compiled_value); 
   assert(ANIME_VERSION_MINOR <= ANIME_VERSION_MINOR__compiled_value); 
   //assert(ANIME_VERSION_REVISION <= ANIME_VERSION_REVISION__compiled_value); 

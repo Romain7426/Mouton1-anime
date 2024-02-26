@@ -17,6 +17,8 @@ enum {
   PROGRAM_OPTIONS_INDEX__URL, 
   PROGRAM_OPTIONS_INDEX__EXAMPLE, 
   PROGRAM_OPTIONS_INDEX__QUIET, 
+  PROGRAM_OPTIONS_INDEX__DUMP, 
+  PROGRAM_OPTIONS_INDEX__RESTORE, 
   PROGRAM_OPTIONS_INDEX__COUNT, 
 }; 
  
@@ -135,7 +137,9 @@ static int program_options__parse(const int argc, const char * argv[]) {
       program_options__stduser_new_output = *p; 
       i++; 
       continue; 
-    }; 
+    };
+    if (0 == strcasecmp(s, "dump"                   )) { program_options[PROGRAM_OPTIONS_INDEX__DUMP                   ]++; continue; }; 
+    if (0 == strcasecmp(s, "restore"                )) { program_options[PROGRAM_OPTIONS_INDEX__RESTORE                ]++; continue; };  
     program_options__unknown__push(i); 
     continue; 
   }; 
@@ -164,8 +168,10 @@ static void main__usage(const int argc, const char * argv[], const int stduser_d
   dputs(stduser_d, "  " "--url                              " "  \t  " "Print url" "\n"); 
   dputs(stduser_d, "  " "--stduser <file>                   " "  \t  " "Redirect all the talk to the user to <file>. (Default is stderr.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)" "\n"); 
   dputs(stduser_d, "  " "--stdlog <file>                    " "  \t  " "Write stdlog to <file>. (By default, stdlog fd is 3; therefore the output of stdlog can be gotten using '3>&2' or '3>./stdlog.txt'.) (stdlog is intended for dev. But can be used by users.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)" "\n"); 
+  dputs(stduser_d, "  " "--dump                             " "  \t  " "Dump the datacode" "\n"); 
+  dputs(stduser_d, "  " "--restore                          " "  \t  " "Input file is datacode" "\n"); 
 }; 
- 
+
 static int program_options__run(const int argc, const char * argv[], const int stdprint_d, const int stduser_d, const int stdlog_d) { 
   if (0 != program_options__unknown__nb) { 
     for (int i = 0; i < program_options__unknown__nb; i++) { 

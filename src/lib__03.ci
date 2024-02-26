@@ -73,6 +73,10 @@ static int16_t strcpy_buffer(const char * cstr, char * buffer, const int16_t buf
 #define ENDIANNESS__SWAP__UINT32(a) (  ((char *)(&(a)))[0] ^= ((char *)(&(a)))[3], ((char *)(&(a)))[3] ^= ((char *)(&(a)))[0], ((char *)(&(a)))[0] ^= ((char *)(&(a)))[3], ((char *)(&(a)))[2] ^= ((char *)(&(a)))[1], ((char *)(&(a)))[1] ^= ((char *)(&(a)))[2], ((char *)(&(a)))[2] ^= ((char *)(&(a)))[1], (a)  ) 
 #define ENDIANNESS__SWAP__UINT64(a) (  ((char *)(&(a)))[0] ^= ((char *)(&(a)))[7], ((char *)(&(a)))[7] ^= ((char *)(&(a)))[0], ((char *)(&(a)))[0] ^= ((char *)(&(a)))[7], ((char *)(&(a)))[6] ^= ((char *)(&(a)))[1], ((char *)(&(a)))[1] ^= ((char *)(&(a)))[6], ((char *)(&(a)))[6] ^= ((char *)(&(a)))[1], ((char *)(&(a)))[2] ^= ((char *)(&(a)))[5], ((char *)(&(a)))[5] ^= ((char *)(&(a)))[2], ((char *)(&(a)))[2] ^= ((char *)(&(a)))[5], ((char *)(&(a)))[3] ^= ((char *)(&(a)))[4], ((char *)(&(a)))[4] ^= ((char *)(&(a)))[3], ((char *)(&(a)))[3] ^= ((char *)(&(a)))[4], (a)  ) 
 #define ENDIANNESS__IDENTITY(a) (a) 
+#define ENDIANNESS__SWAP__INT8  ENDIANNESS__SWAP__UINT8
+#define ENDIANNESS__SWAP__INT16 ENDIANNESS__SWAP__UINT16
+#define ENDIANNESS__SWAP__INT32 ENDIANNESS__SWAP__UINT32
+#define ENDIANNESS__SWAP__INT64 ENDIANNESS__SWAP__UINT64
 
 #ifndef ENDIANNESS 
 #  error ENDIANNESS is not defined 
@@ -80,6 +84,11 @@ static int16_t strcpy_buffer(const char * cstr, char * buffer, const int16_t buf
 #define little 1
 #define big 2 
 #if ENDIANNESS == little
+#  define ENDIANNESS__NATIVE_IS_LITTLE
+#  define ENDIANNESS__NATIVE_TO_LITTLE__INT8   ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_LITTLE__INT16  ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_LITTLE__INT32  ENDIANNESS__IDENTITY
+#  define ENDIANNESS__NATIVE_TO_LITTLE__INT64  ENDIANNESS__IDENTITY
 #  define ENDIANNESS__NATIVE_TO_LITTLE__UINT8  ENDIANNESS__IDENTITY
 #  define ENDIANNESS__NATIVE_TO_LITTLE__UINT16 ENDIANNESS__IDENTITY
 #  define ENDIANNESS__NATIVE_TO_LITTLE__UINT32 ENDIANNESS__IDENTITY
@@ -88,7 +97,13 @@ static int16_t strcpy_buffer(const char * cstr, char * buffer, const int16_t buf
 #  define ENDIANNESS__NATIVE_TO_BIG__UINT16 ENDIANNESS__SWAP__UINT16
 #  define ENDIANNESS__NATIVE_TO_BIG__UINT32 ENDIANNESS__SWAP__UINT32
 #  define ENDIANNESS__NATIVE_TO_BIG__UINT64 ENDIANNESS__SWAP__UINT64
+#  define ENDIANNESS__LITTLE_TO_NATIVE__UINT8  ENDIANNESS__IDENTITY
+#  define ENDIANNESS__LITTLE_TO_NATIVE__UINT16 ENDIANNESS__IDENTITY
+#  define ENDIANNESS__LITTLE_TO_NATIVE__UINT32 ENDIANNESS__IDENTITY
+#  define ENDIANNESS__LITTLE_TO_NATIVE__UINT64 ENDIANNESS__IDENTITY
+
 #elif ENDIANNESS == big 
+#  define ENDIANNESS__NATIVE_IS_BIG
 #  define ENDIANNESS__NATIVE_TO_LITTLE__UINT8  ENDIANNESS__SWAP__UINT8
 #  define ENDIANNESS__NATIVE_TO_LITTLE__UINT16 ENDIANNESS__SWAP__UINT16
 #  define ENDIANNESS__NATIVE_TO_LITTLE__UINT32 ENDIANNESS__SWAP__UINT32
@@ -102,7 +117,14 @@ static int16_t strcpy_buffer(const char * cstr, char * buffer, const int16_t buf
 #endif 
 #undef little
 #undef big
+#if __SIZEOF_FLOAT__ == 4 
+#  define ENDIANNESS__SWAP__FLOAT             ENDIANNESS__SWAP__UINT32 
+#  define ENDIANNESS__NATIVE_TO_LITTLE__FLOAT ENDIANNESS__NATIVE_TO_LITTLE__UINT32 
+#else 
+#  error to be written 
+#endif
 #endif 
+
 
 
 static void endianness__check_and_assert(void) { 

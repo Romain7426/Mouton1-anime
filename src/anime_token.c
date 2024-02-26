@@ -76,32 +76,24 @@ struct anime_token_env_t {
 
 
 
-
-static void assert_compile__dkushdsuf2387645kjhsdfr1(void) { 
-  ASSERT_COMPILE(ANIME_TOKEN__SIZE     <= INT_ANIME_TOKEN_MAX); 
-  ASSERT_COMPILE(ANIME_TOKEN_I_INVALID >  INT_ANIME_TOKEN_MAX); 
-  ASSERT_COMPILE(ANIME_TOKEN_I_INVALID <= INT_ANIME_TOKEN_TOP); 
-  ASSERT_COMPILE(ANIME_TOKEN_I_BOF     >  INT_ANIME_TOKEN_MAX); 
-  ASSERT_COMPILE(ANIME_TOKEN_I_BOF     <= INT_ANIME_TOKEN_TOP); 
-}; 
+ASSERT_COMPILE__TOPLEVEL(ANIME_TOKEN__SIZE     <= INT_ANIME_TOKEN_MAX); 
+ASSERT_COMPILE__TOPLEVEL(ANIME_TOKEN_I_INVALID >  INT_ANIME_TOKEN_MAX); 
+ASSERT_COMPILE__TOPLEVEL(ANIME_TOKEN_I_INVALID <= INT_ANIME_TOKEN_TOP); 
+ASSERT_COMPILE__TOPLEVEL(ANIME_TOKEN_I_BOF     >  INT_ANIME_TOKEN_MAX); 
+ASSERT_COMPILE__TOPLEVEL(ANIME_TOKEN_I_BOF     <= INT_ANIME_TOKEN_TOP); 
 
 enum { ANIME_TOKEN_ENV__SIZEOF = sizeof(anime_token_env_t) }; 
 const int32_t anime_token_env__sizeof = ANIME_TOKEN_ENV__SIZEOF; 
+ASSERT_COMPILE__TOPLEVEL(INT_ANIME_TOKEN_MAX >= ANIME_TOKEN__SIZE); 
+ASSERT_COMPILE__TOPLEVEL(INT8_MAX >= ANIME_TOKEN__SYNTAX_KEYWORD__SIZE); 
+ASSERT_COMPILE__TOPLEVEL(INT8_MAX >= ANIME_TOKEN__SYNTAX_MASTER__SIZE); 
 
 static void assert_compile__dakjdds4388ds1p(void) { 
-  ASSERT_COMPILE(INT_ANIME_TOKEN_MAX >= ANIME_TOKEN__SIZE); 
-  
   anime_token_env_t * this; 
-  //ASSERT_COMPILE(sizeof(this ->  srcval) >= sizeof(int_anime_string_t    )); 
-  ASSERT_COMPILE(sizeof(this ->    type) >= sizeof(int_anime_token_type_t)); 
-  //ASSERT_COMPILE(sizeof(this -> srcfile) >= sizeof(int_anime_string_t    )); 
-  ASSERT_COMPILE(sizeof(this ->      nb) >= sizeof(int_anime_token_t     )); 
-  
-  ASSERT_COMPILE(sizeof(this -> master__nb) == sizeof(int8_t)); 
-  ASSERT_COMPILE(INT8_MAX >= ANIME_TOKEN__SYNTAX_MASTER__SIZE); 
-  
-  ASSERT_COMPILE(sizeof(this -> syntax_keyword__nb) == sizeof(int8_t)); 
-  ASSERT_COMPILE(INT8_MAX >= ANIME_TOKEN__SYNTAX_KEYWORD__SIZE); 
+  ASSERT_COMPILE__LOCAL(sizeof(this ->    type) >= sizeof(int_anime_token_type_t)); 
+  ASSERT_COMPILE__LOCAL(sizeof(this ->      nb) >= sizeof(int_anime_token_t     )); 
+  ASSERT_COMPILE__LOCAL(sizeof(this -> master__nb) == sizeof(int8_t)); 
+  ASSERT_COMPILE__LOCAL(sizeof(this -> syntax_keyword__nb) == sizeof(int8_t)); 
 }; 
 
 anime_token_env_t * anime_token_env__make_r(anime_token_env_t * this, const int stdlog_d) {

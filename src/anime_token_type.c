@@ -4,11 +4,7 @@
 enum { INT_ANIME_TOKEN_TYPE_MAX = sizeof(int_anime_token_type_t) == 1 ? UINT8_MAX : sizeof(int_anime_token_type_t) == 2 ? UINT16_MAX : sizeof(int_anime_token_type_t) == 4 ? UINT32_MAX : sizeof(int_anime_token_type_t) == 8 ? UINT64_MAX : 0 }; 
 
 const int_anime_token_type_t int_anime_token_type_max = INT_ANIME_TOKEN_TYPE_MAX; 
-
-static void assert_compile__dkushdsuf2387645kjhsdfr1(void) { 
-  ASSERT_COMPILE(ANIME_TOKEN_TYPE_COUNT <= INT_ANIME_TOKEN_TYPE_MAX); 
-}; 
-
+ASSERT_COMPILE__TOPLEVEL(ANIME_TOKEN_TYPE_COUNT <= INT_ANIME_TOKEN_TYPE_MAX); 
 const int_anime_token_type_t anime_token_type_count = ANIME_TOKEN_TYPE_COUNT; 
 
 
@@ -156,10 +152,8 @@ static const char * anime_token__type_cstr_array[] = {
 }; 
 
 enum { anime_token__type_cstr_array__size = ARRAY_SIZE(anime_token__type_cstr_array) }; 
+ASSERT_COMPILE__TOPLEVEL(anime_token__type_cstr_array__size == ANIME_TOKEN_TYPE_COUNT + 1); 
 
-static void assert_compile__dkushdsuf2387645kjhsdfr2(void) { 
-  ASSERT_COMPILE(anime_token__type_cstr_array__size == ANIME_TOKEN_TYPE_COUNT + 1); 
-}; 
 
 
 
