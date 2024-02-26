@@ -1,15 +1,8 @@
 #include "anime_global.h"
 #include "anime.h"
 #include "anime_type.h"
-#include "anime_lexer.h"
-#include "anime_token.h"
-#include "anime_token_input_buffering.h"
-#include "anime_token_parser.h"
-//#include "anime_tree.h"
-//#include "anime_tree_parser.h"
-//#include "anime_data_generation_001_from_tokens.h"
-//#include "anime_data_generation_002_from_trees.h"
-#include "anime_data_generation_003_from_syntax_filtering.h"
+#include "anime_lexer_module.h"
+#include "anime_syntax_module.h"
 
 #include "anime_module_string.ci" 
 #include "anime_module_subr.ci" 
@@ -18,6 +11,7 @@
 #include "anime_module_print_field.ci" 
 #include "anime_module_consistency.ci" 
 #include "anime_module_dump_and_restore.ci"
+#include "anime_module_lexeme.ci"
 
 const uint8_t ANIME_VERSION_MAJOR__compiled_value    = (uint8_t) ANIME_VERSION_MAJOR; 
 const uint8_t ANIME_VERSION_MINOR__compiled_value    = (uint8_t) ANIME_VERSION_MINOR; 
@@ -367,57 +361,35 @@ label__body: {
   }; 
 }; 
 
+
 int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, const int input_fd, const int stduser_d) { 
-  LOCAL_ALLOCA__DECLARE(uint16_t,UINT16_MAX); 
-  int_anime_error_t         error_id; 
-  anime_token_input_env_t   input_env[1]; 
-  //dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
-  char                    * token_env_b = LOCAL_ALLOCA(anime_token_env__sizeof); 
-  anime_token_env_t       * token_env; 
-  int input_i = -1; 
+  int_anime_error_t error_id; 
   goto label__body; 
 
- error_label__input_error: { 
+label__error__input_error: { 
     this -> error_id = ANIME__TOKEN__INPUT__ERROR; 
-    snprintf(this -> error_str, this -> error_size, "Error while initializing input buffer for tokenizing: %d", input_i); 
+    snprintf(this -> error_str, this -> error_size, "Error while initializing input buffer for tokenizing"); 
     if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, this -> error_str); }; 
     return this -> error_id; 
   }; 
   
 
  label__body: { 
-#if 0
-    dputs_array(stderr_d, "TOKEN_ENV_SIZEOF = ", int_string(sizeof(token_env_b)), "\n"); 
-    dputs_array(stderr_d, "TOKEN_ENV_B IS NULL HUH = ", bool_string(token_env_b == NULL), "\n"); 
-    dputs_array(stderr_d, "local_alloca__requested = ", int_string(local_alloca__requested), "\n"); 
-    dputs_array(stderr_d, "anime_token_env__sizeof = ", int_string(anime_token_env__sizeof), "\n"); 
-    dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
-    dputs_array(stderr_d, "local_alloca__used = ", int_string(local_alloca__used), "\n"); 
-#endif 
-  
-    anime_token_input_env__make_r(input_env, this -> stdlog_d); 
-  
-    token_env = anime_token_env__make_b(anime_token_env__sizeof, token_env_b, NULL, this -> stdlog_d); 
-    assert(NULL != token_env); 
-    //dputs_array(stderr_d, "TOKEN_ENV IS NULL HUH = ", bool_string(token_env == NULL), "\n"); 
-  
     this -> filename = anime__string_stack__push_lookup(this, input_name); 
-  
-    //const int input_i = anime_token_input__stack_push__filedes(input_env, input_fd, input_name); 
-    input_i = anime_token_input__stack_push__filedes(input_env, input_fd, input_name); 
-    if (input_i < 0) goto error_label__input_error; 
-  
-    error_id = anime_token__parser(token_env, input_env, input_i, &this -> error_id, this -> error_size, this -> error_str); 
+
+    error_id = anime_lexer__run(this, input_fd); 
     if (error_id != ANIME__OK) { return error_id; }; 
-  
-    if (this -> stdlog_d > 0) { anime_token__print_all_tokens(this -> stdlog_d, token_env); fflush(NULL); }; 
-  
-    assert(NULL != token_env); 
-    assert(NULL != this); 
-    error_id = anime_data_generation_003_from_syntax_filtering(token_env, this, stduser_d); 
+    
+    if (this -> stdlog_d > 0) { anime__lexeme__print_all(this, this -> stdlog_d); }; 
+
+    error_id = anime__syntax__is_well_parenthesised_huh(this); 
     if (error_id != ANIME__OK) { return error_id; }; 
-	
+    
+    error_id = anime__syntax__structure_check_and_fill(this, /*stdwarning_d*/stduser_d, /*stderror_d*/stduser_d); 
+    if (error_id != ANIME__OK) { return error_id; }; 
+    
     error_id = anime__consistency_check(this, stduser_d); 
+    
     return error_id; 
   };   
     
