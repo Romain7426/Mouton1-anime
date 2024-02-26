@@ -1,6 +1,7 @@
 #include "anime_global.h"
 #include "anime.h"
 #include "anime_type.h"
+#include "anime_lexer.h"
 #include "anime_token.h"
 #include "anime_token_input_buffering.h"
 #include "anime_token_parser.h"

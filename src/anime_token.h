@@ -28,6 +28,10 @@ enum { ANIME_TOKEN_I_INVALID = UINT16_MAX };
 extern  const int_anime_token_t ANIME_TOKEN_I_INVALID__compiled_value; 
 enum { ANIME_TOKEN_I_BOF = UINT16_MAX - 1 }; 
 extern  const int_anime_token_t ANIME_TOKEN_I_BOF__compiled_value; 
+static void anime_token__check_and_assert(void) {
+  assert(ANIME_TOKEN_I_INVALID == ANIME_TOKEN_I_INVALID__compiled_value); 
+  assert(ANIME_TOKEN_I_BOF     == ANIME_TOKEN_I_BOF__compiled_value); 
+}; 
 
 extern int anime_token__push(anime_token_env_t * this, const int srcval_len, const char * srcval_rstr, const int token_type, const char * srcfile, const int offset0, const int line1, const int column0); 
 
