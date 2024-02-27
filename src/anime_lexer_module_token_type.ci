@@ -1,5 +1,3 @@
-#include "anime_global.h"
-#include "anime_token_type.h"
 
 enum { INT_ANIME_TOKEN_TYPE_MAX = sizeof(int_anime_token_type_t) == 1 ? UINT8_MAX : sizeof(int_anime_token_type_t) == 2 ? UINT16_MAX : sizeof(int_anime_token_type_t) == 4 ? UINT32_MAX : sizeof(int_anime_token_type_t) == 8 ? UINT64_MAX : 0 }; 
 

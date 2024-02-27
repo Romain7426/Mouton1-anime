@@ -1,8 +1,5 @@
-#include "anime_global.h"
-#include "anime_token_type.h"
-#include "anime_token.h"
-#include "anime_token_automata.h"
 
+#include "anime_lexer_module_automata.hi"
 
 
 
@@ -760,6 +757,9 @@ int8_t anime_token_automata__read_symbol(const anime_token_automata_t * automata
     next_state = p(current_state, char_to_be_read); 
   }; break; 
   case ANIME_TOKEN_AUTOMATA__TYPE__MASTER: { 
+#if 1
+    assert(false); 
+#else 
     int8_t (* p)(const int master__nb, const int master__len[], const char * master__array[], const int8_t current_state0, const int16_t char_given); // = (void *)this -> automata; 
     p = (CASTING_CONST void *)this -> automata; 
     const anime_token_env_t * token_env; // = (const void *) this -> value_ptr1; 
@@ -774,8 +774,12 @@ int8_t anime_token_automata__read_symbol(const anime_token_automata_t * automata
 #if 0 
   dputs_array(stderr, __func__, ": ", "next_state = ", int_string__stack(next_state), "\n"); 
 #endif 
+#endif 
   }; break; 
   case ANIME_TOKEN_AUTOMATA__TYPE__SYNTAX_KEYWORD: { 
+#if 1 
+    assert(false);
+#else
     int8_t (* p)(const int syntax_keyword__nb, const int syntax_keyword__len[], const char * syntax_keyword__array[], const int8_t current_state0, const int16_t char_given);
     p = (CASTING_CONST void *)this -> automata; 
     const anime_token_env_t * token_env = (const void *) this -> value_ptr1; 
@@ -788,6 +792,7 @@ int8_t anime_token_automata__read_symbol(const anime_token_automata_t * automata
 
 #if 0 
   dputs_array(stderr, __func__, ": ", "next_state = ", int_string__stack(next_state), "\n"); 
+#endif 
 #endif 
   }; break; 
   }; 
@@ -809,7 +814,7 @@ uint8_t anime_token_automata__get_token_type(const anime_token_automata_t * auto
 
 
 
-
+#if 0 
 void anime_token_automata__set_master(anime_token_automata_t * automata, const anime_token_env_t * token_env) { 
   for (int automaton_i = 0; automaton_i < anime_token_automata__size; automaton_i++) { 
     anime_token_automata_t * this = &(automata[automaton_i]); 
@@ -817,7 +822,7 @@ void anime_token_automata__set_master(anime_token_automata_t * automata, const a
     this -> value_ptr1 = (const void *)token_env; 
   }; 
 }; 
-
+#endif 
 
 
 
@@ -989,8 +994,10 @@ anime_token_automata_t anime_token_automata[] = {
   TOKEN_AUTOMATA__ISTRING(ANIME_TOKEN_AS,         "as"), 
   TOKEN_AUTOMATA__ISTRING(ANIME_TOKEN_HUH,         "?"), 
   // RL: Ident 
+#if 0
   TOKEN_AUTOMATA__MASTER(ANIME_TOKEN_SYNTAX_MASTER), 
   TOKEN_AUTOMATA__SYNTAX_KEYWORD(ANIME_TOKEN_SYNTAX_KEYWORD), 
+#endif 
   TOKEN_AUTOMATA__FUNCTION(ANIME_TOKEN_IDENT,      token_automaton__ident), 
   // RL: Ignored tokens 
   TOKEN_AUTOMATA__STRING(ANIME_TOKEN_EOL, "\n"), 

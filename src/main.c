@@ -48,7 +48,7 @@ int main(const int argc, const char * argv[]) {
     if (NULL != a_anime) anime__delete_b(a_anime); 
     if (stduser_out_d > 2) { close(stduser_out_d); }; 
     if (stdlog_d > 0) { dprintf(stdlog_d, "Exit value = [ %d ] %s " "\n", error_id, int_anime_error__get_cstr(error_id)); }; 
-    if (stdlog_d > 0) { main__stdlog_close(stdlog_d); }; 
+    if (stdlog_d > 0) { main__stdlog_close(stdlog_d, /*flush_huh*/true); }; 
     return error_id; 
   }; 
   
@@ -128,9 +128,9 @@ label__error__anime_buffer_is_too_small: {
     { 
       stdlog_d = main__stdlog_init(main__stdlog__buffer, main__stdlog__buffer_bytesize); 
       
-      stduser_out_d = stderr_d; 
+      stduser_out_d = isatty(stdout_d) ? stdout_d : open("/dev/tty", O_WRONLY); 
       stduser_in_d  = isatty(stdin_d) ? stdin_d : open("/dev/tty", O_RDONLY); 
-
+      
       stddata_out_d = isatty(stdout_d) ? -1 : stdout_d; 
       stddata_in_d  = isatty(stdin_d)  ? -1 : stdin_d; 
     }; 
@@ -142,7 +142,7 @@ label__error__anime_buffer_is_too_small: {
     { 
       if (!program_options__parse(argc, argv)) { goto label__error__options_parsing_failed; }; 
       
-      error_id = program_options__run(argc, argv, /*stdprint_d*/stderr_d, /*stduser_out_d*/stderr_d, /*stdlog_d*/stdlog_d); 
+      error_id = program_options__run(argc, argv, /*stdprint_d*/stduser_out_d, /*stduser_out_d*/stduser_out_d, /*stdlog_d*/stdlog_d); 
       if (ANIME__OK != error_id) { goto label__error__options_running_failed; }; 
       
       //dprintf(stderr_d, "program_options__stdlog_new_output = %s" "\n", program_options__stdlog_new_output); 

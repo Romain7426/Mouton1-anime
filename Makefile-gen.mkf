@@ -341,7 +341,7 @@ Makefile:
 	echo "" > $@
 #	echo "default: Makefile build run $(BIN)" >> $@
 #	echo "default: Makefile build $(LIB) $(BIN) run " >> $@
-	echo "default: Makefile build build_ci build_i build_o $(LIB) $(BIN) run " >> $@
+	echo "default: Makefile build build_ci build_hi build_i build_o $(LIB) $(BIN) run " >> $@
 	echo "" >> $@
 	echo "" >> $@
 	echo "" >> $@
@@ -465,6 +465,16 @@ Makefile:
 	$(foreach file_ci,$(patsubst src/%,%,$(wildcard src/*.ci)), \
 	  echo "build/$(file_ci): src/$(file_ci) " >> $@; \
 	  echo "	ln src/$(file_ci) build/$(file_ci) " >> $@; \
+	  echo "" >> $@; \
+	)
+	echo "" >> $@
+	echo "" >> $@
+	echo "" >> $@
+	echo "build_hi: build $(patsubst src/%,build/%,$(wildcard src/*.hi)) " >> $@; 
+	echo "" >> $@
+	$(foreach file_hi,$(patsubst src/%,%,$(wildcard src/*.hi)), \
+	  echo "build/$(file_hi): src/$(file_hi) " >> $@; \
+	  echo "	ln src/$(file_hi) build/$(file_hi) " >> $@; \
 	  echo "" >> $@; \
 	)
 	echo "" >> $@

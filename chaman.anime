@@ -10,7 +10,7 @@ physique {
   largeur := 0.5;
   hauteur := 50.;
  };
- MaSSe := 240.;
+ MaSSe := 240. + 1;
 }
 
 gameplay {
@@ -67,6 +67,11 @@ gameplay {
 
 
 }
+
+
+
+
+
 
 
 graphique {
@@ -127,8 +132,3 @@ graphique {
 	{qui := bras_droit;   x := 0.; y := -.15.; z := 37.; angle y := 0.;};
 
 }
-
-
-
-
-

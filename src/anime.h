@@ -28,7 +28,7 @@ extern const uint16_t   anime_example__strlen;
 extern const char     * anime_example__get(void); 
 extern void             anime_example__print(const int stduser_d); 
 
-enum {               ANIME_BYTESIZE = (1 << 14) }; 
+enum {               ANIME_BYTESIZE = (1 << 14) + (1 << 13) }; 
 extern const int16_t anime_bytesize_actual; 
 
 enum { ANIME_LINE_LEN_MAX = INT8_MAX - 1 - 1 - 1 }; // \r\n\0 
@@ -133,6 +133,7 @@ enum {
   ANIME__LEXER__GENERIC_ERROR,
   ANIME__LEXER__BAD_INPUT_FD,
   ANIME__LEXER__LINE_TOO_LARGE,
+  ANIME__SYNTAX__GENERIC_ERROR,
   // Warnings 
   ANIME__NULL_STRUCT = 1, 
   ANIME__EMPTY_STRUCTURE, 

@@ -20,11 +20,12 @@ extern  int8_t anime_token_automata__read_symbol   (const anime_token_automata_t
 
 extern uint8_t anime_token_automata__get_token_type(const anime_token_automata_t * automata, const uint8_t automaton_i); 
 
+
+#if 0 
 extern void    anime_token_automata__set_master(anime_token_automata_t * automata, const anime_token_env_t * token_env); 
 
 extern int8_t  anime_token_automaton__get__master(const int master__nb, const int master__len[], const char * master__array[], const int8_t current_state0); 
-
-
+#endif 
 
 
 

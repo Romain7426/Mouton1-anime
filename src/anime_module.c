@@ -376,19 +376,19 @@ label__error__input_error: {
 
  label__body: { 
     this -> filename = anime__string_stack__push_lookup(this, input_name); 
-
-    error_id = anime_lexer__run(this, input_fd); 
+    
+    error_id = anime__lexer__fill_from_fd(this, input_fd); 
     if (error_id != ANIME__OK) { return error_id; }; 
     
     if (this -> stdlog_d > 0) { anime__lexeme__print_all(this, this -> stdlog_d); }; 
-
-    error_id = anime__syntax__is_well_parenthesised_huh(this); 
-    if (error_id != ANIME__OK) { return error_id; }; 
     
     error_id = anime__syntax__structure_check_and_fill(this, /*stdwarning_d*/stduser_d, /*stderror_d*/stduser_d); 
     if (error_id != ANIME__OK) { return error_id; }; 
-    
-    error_id = anime__consistency_check(this, stduser_d); 
+
+    if (this -> stdlog_d > 0) { anime__syntax__print(this, this -> stdlog_d); };
+
+    // RL: D’abord, il faut calculer les noms. 
+    error_id = anime__post_syntax__consistency_check(this, stduser_d); 
     
     return error_id; 
   };   
