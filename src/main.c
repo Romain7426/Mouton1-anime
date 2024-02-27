@@ -8,13 +8,13 @@
 
 //struct a_t { char u; char aa[]; }; // RL: sizeof(struct a_t) = 1 
 
-// agglomerate
+// amalgamated 
 
 
 // RL: OBJECTIFS: 
 //  -- ldd ne retourne aucune dépendance. (On compilerait donc avec libc; et avec crt0) /usr/lib/libc.a /usr/lib/crt0.o 
 //  -- KISS: keep it short and simple 
-//  -- 
+//  -- no malloc 
 
 
 // RLE: Modèle: commande + traitement + log 

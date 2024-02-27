@@ -251,6 +251,27 @@ static char * /* encoded_char */ special_char_2_encoded_char(const char special_
 };
 
 
+static char * convert_quoted_encoded_string_to_regular_string(const char * quoted_encoded_string, char * buffer, const int16_t buffer_bytesize) { 
+  const char * cstr = quoted_encoded_string; 
+  if (0 >= buffer_bytesize) return NULL; 
+  if (NULL ==  cstr) return NULL; 
+  if ('\0' == *cstr) { *buffer = '\0'; return buffer; }; 
+  const int16_t cstr_len0 = strlen(cstr); 
+  if (1 == cstr_len0) return NULL; 
+  if ('"' != *cstr) return NULL; 
+  if ('"' != cstr[cstr_len0-1]) return NULL; 
+  int16_t dest_pos = 0; 
+  for (int16_t src_pos = 1; src_pos < cstr_len0 - 1; src_pos++) { 
+    if (buffer_bytesize <= dest_pos) { buffer[buffer_bytesize-1] = '\0'; return buffer; }; 
+    char src_c = cstr[src_pos]; 
+    buffer[dest_pos] = '\\' != src_c ? src_c : (src_pos++, src_c = cstr[src_pos], encoded_char_2_special_char(src_c)); 
+    dest_pos++; 
+  };
+  buffer[dest_pos] = '\0'; 
+  return buffer; 
+}; 
+
+
 static int int_member_array_nb(const int n, const int size, const int int_array[]) {
   for (int i = 0; i < size; i++) {
     if (n == int_array[i]) return true; 

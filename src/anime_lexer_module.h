@@ -6,5 +6,7 @@
 
 extern int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd); 
 
+extern void anime__lexeme__print_all(const anime_t * this, const int stdout_d); 
+
 
 #endif /* ANIME_LEXER_MODULE_H */

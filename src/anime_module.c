@@ -12,6 +12,7 @@
 #include "anime_module_consistency.ci" 
 #include "anime_module_dump_and_restore.ci"
 #include "anime_module_lexeme.ci"
+#include "anime_generation_module.h"
 
 const uint8_t ANIME_VERSION_MAJOR__compiled_value    = (uint8_t) ANIME_VERSION_MAJOR; 
 const uint8_t ANIME_VERSION_MINOR__compiled_value    = (uint8_t) ANIME_VERSION_MINOR; 
@@ -379,16 +380,23 @@ label__error__input_error: {
     
     error_id = anime__lexer__fill_from_fd(this, input_fd); 
     if (error_id != ANIME__OK) { return error_id; }; 
-    
     if (this -> stdlog_d > 0) { anime__lexeme__print_all(this, this -> stdlog_d); }; 
     
     error_id = anime__syntax__structure_check_and_fill(this, /*stdwarning_d*/stduser_d, /*stderror_d*/stduser_d); 
     if (error_id != ANIME__OK) { return error_id; }; 
-
     if (this -> stdlog_d > 0) { anime__syntax__print(this, this -> stdlog_d); };
 
+    error_id = anime__generation__field_names(this); 
+    if (error_id != ANIME__OK) { return error_id; }; 
+
     // RL: D’abord, il faut calculer les noms. 
+    this -> filled_huh = 2; // RL: À supprimer. 
     error_id = anime__post_syntax__consistency_check(this, stduser_d); 
+
+    error_id = anime__generation__field_values(this); 
+    if (error_id != ANIME__OK) { return error_id; }; 
+    
+    if (this -> stdlog_d > 0) { anime__print_d(this, stderr_d); }; 
     
     return error_id; 
   };   
