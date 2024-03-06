@@ -18,6 +18,7 @@
 #include <time.h>
 #include <signal.h> 
 #include "lib__02__header.ci"
+#include "lib__10__local_alloca.ci"
 #include "lib__03.ci"
 #include "lib__04__string_stack.ci"
 #include "lib__05__error_state.ci"

@@ -148,10 +148,11 @@ void anime_del_code(anime_tcode **c) {
 #define BUFFERED_OUTSTREAM__C 
 #define BUFFERED_OUTSTREAM__MAX 8 
 #include "lib__07__buffered_outstream.ci"
-#undef BUFFERED_OUTSTREAM__MAX
-#undef BUFFERED_OUTSTREAM__C 
+#undef  BUFFERED_OUTSTREAM__MAX
+#undef  BUFFERED_OUTSTREAM__C 
 
 #define BUFFER_TO_FD__C 
 #define BUFFER_TO_FD__MAX 8 
 #include "lib__11__buffer_to_fd.ci"
+#undef  BUFFER_TO_FD__MAX 
 #undef  BUFFER_TO_FD__C 

@@ -53,6 +53,8 @@ static void anime__check_and_assert(const int8_t debug_print_huh, const int stdd
 //  - The 128-255 range (the -128_-1 range) could be interpreted as positive or negative. 
 // However, in the program, the sign interpretation of these values depends only 
 // on the type declaration, «int8_t error_id» or «uint8_t error_id» — so they are safe. 
+// 
+// PCC: warning: identifier exceeds C99 5.2.4.1: 63 [ https://rgambord.github.io/c99-doc/sections/5/2/4/1/index.html ] 
 enum { 
   ANIME__OK = 0, 
   // Unspecified 

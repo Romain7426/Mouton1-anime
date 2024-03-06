@@ -144,13 +144,28 @@ bool name_has_spaces_huh(const char * str) {
 
 char * strconcat(const char * const str1, const char * const str2) {
   const unsigned int len = strlen(str1) + strlen(str2);
+#if 0 
   return strcat(strcpy(malloc(len + 1), str1), str2);
-}
+#else 
+  char * new_str = malloc(len + 1); 
+  strlcpy(new_str, str1, len+1);
+  strlcat(new_str, str2, len+1); 
+  return new_str;
+#endif
+};
 
 char * strconcat3(const char * const str1, const char * const str2, const char * const str3) {
   const unsigned int len = strlen(str1) + strlen(str2) + strlen(str3);
+#if 0 
   return strcat(strcat(strcpy(malloc(len + 1), str1), str2), str3);
-}
+#else 
+  char * new_str = malloc(len + 1); 
+  strlcpy(new_str, str1, len+1);
+  strlcat(new_str, str2, len+1); 
+  strlcat(new_str, str3, len+1); 
+  return new_str;
+#endif
+};
 
 char * strcopy(const char * str) {
   const size_t len = strlen(str);

@@ -7,11 +7,13 @@ static int16_t    exception_message_string_nb = 0;
 static int        exception_code = 0; 
 static sigjmp_buf exception_data; 
 
+// PCC: warning: identifier exceeds C99 5.2.4.1: 4095 
+
 #define EXCEPTION_CODE__LIST \
   X(EXCEPTION_CODE__NONE, = 0)		 \
   X(EXCEPTION_CODE__READ_BUFFER_TOO_SMALL,) \
   X(EXCEPTION_CODE__NEWLINE_LOOKUP_ISSUE,) \
-  X(EXCEPTION_CODE__STDIN_LINE_DATA_BUFFER_TOO_SMALL,) \
+  X(EXCEPTION_CODE__STDIN_LINE_BUFFER_TOO_SMALL,) \
   X(EXCEPTION_CODE__READING_ERROR,) \
   X(EXCEPTION_CODE__FORK_FAILED,) \
   X(EXCEPTION_CODE__MAPPED_ARGV_ARRAY_TOO_SMALL,) 

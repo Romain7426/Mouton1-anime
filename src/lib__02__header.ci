@@ -181,8 +181,8 @@ static void assert_at_compile_time__check_type_size(void) {
 #endif
 
 
-#ifdef STDLIB_PROVIDES_ARC4RANDOM
-#  define random arc4random 
+#ifndef STDLIB_PROVIDES_ARC4RANDOM
+#  define arc4random random 
 #endif 
 
 

@@ -6,7 +6,7 @@
 
 (cat CC > /dev/null 2>&1 ) || (echo "No './CC' file (it holds path to C compiler)" ; exit 1 ; ) || exit 1;
 
-CC="$(cat CC)"
+CC="$(cat CC | head -1)"
 echo "CC="\"${CC}\" 
 
 #exit 0;

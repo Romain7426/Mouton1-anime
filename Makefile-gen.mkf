@@ -48,7 +48,7 @@ $(info CC is defined)
 CC           := $(if $(strip $(filter $(CC),cc)),$(shell which cc),$(CC))
 else
 $(info CC is undefined)
-CC           := $(if $(strip $(wildcard CC)),$(shell cat CC),$(shell which cc))
+CC           := $(if $(strip $(wildcard CC)),$(shell cat CC | head -1),$(shell which cc))
 endif
 endif
 
@@ -57,7 +57,7 @@ endif
 # RL: 3. CC par défault
 # Else, cc. 
 CC_ENV     := $(strip $(shell env | grep "^CC=" | head -1 | cut -f 2 -d "="))
-CC_FILE    := $(strip $(if $(strip $(wildcard CC)),$(shell cat CC),))
+CC_FILE    := $(strip $(if $(strip $(wildcard CC)),$(shell cat CC | head -1),))
 CC_DEFAULT := $(strip $(shell which cc))
 #$(info CC_ENV     = "$(CC_ENV)")
 #$(info CC_FILE    = "$(CC_FILE)")
@@ -147,6 +147,7 @@ endif
 CC_CONFIG:=
 CC_CONFIG:=$(CC_CONFIG) -D ENDIANNESS="$(ENDIANNESS)"
 CC_CONFIG:=$(CC_CONFIG) -D PIPEBUFFERSIZE="$(PIPEBUFFERSIZE)"
+CC_CONFIG:=$(CC_CONFIG) -D FLOATBYTESIZE="$(FLOATSIZE)"
 
 STDLIB_PROVIDES_ARC4RANDOM_HUH := $(shell echo "#include <stdlib.h>\nint main(int argc, char * argv[]) { return arc4random(); }; " | $(CC) -x c -std=c99 -O0 - -o - > /dev/null 2>&1 ; echo $$?)
 ifeq ($(STDLIB_PROVIDES_ARC4RANDOM_HUH),0) 
@@ -167,11 +168,11 @@ CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -O0 $(CC_
 
 
 # -pedantic -pedantic-errors 
-CC_FLAGS_F := -fmessage-length=0 -fdiagnostics-show-location=once -fdiagnostics-show-option -fstack-check  -fverbose-asm -ffreestanding -feliminate-unused-debug-types 
-CC_FLAGS_F_NO := -fno-exceptions -fno-omit-frame-pointer  -fno-builtin -fno-builtin-printf -fno-builtin-abs -fno-builtin-strcpy -fno-builtin-strcat -fno-builtin-strlen -fno-builtin-bzero -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-assert -fno-builtin-tolower -fno-builtin-toupper -fno-builtin-log -fno-builtin-alloca -fno-common -fno-exceptions -fno-non-call-exceptions -fno-asynchronous-unwind-tables -fno-inline -fno-inline-functions -fno-inline-functions 
+CC_FLAGS_F := -fmessage-length=0 -fdiagnostics-show-location=once -fdiagnostics-show-option -fstack-check  -fverbose-asm -ffreestanding -feliminate-unused-debug-types -fjump-tables -fmerge-all-constants -fshort-enums -ftrapv -fvisibility=hidden 
+CC_FLAGS_F_NO := -fno-exceptions -fno-omit-frame-pointer  -fno-builtin -fno-builtin-printf -fno-builtin-abs -fno-builtin-strcpy -fno-builtin-strcat -fno-builtin-strlen -fno-builtin-bzero -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-assert -fno-builtin-tolower -fno-builtin-toupper -fno-builtin-log -fno-builtin-alloca -fno-common -fno-non-call-exceptions -fno-asynchronous-unwind-tables -fno-inline -fno-inline-functions -fno-inline-functions 
 # unknown: -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon 
 CC_FLAGS_W := -Wall -W -Wextra  -Werror -Wfatal-errors  -Werror-implicit-function-declaration -Wparentheses -Wimplicit -Wreturn-type -Wcomment -Wpointer-arith -Wchar-subscripts -Wimplicit-int -Werror-implicit-function-declaration -Wmain -Wmissing-braces -Wmultichar -Wsequence-point -Wreturn-type -Wstrict-prototypes -Wpacked -Wcast-qual -Winline -Wformat-nonliteral -Wwrite-strings -Wmissing-field-initializers -Wsign-compare  -Wformat-zero-length -Wswitch -Wswitch-enum -Wswitch-default -Wnested-externs -Wunknown-pragmas
-CC_FLAGS_W_NO := -Wno-cast-align -Wno-system-headers  -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral 
+CC_FLAGS_W_NO := -Wno-cast-align -Wno-system-headers  -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral -Wno-unused-command-line-argument 
 # unknown: -gstabs+3 
 
 # -I /usr/X11R6/include  -I ./libs/SDL-1.2.15/destroot/include -I ./src/SDL_image -I ./src/SDL_mixer # -Wmissing-prototypes -Wmissing-declarations 
@@ -184,8 +185,38 @@ CLANG_FLAGS := -gfull -W -Wextra -Wnewline-eof -Wno-unsequenced
 #pragma GCC diagnostics disable "-Wtype-limits" 
 GCC_FLAGS := -g3  -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon  -fno-stack-check -Wno-error -Wno-enum-compare #-Wno-extra -Wno-sign-compare #-Werror=no-type-limits #-Wno-absolute-value #-Wno-type-limits #-Wframe-larger-than=76368 #-Wframe-larger-than=1844674407370955161 #-Wframe-larger-than=18446744073709551615 #-Wframe-larger-than=18446744073709551615UL #-Wframe-larger-than='18446744073709551615UL' #-Wframe-larger-than='SIZE_MAX' #-Wno-frame-larger-than # -Wno-stack-usage # -Wstack-usage=1844674407370955161
 #PCC: -g: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
-PCC_FLAGS := -fpic #-g #-fpic 
-TCC_FLAGS := -g -bt100 #-b #-fpic #-g #-fpic 
+CLANG_FLAGS :=
+PCC_FLAGS   := -fpic -Wno-unreachable-code -Wno-shadow #-g #-fpic 
+TCC_FLAGS   := -g -bt100 #-b #-fpic #-g #-fpic 
+
+# RL: Le préprocesseur de PCC émet un warning pour chaque identifiant plus que soixante-trois charactères: «identifier exceeds C99 5.2.4.1» 
+# RL: Cependant, ceci n’empêche pas le compilateur de continuer. Ceci a une influence uniquement pour les noms de macros, qui sont alors tronqués. 
+# RL: Ceci implique que un warning est émis, et donc change le code de retour. 
+# RL: Cependant, si l’option «-E» n'est pas spécifié à PCC, alors le préprocesseur de PCC retourne zéro en dépit des warnings. 
+# RL: SOURCE: {PCC_SOURCE}/cc/cpp/token.c
+# RL: SOURCE: {PCC_SOURCE}/cc/cpp/cpp.h
+# RL:          #define    MAXIDSZ 63      /* Max length of C99 identifier; 5.2.4.1 */
+# RL: 
+# RL: Cependant, problème: lors de l’appel récursif à son préprocesseur, PCC ne retire pas l’option «-E», lequel a une sémantique différente pour son propre préprocesseur… 
+# RL: Pas le choix, il faut tester le code de retour du préprocesseur de PCC. (0 -> OK; 1 -> erreur; 2 -> warnings) 
+# RL: Pire, PCC ajoute automatiquement l’option «-E» à son préprocesseur… 
+# RL: Il faut donc dire ensuite donner nous-même le fichier de sortie au compilateur. 
+# RL: 
+# RL: Pire, PCC ne supporte pas les points-virgules sur-numéraires dans la déclaration d’un ‘struct'… 
+# RL: 
+# RL: Pas le choix, pour PCC, il faut enlever tous les warnings. 
+ifeq ($(CC_NAME),pcc)
+$(info ****** PCC ******)
+$(info PCC: Vous pouvez ignorer les avertissements émis par le préprocesseur de PCC à propos de la longueur des identifiants («identifier exceeds C99 5.2.4.1»), tant que ceux-ci ne concernent pas les noms de macros, lesquels seront alors tronqués par le préprocesseur de PCC.)
+$(info PCC: Vous pouvez ignorer les avertissements «extra ; in struct».) 
+$(info PCC: De façon générale, nous ignorons tous les messages émis par PCC. (Nous avons enlevés tous les flags «-W».)) 
+$(info ****** PCC ******)
+CC_FLAGS_W :=
+CC_FLAGS_W_NO :=
+endif
+
+#CLANG_FLAGS := $(CLANG_FLAGS) -nostdinc -I/usr/include -nostdlib 
+#PCC_FLAGS   := $(PCC_FLAGS) -nodefaultlibs -nostartfiles -nostdinc -nostdlib -static 
 
 CC_FLAGS_SPEC := 
 CC_FLAGS_SPEC := $(CC_FLAGS_SPEC) $(if $(strip $(filter $(CC_NAME),clang)),$(CLANG_FLAGS),) 

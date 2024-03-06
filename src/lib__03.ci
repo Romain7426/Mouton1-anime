@@ -117,13 +117,17 @@ static int16_t strcpy_buffer(const char * cstr, char * buffer, const int16_t buf
 #endif 
 #undef little
 #undef big
-#if __SIZEOF_FLOAT__ == 4 
+
+#ifndef FLOATBYTESIZE 
+#  error FLOATBYTESIZE is not defined
+#elif FLOATBYTESIZE == 4 
 #  define ENDIANNESS__SWAP__FLOAT             ENDIANNESS__SWAP__UINT32 
 #  define ENDIANNESS__NATIVE_TO_LITTLE__FLOAT ENDIANNESS__NATIVE_TO_LITTLE__UINT32 
 #else 
-#  error to be written 
-#endif
+#  error Code for this size of float is missing 
 #endif 
+
+#endif
 
 
 

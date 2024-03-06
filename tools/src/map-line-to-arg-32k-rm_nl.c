@@ -76,7 +76,7 @@ static void stdin_line__push_char_array(const char * read_buffer, const int16_t 
     exception_message_push_string(": STDIN_LINE_DATA_BUFFER is too small: "); 
     exception_message_push_llint(STDIN_LINE_DATA_BUFFER_BYTESIZE); 
     exception_message_push_string("\n"); 
-    exception_raise(EXCEPTION_CODE__STDIN_LINE_DATA_BUFFER_TOO_SMALL); 
+    exception_raise(EXCEPTION_CODE__STDIN_LINE_BUFFER_TOO_SMALL); 
     /* NOT REACHED */
   }; 
   

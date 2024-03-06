@@ -15,7 +15,8 @@ mkdir -p tools/bin
 
 
 #echo "CC = "${CC}
-CC=$(cat CC)
+#CC=$(cat CC)
+CC=$(cat CC | head -1)
 #echo ${CC} 
 #exit 0; 
 

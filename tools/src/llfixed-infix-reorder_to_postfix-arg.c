@@ -109,12 +109,16 @@ int main(const int argc, const char * argv[]) {
 	if (OUTPUT_STACK_UNITSIZE <= output_stack_nb) goto label__error__stack_overflow; 
 	output_stack[output_stack_nb] = operation_symbol_stack_argv[operation_symbol_stack_nb]; 
 	output_stack_nb++; 
+#if 1 
 	operation_symbol_stack     [operation_symbol_stack_nb] = operation_symbol; 
 	operation_symbol_stack_argv[operation_symbol_stack_nb] = argv_i; 
 	operation_symbol_stack_nb++; 
+#else 
+	arg_i--; 
+#endif 
 	continue; 
       }; 
-      /* NOT REACHED */
+      /* NOT REACHED */ assert(false); 
     }; 
 
 #if 0 
