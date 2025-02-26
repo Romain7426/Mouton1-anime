@@ -172,7 +172,7 @@ CC_FLAGS_F := -fmessage-length=0 -fdiagnostics-show-location=once -fdiagnostics-
 CC_FLAGS_F_NO := -fno-exceptions -fno-omit-frame-pointer  -fno-builtin -fno-builtin-printf -fno-builtin-abs -fno-builtin-strcpy -fno-builtin-strcat -fno-builtin-strlen -fno-builtin-bzero -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-assert -fno-builtin-tolower -fno-builtin-toupper -fno-builtin-log -fno-builtin-alloca -fno-common -fno-non-call-exceptions -fno-asynchronous-unwind-tables -fno-inline -fno-inline-functions -fno-inline-functions 
 # unknown: -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon 
 CC_FLAGS_W := -Wall -W -Wextra  -Werror -Wfatal-errors  -Werror-implicit-function-declaration -Wparentheses -Wimplicit -Wreturn-type -Wcomment -Wpointer-arith -Wchar-subscripts -Wimplicit-int -Werror-implicit-function-declaration -Wmain -Wmissing-braces -Wmultichar -Wsequence-point -Wreturn-type -Wstrict-prototypes -Wpacked -Wcast-qual -Winline -Wformat-nonliteral -Wwrite-strings -Wmissing-field-initializers -Wsign-compare  -Wformat-zero-length -Wswitch -Wswitch-enum -Wswitch-default -Wnested-externs -Wunknown-pragmas
-CC_FLAGS_W_NO := -Wno-cast-align -Wno-system-headers  -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral -Wno-unused-command-line-argument 
+CC_FLAGS_W_NO := -Wno-cast-align -Wno-system-headers  -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral $(if $(strip $(filter $(CC_NAME),gcc)),,-Wno-unused-command-line-argument) 
 # unknown: -gstabs+3 
 
 # -I /usr/X11R6/include  -I ./libs/SDL-1.2.15/destroot/include -I ./src/SDL_image -I ./src/SDL_mixer # -Wmissing-prototypes -Wmissing-declarations 
@@ -184,10 +184,11 @@ CLANG_FLAGS := -gfull -W -Wextra -Wnewline-eof -Wno-unsequenced
 #GCC: -gstabs+3: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
 #pragma GCC diagnostics disable "-Wtype-limits" 
 GCC_FLAGS := -g3  -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon  -fno-stack-check -Wno-error -Wno-enum-compare #-Wno-extra -Wno-sign-compare #-Werror=no-type-limits #-Wno-absolute-value #-Wno-type-limits #-Wframe-larger-than=76368 #-Wframe-larger-than=1844674407370955161 #-Wframe-larger-than=18446744073709551615 #-Wframe-larger-than=18446744073709551615UL #-Wframe-larger-than='18446744073709551615UL' #-Wframe-larger-than='SIZE_MAX' #-Wno-frame-larger-than # -Wno-stack-usage # -Wstack-usage=1844674407370955161
-#PCC: -g: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
 CLANG_FLAGS :=
 PCC_FLAGS   := -fpic -Wno-unreachable-code -Wno-shadow #-g #-fpic 
+#PCC: -g: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
 TCC_FLAGS   := -g -bt100 #-b #-fpic #-g #-fpic 
+
 
 # RL: Le préprocesseur de PCC émet un warning pour chaque identifiant plus que soixante-trois charactères: «identifier exceeds C99 5.2.4.1» 
 # RL: Cependant, ceci n’empêche pas le compilateur de continuer. Ceci a une influence uniquement pour les noms de macros, qui sont alors tronqués. 
@@ -205,6 +206,8 @@ TCC_FLAGS   := -g -bt100 #-b #-fpic #-g #-fpic
 # RL: Pire, PCC ne supporte pas les points-virgules sur-numéraires dans la déclaration d’un ‘struct'… 
 # RL: 
 # RL: Pas le choix, pour PCC, il faut enlever tous les warnings. 
+# RL: 
+# RL: Pour obtenir la man-page du préprocesseur de PCC:  man /usr/local/man/man1/cpp.1 
 ifeq ($(CC_NAME),pcc)
 $(info ****** PCC ******)
 $(info PCC: Vous pouvez ignorer les avertissements émis par le préprocesseur de PCC à propos de la longueur des identifiants («identifier exceeds C99 5.2.4.1»), tant que ceux-ci ne concernent pas les noms de macros, lesquels seront alors tronqués par le préprocesseur de PCC.)
@@ -214,6 +217,7 @@ $(info ****** PCC ******)
 CC_FLAGS_W :=
 CC_FLAGS_W_NO :=
 endif
+
 
 #CLANG_FLAGS := $(CLANG_FLAGS) -nostdinc -I/usr/include -nostdlib 
 #PCC_FLAGS   := $(PCC_FLAGS) -nodefaultlibs -nostartfiles -nostdinc -nostdlib -static 

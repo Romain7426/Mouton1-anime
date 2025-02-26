@@ -374,29 +374,45 @@ label__error__input_error: {
     return this -> error_id; 
   }; 
   
-
+  
  label__body: { 
     this -> filename = anime__string_stack__push_lookup(this, input_name); 
     
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[LEXEMES]" "\n"); }; 
     error_id = anime__lexer__fill_from_fd(this, input_fd); 
     if (error_id != ANIME__OK) { return error_id; }; 
     if (this -> stdlog_d > 0) { anime__lexeme__print_all(this, this -> stdlog_d); }; 
     
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[STRUCTURE]" "\n"); }; 
     error_id = anime__syntax__structure_check_and_fill(this, /*stdwarning_d*/stduser_d, /*stderror_d*/stduser_d); 
     if (error_id != ANIME__OK) { return error_id; }; 
-    if (this -> stdlog_d > 0) { anime__syntax__print(this, this -> stdlog_d); };
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Reconstruction de la structure: réalisée" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Cohérence de la structure: vérifiée" "\n"); }; 
+    if (this -> stdlog_d > 0) { anime__syntax__print(this, this -> stdlog_d); }; 
 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[NOMS DES CHAMPS]" "\n"); }; 
     error_id = anime__generation__field_names(this); 
     if (error_id != ANIME__OK) { return error_id; }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Noms des champs: calculés" "\n"); }; 
 
     // RL: D’abord, il faut calculer les noms. 
     this -> filled_huh = 2; // RL: À supprimer. 
     error_id = anime__post_syntax__consistency_check(this, stduser_d); 
+    if (error_id != ANIME__OK) { return error_id; }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Absence d’incohérence entre les noms des champs: vérifiée" "\n"); }; 
 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[VALEURS DES CHAMPS]" "\n"); }; 
     error_id = anime__generation__field_values(this); 
     if (error_id != ANIME__OK) { return error_id; }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Valeurs des champs: calculées" "\n"); }; 
     
-    if (this -> stdlog_d > 0) { anime__print_d(this, stderr_d); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[TERMINÉ]" "\n"); }; 
+    if (this -> stdlog_d > 0) { anime__print_d(this, this -> stdlog_d); }; 
     
     return error_id; 
   };   

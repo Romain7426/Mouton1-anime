@@ -1,3 +1,4 @@
 tcc
+egcc
 pcc
 clang 

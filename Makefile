@@ -104,13 +104,16 @@ build/main.h: src/main.h
 
 
 
-build_ci: build build/000_oldies.ci build/anime_generation_module_infix_to_postfix.ci build/anime_lexer_module_automata.ci build/anime_lexer_module_print.ci build/anime_lexer_module_token_type.ci build/anime_module_consistency.ci build/anime_module_dump_and_restore.ci build/anime_module_error.ci build/anime_module_lexeme.ci build/anime_module_print.ci build/anime_module_print_field.ci build/anime_module_string.ci build/anime_module_subr.ci build/chaman.anime.ci build/lib__00__oldies.ci build/lib__01__pre_header.ci build/lib__02__header.ci build/lib__03.ci build/lib__04__string_stack.ci build/lib__05__error_state.ci build/lib__06__exception.ci build/lib__07__buffered_outstream.ci build/lib__08__cstring.ci build/lib__09__write_string.ci build/lib__10__local_alloca.ci build/lib__11__buffer_to_fd.ci build/main_old.ci build/main_options.ci build/main_stdlog_buffering.ci build/main_subr.ci 
+build_ci: build build/000_oldies.ci build/anime_generation_module_infix_to_postfix.ci build/anime_generation_module_syntax_type.ci build/anime_lexer_module_automata.ci build/anime_lexer_module_print.ci build/anime_lexer_module_token_type.ci build/anime_module_consistency.ci build/anime_module_dump_and_restore.ci build/anime_module_error.ci build/anime_module_lexeme.ci build/anime_module_print.ci build/anime_module_print_field.ci build/anime_module_string.ci build/anime_module_subr.ci build/chaman.anime.ci build/lib__00__oldies.ci build/lib__01__pre_header.ci build/lib__02__header.ci build/lib__03.ci build/lib__04__string_stack.ci build/lib__05__error_state.ci build/lib__06__exception.ci build/lib__07__buffered_outstream.ci build/lib__08__cstring.ci build/lib__09__write_string.ci build/lib__10__local_alloca.ci build/lib__11__buffer_to_fd.ci build/main_old.ci build/main_options.ci build/main_stdlog_buffering.ci build/main_subr.ci 
 
 build/000_oldies.ci: src/000_oldies.ci 
 	ln src/000_oldies.ci build/000_oldies.ci 
 
 build/anime_generation_module_infix_to_postfix.ci: src/anime_generation_module_infix_to_postfix.ci 
 	ln src/anime_generation_module_infix_to_postfix.ci build/anime_generation_module_infix_to_postfix.ci 
+
+build/anime_generation_module_syntax_type.ci: src/anime_generation_module_syntax_type.ci 
+	ln src/anime_generation_module_syntax_type.ci build/anime_generation_module_syntax_type.ci 
 
 build/anime_lexer_module_automata.ci: src/anime_lexer_module_automata.ci 
 	ln src/anime_lexer_module_automata.ci build/anime_lexer_module_automata.ci 

@@ -12,15 +12,20 @@
 
 
 // RL: OBJECTIFS: 
-//  -- ldd ne retourne aucune dépendance. (On compilerait donc avec libc; et avec crt0) /usr/lib/libc.a /usr/lib/crt0.o 
+//  -- ldd ne retourne aucune dépendance. (On compilerait donc avec libc; et avec crt0; --static) /usr/lib/libc.a /usr/lib/crt0.o  [ À titre d’exemple, lire les commandes issues par «pcc -v». ] 
 //  -- KISS: keep it short and simple 
 //  -- no malloc 
+//   
 
 
 // RLE: Modèle: commande + traitement + log 
-//  -- Commande = user => TTY (+ ligne de commande) 
+//  -- Commande   = user => TTY (+ ligne de commande) 
 //  -- Traitement = data => PIPE (+ fichiers) 
-//  -- Log = log dans un fichier (éventuellement sur le terminal) 
+//  -- Log        = log dans un fichier (éventuellement sur le terminal) 
+// 
+// -- TTY  = stdtty_in_d  + stdtty_out_d 
+// -- PIPE = stdpipe_in_d + stdpipe_out_d 
+// -- LOG  = stdlog_d 
 // 
 // -- USER = stduser_out_d + stduser_in_d 
 // -- DATA = stddata_out_d + stddata_in_d 
@@ -29,24 +34,25 @@
 
 int main(const int argc, const char * argv[]) { 
   int stdlog_d = -1; 
-  int stduser_in_d = -1; 
+  const int stderr_d = STDERR_FILENO; 
+  int stdtty_in_d  = -1; 
+  int stdtty_out_d = -1; 
+  int stdpipe_in_d  = -1; 
+  int stdpipe_out_d = -1; 
+  int stduser_in_d  = -1; 
   int stduser_out_d = -1; // RLE: Différent de stderr, car, avec l’option --quiet, on peut vouloir faire taire le logiciel. Et avoir stderr_d vivant permet de contourner stduser en cas de besoin. 
-  int stddata_in_d = -1; 
+  int stddata_in_d  = -1; 
   int stddata_out_d = -1; 
   int_anime_error_t error_id; 
   enum { MAIN__ERROR_BUFFER_SIZE = 2048 }; 
   char error_str[MAIN__ERROR_BUFFER_SIZE]; 
   const char * input_file_name = NULL; 
-  //anime_t a_anime[1]; 
-  //dprintf(stderr_d, "sizeof(anime_t) = %lu" "\n", (unsigned long int) sizeof(anime_t)); 
   anime_t * a_anime = NULL; 
   goto label__body; 
 
 
  label__exit: { 
-    //anime__delete_r(a_anime); 
     if (NULL != a_anime) anime__delete_b(a_anime); 
-    if (stduser_out_d > 2) { close(stduser_out_d); }; 
     if (stdlog_d > 0) { dprintf(stdlog_d, "Exit value = [ %d ] %s " "\n", error_id, int_anime_error__get_cstr(error_id)); }; 
     if (stdlog_d > 0) { main__stdlog_close(stdlog_d, /*flush_huh*/true); }; 
     return error_id; 
@@ -64,7 +70,7 @@ int main(const int argc, const char * argv[]) {
     error_id = ANIME__MAIN__OPTIONS__PARSING_ERROR; 
     goto label__exit; 
   }; 
-
+  
  label__error__options_running_failed: { 
     goto label__exit; 
   }; 
@@ -73,7 +79,7 @@ int main(const int argc, const char * argv[]) {
     error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
     snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "First arg is null"); 
     if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d  > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
     goto label__exit; 
   }; 
   
@@ -81,7 +87,7 @@ int main(const int argc, const char * argv[]) {
     error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
     snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "First arg is empty"); 
     if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d  > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
     goto label__exit; 
   }; 
 
@@ -89,7 +95,7 @@ int main(const int argc, const char * argv[]) {
     error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
     snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "stdin is tty - I refuse to read data from a tty."); 
     if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d  > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
     goto label__exit; 
   }; 
   
@@ -97,20 +103,23 @@ int main(const int argc, const char * argv[]) {
     error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
     snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "Cannot open input file: %s", input_file_name); 
     if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d  > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
     goto label__exit; 
   }; 
 
 label__error__anime_buffer_is_too_small: { 
-    if (stderr_d > 0) dprintf(stderr_d, "%s" "\n", "anime_buffer is too small"); 
+    error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
+    strlcpy(error_str, "anime_buffer is too small", MAIN__ERROR_BUFFER_SIZE); 
+    if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
+    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
     goto label__exit; 
   }; 
 
  label__error__cannot_parse_input_file: { 
-    //if (stderr_d > 0) dprintf(stderr_d, "<%s>: " "%s[%d]: " "%s" "\n", a_anime -> filename, error_id > 0 ? "Warning" : "Error", error_id, a_anime -> error_str); 
-    //if (stderr_d > 0) dprintf(stderr_d, "<%s>: " "%s[%d]: " "%s" "\n", input_file_name, error_id > 0 ? "Warning" : "Error", error_id, "-"); 
-    //if (stderr_d > 0) dprintf(stderr_d, "<%s>: " "%s[%d]: " "%s" "\n", anime__filename_get(a_anime), error_id > 0 ? "Warning" : "Error", error_id, anime__error_cstr_get(a_anime)); 
-    if (stderr_d > 0) dprintf(stderr_d, "<%s>: " "%s[%d]: " "%s: %s" "\n", anime__filename_get(a_anime), error_id > 0 ? "Warning" : "Error", error_id, int_anime_error__get_cstr(error_id), anime__error_cstr_get(a_anime)); 
+    error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
+    snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "<%s>: " "%s[%d]: " "%s: %s" "\n", anime__filename_get(a_anime), error_id > 0 ? "Warning" : "Error", error_id, int_anime_error__get_cstr(error_id), anime__error_cstr_get(a_anime)); 
+    if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
+    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
     goto label__exit; 
   }; 
   
@@ -122,17 +131,17 @@ label__error__anime_buffer_is_too_small: {
     anime__check_and_assert(/*debug_print_huh*/true, /*stderr_d*/stderr_d); 
     assert(isatty(stderr_d)); 
 
-    // STDLOG, STDUSER, STDDATA  
+    // STDLOG, STDTTY, STDPIPE, STDUSER, STDDATA  
     enum { main__stdlog__buffer_bytesize = INT16_MAX }; 
     char main__stdlog__buffer[main__stdlog__buffer_bytesize]; 
     { 
       stdlog_d = main__stdlog_init(main__stdlog__buffer, main__stdlog__buffer_bytesize); 
       
-      stduser_out_d = isatty(stdout_d) ? stdout_d : open("/dev/tty", O_WRONLY); 
-      stduser_in_d  = isatty(stdin_d) ? stdin_d : open("/dev/tty", O_RDONLY); 
-      
-      stddata_out_d = isatty(stdout_d) ? -1 : stdout_d; 
-      stddata_in_d  = isatty(stdin_d)  ? -1 : stdin_d; 
+      stduser_in_d  = stdtty_in_d  = isatty(STDIN_FILENO)  ? STDIN_FILENO  : open("/dev/tty", O_RDONLY); 
+      stduser_out_d = stdtty_out_d = isatty(STDOUT_FILENO) ? STDOUT_FILENO : open("/dev/tty", O_WRONLY); 
+    
+      stddata_in_d  = stdpipe_in_d  = isatty(STDIN_FILENO)  ? -1 : STDIN_FILENO; 
+      stddata_out_d = stdpipe_out_d = isatty(STDOUT_FILENO) ? -1 : STDOUT_FILENO; 
     }; 
     
     main_arg_print(argc, argv, stdlog_d); 
@@ -175,9 +184,9 @@ label__error__anime_buffer_is_too_small: {
 	break; 
 	
       label__input_is_stdin: { 
-	  if (isatty(stdin_d)) goto label__error__stdin_is_tty; 
-	  input_file_name = "<stdin>";  
-	  stddata_in_d   = stdin_d;
+	  if (isatty(STDIN_FILENO)) goto label__error__stdin_is_tty; 
+	  input_file_name = "<stdin>"; 
+	  stddata_in_d    = STDIN_FILENO; 
 	  break; 
 	}; 
       }; 
@@ -208,7 +217,7 @@ label__error__anime_buffer_is_too_small: {
       stddata_in_d = -1; 
       if (stduser_out_d > 0) dprintf(stduser_out_d, "<%s>: " "OK" "\n", anime__filename_get(a_anime)); 
     }; 
-
+    
     // PRINT? 
     if (program_options[PROGRAM_OPTIONS_INDEX__PRINT] > 0) { 
       if (stduser_out_d > 0) anime__print_d(a_anime, stduser_out_d); 
@@ -220,14 +229,13 @@ label__error__anime_buffer_is_too_small: {
       for (int i = 1; i < program_options__plain__nb; i++) { 
 	const int arg_i = program_options__plain[i]; 
 	const char * field = argv[arg_i]; 
-	//error_id = anime__print_field_value_by_name(a_anime, field, /*stdprint_d*/stderr_d, /*stduser_out_d*/stduser_out_d, &a_anime -> error_id, a_anime -> error_size, a_anime -> error_str); 
-	anime__print_field_value_by_name(a_anime, field, /*stdprint_d*/stderr_d, /*stduser_out_d*/stduser_out_d, &error_id, MAIN__ERROR_BUFFER_SIZE, error_str); 
+	error_id = anime__print_field_value_by_name(a_anime, field, /*stdprint_d*/stderr_d, /*stduser_out_d*/stduser_out_d, &error_id, MAIN__ERROR_BUFFER_SIZE, error_str); 
 	if (error_id == ANIME__OK) { continue; }; 
 	if (stduser_out_d > 0) { dprintf(stduser_out_d, "<%s>: " "%s[%d]: " "%s" "\n", anime__filename_get(a_anime), error_id > 0 ? "Warning" : "Error", error_id, error_str); }; 
 	continue; 
       }; 
     }; 
-
+    
     // DUMP?
     if (program_options[PROGRAM_OPTIONS_INDEX__DUMP] > 0) { 
       error_id = anime__dump_to_fd(a_anime, stddata_out_d); 

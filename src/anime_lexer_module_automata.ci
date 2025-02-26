@@ -250,7 +250,8 @@ static int8_t token_automaton__eof__wrapper(const int8_t current_state, const in
   LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
   const int8_t new_state = token_automaton__eof(current_state, char_read); 
   //dputs_array(stderr_d, __func__, ": ", "new_state = ", int_string__stack(new_state), "\n"); 
-  dputs5(stderr_d, __func__, ": ", "new_state = ", int_string__stack(new_state), "\n"); 
+  //dputs5(stderr_d, __func__, ": ", "new_state = ", int_string__stack(new_state), "\n"); 
+  //dputs5(STDERR_FILENO, __func__, ": ", "new_state = ", int_string__stack(new_state), "\n"); 
   return new_state; 
 }; 
 

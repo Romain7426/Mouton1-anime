@@ -137,7 +137,11 @@ enum { UINT_MIN    = 0 };
 #endif 
 
 
-
+#if 1
+enum { STDIN_FILENO  = 0 }; 
+enum { STDOUT_FILENO = 1 }; 
+enum { STDERR_FILENO = 2 }; 
+#else 
 enum {  stdin_d  = 0 }; 
 enum { stdout_d = 1 }; 
 enum { stderr_d = 2 }; 
@@ -147,6 +151,7 @@ enum { stderr__fdes = stderr_d };
 enum {  stdin__fileno =  stdin_d }; 
 enum { stdout__fileno = stdout_d }; 
 enum { stderr__fileno = stderr_d }; 
+#endif 
 
 enum { EOF = (-1) }; 
 enum { EOL = '\n' }; 

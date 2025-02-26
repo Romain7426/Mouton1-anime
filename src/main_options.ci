@@ -19,6 +19,7 @@ enum {
   PROGRAM_OPTIONS_INDEX__QUIET, 
   PROGRAM_OPTIONS_INDEX__DUMP, 
   PROGRAM_OPTIONS_INDEX__RESTORE, 
+  PROGRAM_OPTIONS_INDEX__LIMITS, 
   PROGRAM_OPTIONS_INDEX__COUNT, 
 }; 
  
@@ -89,6 +90,7 @@ static int program_options__parse(const int argc, const char * argv[]) {
 	 case 'v': program_options[PROGRAM_OPTIONS_INDEX__VERBOSE_LEVEL]++; break; 
          case 'V': program_options[PROGRAM_OPTIONS_INDEX__VERSION      ]++; break; 
          case 'q': program_options[PROGRAM_OPTIONS_INDEX__QUIET        ]++; break; 
+         case 'p': program_options[PROGRAM_OPTIONS_INDEX__PRINT        ]++; break; 
          default : program_options__unknown__push(i); break; // RL: TODO FIXME XXX: Find a way to get that unrecognized letter. 
 	}; 
 	s++; 
@@ -140,6 +142,8 @@ static int program_options__parse(const int argc, const char * argv[]) {
     };
     if (0 == strcasecmp(s, "dump"                   )) { program_options[PROGRAM_OPTIONS_INDEX__DUMP                   ]++; continue; }; 
     if (0 == strcasecmp(s, "restore"                )) { program_options[PROGRAM_OPTIONS_INDEX__RESTORE                ]++; continue; };  
+    if (0 == strcasecmp(s, "limits"                 )) { program_options[PROGRAM_OPTIONS_INDEX__LIMITS                 ]++; continue; };  
+    if (0 == strcasecmp(s, "limites"                )) { program_options[PROGRAM_OPTIONS_INDEX__LIMITS                 ]++; continue; };  
     program_options__unknown__push(i); 
     continue; 
   }; 
@@ -163,13 +167,15 @@ static void main__usage(const int argc, const char * argv[], const int stduser_d
   dputs(stduser_d, "  " "--copyright-slash_comment          " "  \t  " "Display the program license as a double-slash comment" "\n"); 
   dputs(stduser_d, "  " "-v,--verbose                       " "  \t  " "Increase verbosity" "\n"); 
   dputs(stduser_d, "  " "-q,--quiet,--mute                  " "  \t  " "Do not say anything" "\n"); 
+  dputs(stduser_d, "  " "-p,--print                         " "  \t  " "Print the computed structure" "\n"); 
   dputs(stduser_d, "  " "-V,--version                       " "  \t  " "Print program version" "\n"); 
   dputs(stduser_d, "  " "--example,--exemple                " "  \t  " "Print an example" "\n"); 
   dputs(stduser_d, "  " "--url                              " "  \t  " "Print url" "\n"); 
   dputs(stduser_d, "  " "--stduser <file>                   " "  \t  " "Redirect all the talk to the user to <file>. (Default is stderr.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)" "\n"); 
-  dputs(stduser_d, "  " "--stdlog <file>                    " "  \t  " "Write stdlog to <file>. (By default, stdlog fd is 3; therefore the output of stdlog can be gotten using '3>&2' or '3>./stdlog.txt'.) (stdlog is intended for dev. But can be used by users.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)" "\n"); 
+  dputs(stduser_d, "  " "--stdlog <file>                    " "  \t  " "Write stdlog to <file>. (By default, stdlog fd is 3; therefore the output of stdlog can be gotten using '3>&2' or '3>./stdlog.txt'.) (stdlog is intended for dev. But can be read by users.) (Use 'stdout', 'stderr', and 'stdnull' to redirect to stdout, stderr, and /dev/null.)" "\n"); 
   dputs(stduser_d, "  " "--dump                             " "  \t  " "Dump the datacode" "\n"); 
   dputs(stduser_d, "  " "--restore                          " "  \t  " "Input file is datacode" "\n"); 
+  dputs(stduser_d, "  " "--limits,--limites                 " "  \t  " "Print program limitations" "\n"); 
 }; 
 
 static int program_options__run(const int argc, const char * argv[], const int stdprint_d, const int stduser_d, const int stdlog_d) { 
