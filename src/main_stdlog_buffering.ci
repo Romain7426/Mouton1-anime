@@ -1,0 +1,62 @@
+
+static void main__stduser_open(int * stduser_d_r, const char * filename) { 
+  if (NULL ==  filename) return; 
+  if ('\0' == *filename) return; 
+  if (0 == strcasecmp("stdout",  filename)) { *stduser_d_r = STDOUT_FILENO; return; }; 
+  if (0 == strcasecmp("stderr",  filename)) { *stduser_d_r = STDERR_FILENO; return; }; 
+  if (0 == strcasecmp("stdnull", filename)) { *stduser_d_r = -1; return; }; 
+  int new_fd; 
+  new_fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0600); 
+  if (new_fd < 0) return; 
+  *stduser_d_r = new_fd; 
+}; 
+
+
+static int main__stdlog_init(char * buffer, const int16_t buffer_bytesize) { 
+  int stdlog_d = -1; 
+  if (-1 != fcntl(3, F_GETFL)) { 
+    stdlog_d = buffered_outstream__open(/*write_fd*/3, buffer, buffer_bytesize); 
+  }; 
+  return stdlog_d; 
+}; 
+
+
+static void main__stdlog_flush(const int stdlog_d) { 
+  buffered_outstream__flush(stdlog_d); 
+}; 
+
+static void main__stdlog_close(const int stdlog_d, const int8_t flush_huh) { 
+  buffered_outstream__close(stdlog_d, flush_huh); 
+}; 
+
+
+static int main__stdlog_reopen(int * stdlog_d_r, const char * filename, char * buffer, const int16_t buffer_bytesize) { 
+  if (NULL ==  filename) return -1; 
+  if ('\0' == *filename) return -1; 
+
+  int stdlog_d = -1; 
+  if (NULL == stdlog_d_r) return -1; 
+  stdlog_d = *stdlog_d_r; 
+  
+  if (stdlog_d >= 0) { 
+    main__stdlog_close(stdlog_d, /*flush_huh*/true); 
+    *stdlog_d_r = -1; 
+  };
+  
+  if (0 == strcasecmp("stdnull", filename)) { return -1; }; 
+  
+  int new_fd; 
+  if      (0 == strcasecmp("stdout", filename)) { new_fd = STDOUT_FILENO; } 
+  else if (0 == strcasecmp("stderr", filename)) { new_fd = STDERR_FILENO; } 
+  else { 
+    new_fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0600); 
+    if (new_fd < 0) return -1; 
+  }; 
+  stdlog_d = buffered_outstream__open(new_fd, buffer, buffer_bytesize); 
+  *stdlog_d_r = stdlog_d; 
+  return stdlog_d; 
+}; 
+
+
+
+

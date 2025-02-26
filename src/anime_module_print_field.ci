@@ -1,0 +1,532 @@
+
+
+int_anime_error_t anime__print_field_value_by_name(const anime_t * this, const char * field_name, const int stdprint_d, const int stduser_d, int_anime_error_t * error_id_r, const uint16_t error_size, char * error_str) { 
+  if (NULL == error_id_r) { return ANIME__DATA_GENERATION__NULL_ERROR_ID_R; }; 
+  if (1     > error_size) { *error_id_r = ANIME__DATA_GENERATION__ERROR_SIZE_LOWER_THAN_1; return *error_id_r; }; 
+  if (NULL ==       this) { *error_id_r = ANIME__NULL_STRUCT    ; snprintf(error_str, error_size, "'this' argument is null."    ); return *error_id_r; }; 
+  if (NULL == field_name) { *error_id_r = ANIME__NULL_FIELD_NAME; snprintf(error_str, error_size, "field_name argument is null."); return *error_id_r; }; 
+
+  if      ( 0 == this -> filled_huh) { 
+    snprintf(error_str, error_size, "Anime data structure empty — still printing its content though."); 
+    if (stduser_d         > 0) { dprintf(stduser_d, "Warning: " "%s" "\n", error_str); }; 
+    if (this -> stdlog_d  > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+  } 
+  else if (-1 == this -> filled_huh) { 
+    snprintf(error_str, error_size, "Anime data structure only partially filled — still printing its content though."); 
+    if (stduser_d         > 0) { dprintf(stduser_d, "Warning: " "%s" "\n", error_str); }; 
+    if (this -> stdlog_d  > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+  } 
+  else if ( 1 == this -> filled_huh) { } 
+  else if ( 2 == this -> filled_huh) { } 
+  else if ( 3 == this -> filled_huh) { 
+    snprintf(error_str, error_size, "Anime data structure has breaking unconsistencies."); 
+    if (stduser_d         > 0) { dprintf(stduser_d, "Info: " "%s" "\n", error_str); }; 
+    if (this -> stdlog_d  > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Info: " "%s" "\n", __func__, error_str); }; 
+  } 
+  else if ( 4 == this -> filled_huh) { 
+    snprintf(error_str, error_size, "Anime data structure has non-breaking unconsistencies."); 
+    if (stduser_d         > 0) { dprintf(stduser_d, "Info: " "%s" "\n", error_str); }; 
+    if (this -> stdlog_d  > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Info: " "%s" "\n", __func__, error_str); }; 
+  } 
+  else { 
+    snprintf(error_str, error_size, "Anime data structure has an unknown filling status — still printing its content though."); 
+    if (stduser_d         > 0) { dprintf(stduser_d, "Warning: " "%s" "\n", error_str); }; 
+    if (this -> stdlog_d  > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+  }; 
+  
+
+  if (0 == strncasecmp("physique" , field_name, strlen("physique")))  goto label__physique_field; 
+  if (0 == strncasecmp("gameplay" , field_name, strlen("gameplay")))  goto label__gameplay_field; 
+  if (0 == strncasecmp("graphique", field_name, strlen("graphique"))) goto label__graphique_field; 
+  
+  goto label__unknown_field; 
+
+
+
+  
+  
+ label__physique_field: { 
+    if ((0 == strcasecmp("physique", field_name)) || (0 == strcasecmp("physique.", field_name))) { 
+      dprintf(stdprint_d, "physique.zone_de_choc.longueur = %10f " "\n", this -> choc_longueur); 
+      dprintf(stdprint_d, "physique.zone_de_choc.largeur  = %10f " "\n", this -> choc_largeur ); 
+      dprintf(stdprint_d, "physique.zone_de_choc.hauteur  = %10f " "\n", this -> choc_hauteur ); 
+      dprintf(stdprint_d, "physique.masse = %10f " "\n", this -> masse); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+    
+    if ((0 == strcasecmp("physique.zone_de_choc", field_name)) || (0 == strcasecmp("physique.zone_de_choc.", field_name)) || 
+	(0 == strcasecmp("physique.zone-de-choc", field_name)) || (0 == strcasecmp("physique.zone-de-choc.", field_name)) || 
+	(0 == strcasecmp("physique.zone de choc", field_name)) || (0 == strcasecmp("physique.zone de choc.", field_name)) || 
+	(0 == strcasecmp("physique.choc"        , field_name)) || (0 == strcasecmp("physique.choc."        , field_name))) { 
+      dprintf(stdprint_d, "physique.zone_de_choc.longueur = %10f " "\n", this -> choc_longueur); 
+      dprintf(stdprint_d, "physique.zone_de_choc.largeur  = %10f " "\n", this -> choc_largeur ); 
+      dprintf(stdprint_d, "physique.zone_de_choc.hauteur  = %10f " "\n", this -> choc_hauteur ); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    };
+
+    if ((0 == strcasecmp("physique.zone_de_choc.longueur", field_name)) || 
+	(0 == strcasecmp("physique.zone-de-choc.longueur", field_name)) || 
+	(0 == strcasecmp("physique.zone de choc.longueur", field_name)) || 
+	(0 == strcasecmp("physique.choc.longueur"        , field_name)) || 
+	(0 == strcasecmp("physique.longueur"             , field_name))) { 
+      dprintf(stdprint_d, "physique.zone_de_choc.longueur = %10f " "\n", this -> choc_longueur); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+    
+    if ((0 == strcasecmp("physique.zone_de_choc.largeur", field_name)) || 
+	(0 == strcasecmp("physique.zone-de-choc.largeur", field_name)) || 
+	(0 == strcasecmp("physique.zone de choc.largeur", field_name)) || 
+	(0 == strcasecmp("physique.choc.largeur"        , field_name)) || 
+	(0 == strcasecmp("physique.largeur"             , field_name))) { 
+      dprintf(stdprint_d, "physique.zone_de_choc.largeur  = %10f " "\n", this -> choc_largeur ); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+    
+    if ((0 == strcasecmp("physique.zone_de_choc.hauteur", field_name)) || 
+	(0 == strcasecmp("physique.zone-de-choc.hauteur", field_name)) || 
+	(0 == strcasecmp("physique.zone de choc.hauteur", field_name)) || 
+	(0 == strcasecmp("physique.choc.hauteur"        , field_name)) || 
+	(0 == strcasecmp("physique.hauteur"             , field_name))) { 
+      dprintf(stdprint_d, "physique.zone_de_choc.hauteur  = %10f " "\n", this -> choc_hauteur ); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+    
+    if ((0 == strcasecmp("physique.masse", field_name))) { 
+      dprintf(stdprint_d, "physique.masse = %10f " "\n", this -> masse); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+    
+    goto label__unknown_field; 
+  }; 
+  
+  
+ label__gameplay_field: { 
+    if ((0 == strcasecmp("gameplay", field_name)) || (0 == strcasecmp("gameplay.", field_name))) { 
+      dprintf(stdprint_d, "gameplay.points_de_vie = %5d " "\n", this -> vie); 
+      dprintf(stdprint_d, "gameplay.invincible    = %5s " "\n", this -> invincible ? "vrai" : "faux"); 
+      dprintf(stdprint_d, "gameplay.hostile       = %5s " "\n", this -> hostile    ? "vrai" : "faux"); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+    
+    if ((0 == strcasecmp("gameplay.points_de_vie", field_name)) || 
+	(0 == strcasecmp("gameplay.points de vie", field_name)) || 
+	(0 == strcasecmp("gameplay.points-de-vie", field_name))) { 
+      dprintf(stdprint_d, "gameplay.points_de_vie = %5d " "\n", this -> vie); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+
+    if ((0 == strcasecmp("gameplay.invincible", field_name))) { 
+      dprintf(stdprint_d, "gameplay.invincible    = %5s " "\n", this -> invincible ? "vrai" : "faux"); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+
+    if ((0 == strcasecmp("gameplay.hostile", field_name))) { 
+      dprintf(stdprint_d, "gameplay.hostile       = %5s " "\n", this -> hostile    ? "vrai" : "faux"); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+    
+    goto label__unknown_field; 
+  }; 
+  
+
+
+
+
+
+ label__graphique_field: { 
+    if ((0 == strcasecmp("graphique", field_name)) || (0 == strcasecmp("graphique.", field_name))) { 
+      dprintf(stdprint_d, "graphique.membres_nb = %d " "\n", this -> membres_nb); 
+      for (int i = 0; i < this -> membres_nb; i++) { 
+	dprintf(stdprint_d, "graphique.membre[%15s].fils        =      " "\n", anime__string_stack__get(this, this -> membres_nom[i])); 
+	dprintf(stdprint_d, "graphique.membre[%15s].image       = %30s " "\n", anime__string_stack__get(this, this -> membres_nom[i]), anime__string_stack__get(this, this -> membres_image[i])); 
+	dprintf(stdprint_d, "graphique.membre[%15s].largeur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_largeur[i]); 
+	dprintf(stdprint_d, "graphique.membre[%15s].hauteur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_hauteur[i]); 
+	dprintf(stdprint_d, "graphique.membre[%15s].angle_max_y = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_angle_max_y[i]); 
+      }; 
+      dprintf(stdprint_d, "graphique.racines_nb = %d " "\n", this -> racines_nb); 
+      for (int i = 0; i < this -> racines_nb; i++) { 
+	dprintf(stdprint_d, "graphique.racine[%2d].qui     = %15s " "\n", i, anime__string_stack__get(this, this -> racines_qui[i])); 
+	dprintf(stdprint_d, "graphique.racine[%2d].x       = %15f " "\n", i, this -> racines_x[i]); 
+	dprintf(stdprint_d, "graphique.racine[%2d].y       = %15f " "\n", i, this -> racines_y[i]); 
+	dprintf(stdprint_d, "graphique.racine[%2d].z       = %15f " "\n", i, this -> racines_z[i]); 
+	dprintf(stdprint_d, "graphique.racine[%2d].angle_y = %15f " "\n", i, this -> racines_angle_y[i]); 
+      }; 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+
+    if ((0 == strcasecmp("graphique.membre" , field_name)) || (0 == strcasecmp("graphique.membre." , field_name)) || 
+	(0 == strcasecmp("graphique.membres", field_name)) || (0 == strcasecmp("graphique.membres.", field_name))) { 
+      dprintf(stdprint_d, "graphique.membres_nb = %d " "\n", this -> membres_nb); 
+      for (int i = 0; i < this -> membres_nb; i++) { 
+	dprintf(stdprint_d, "graphique.membre[%15s].fils        =      " "\n", anime__string_stack__get(this, this -> membres_nom[i])); 
+	dprintf(stdprint_d, "graphique.membre[%15s].image       = %30s " "\n", anime__string_stack__get(this, this -> membres_nom[i]), anime__string_stack__get(this, this -> membres_image[i])); 
+	dprintf(stdprint_d, "graphique.membre[%15s].largeur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_largeur[i]); 
+	dprintf(stdprint_d, "graphique.membre[%15s].hauteur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_hauteur[i]); 
+	dprintf(stdprint_d, "graphique.membre[%15s].angle_max_y = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_angle_max_y[i]); 
+      }; 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+
+    if ((0 == strcasecmp("graphique.racine" , field_name)) || (0 == strcasecmp("graphique.racine." , field_name)) || 
+	(0 == strcasecmp("graphique.racines", field_name)) || (0 == strcasecmp("graphique.racines.", field_name))) { 
+      dprintf(stdprint_d, "graphique.racines_nb = %d " "\n", this -> racines_nb); 
+      for (int i = 0; i < this -> racines_nb; i++) { 
+	dprintf(stdprint_d, "graphique.racine[%2d].qui     = %15s " "\n", i, anime__string_stack__get(this, this -> racines_qui[i])); 
+	dprintf(stdprint_d, "graphique.racine[%2d].x       = %15f " "\n", i, this -> racines_x[i]); 
+	dprintf(stdprint_d, "graphique.racine[%2d].y       = %15f " "\n", i, this -> racines_y[i]); 
+	dprintf(stdprint_d, "graphique.racine[%2d].z       = %15f " "\n", i, this -> racines_z[i]); 
+	dprintf(stdprint_d, "graphique.racine[%2d].angle_y = %15f " "\n", i, this -> racines_angle_y[i]); 
+      }; 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+
+    if ((0 == strcasecmp("graphique.membres_nb", field_name))) { 
+      dprintf(stdprint_d, "graphique.membres_nb = %d " "\n", this -> membres_nb); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+
+    if ((0 == strcasecmp("graphique.racines_nb", field_name))) { 
+      dprintf(stdprint_d, "graphique.racines_nb = %d " "\n", this -> racines_nb); 
+      *error_id_r = ANIME__OK; 
+      return *error_id_r; 
+    }; 
+    
+    do { 
+      const char * prefix = "graphique.membre["; 
+      const int prefix_len = strlen(prefix); 
+      if ((0 != strncasecmp(prefix, field_name, prefix_len))) break; 
+      int index_len = 0; const char * p = field_name + prefix_len; 
+      //dprintf(stderr_d, "p = %s" "\n", p); 
+      for (;;) { if (*p == ']') break; if (*p == '\0') { index_len = -1; break; }; p++; index_len++; }; 
+      //dprintf(stderr_d, "index_len = %d" "\n", index_len); 
+      
+      const char * short_field_name = p + 1; 
+      while (isspace(*(p-1))) { p--; index_len--; }; 
+      if (0 != index_len) { 
+	p = field_name + prefix_len; 
+	while (isspace(*p)) { p++; index_len--; }; 
+      }; 
+      
+      if (index_len < 0) { goto label__unknown_field; }; 
+      
+      if (0 == index_len) { 
+	if ((0 == strcasecmp("", short_field_name)) || (0 == strcasecmp(".", short_field_name))) { 
+	  for (int i = 0; i < this -> membres_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.membre[%15s].fils        =      " "\n", anime__string_stack__get(this, this -> membres_nom[i])); 
+	    dprintf(stdprint_d, "graphique.membre[%15s].image       = %30s " "\n", anime__string_stack__get(this, this -> membres_nom[i]), anime__string_stack__get(this, this -> membres_image[i])); 
+	    dprintf(stdprint_d, "graphique.membre[%15s].largeur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_largeur[i]); 
+	    dprintf(stdprint_d, "graphique.membre[%15s].hauteur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_hauteur[i]); 
+	    dprintf(stdprint_d, "graphique.membre[%15s].angle_max_y = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_angle_max_y[i]); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".fils", short_field_name))) { 
+	  for (int i = 0; i < this -> membres_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.membre[%15s].fils        =      " "\n", anime__string_stack__get(this, this -> membres_nom[i])); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".image", short_field_name))) { 
+	  for (int i = 0; i < this -> membres_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.membre[%15s].image       = %30s " "\n", anime__string_stack__get(this, this -> membres_nom[i]), anime__string_stack__get(this, this -> membres_image[i])); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".largeur", short_field_name))) { 
+	  for (int i = 0; i < this -> membres_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.membre[%15s].largeur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_largeur[i]); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".hauteur", short_field_name))) { 
+	  for (int i = 0; i < this -> membres_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.membre[%15s].hauteur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_hauteur[i]); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".angle_max_y", short_field_name)) || 
+	    (0 == strcasecmp(".angle-max-y", short_field_name)) || 
+	    (0 == strcasecmp(".angle max y", short_field_name)) || 
+	    (0 == strcasecmp(".max_angle_y", short_field_name)) || 
+	    (0 == strcasecmp(".max-angle-y", short_field_name)) || 
+	    (0 == strcasecmp(".max angle y", short_field_name)) || 
+	    (0 == strcasecmp(".angle_y_max", short_field_name)) || 
+	    (0 == strcasecmp(".angle-y-max", short_field_name)) || 
+	    (0 == strcasecmp(".angle y max", short_field_name))) { 
+	  for (int i = 0; i < this -> membres_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.membre[%15s].angle_max_y = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[i]), this -> membres_angle_max_y[i]); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+
+	goto label__unknown_field; 
+      }; 
+      
+      //dprintf(stderr_d, "p = %s" "\n", p); 
+      int index; 
+      if (isdigit(*p)) { 
+	index = 0; 
+	for (int i = 0; i < index_len; i++) { 
+	  const char c = *(p + i); 
+	  if (!isdigit(c)) break; 
+	  index = 10 * index + (c - '0'); 
+	}; 
+	//dprintf(stderr_d, "index = %d" "\n", index); 
+	if (index >= this -> membres_nb) { goto error_label__index_out_of_bounds; }; 
+      } 
+      else { 
+	index = ~0; 
+	for (int i = 0; i < this -> membres_nb; i++) { 
+	  const int len = strlen(anime__string_stack__get(this, this -> membres_nom[i])); 
+	  if (len != index_len) continue; 
+	  if (0 != strncasecmp(p, anime__string_stack__get(this, this -> membres_nom[i]), index_len)) continue; 
+	  index = i; 
+	  break; 
+	}; 
+	//dprintf(stderr_d, "index = %d" "\n", index); 
+	if (index < 0) { goto error_label__index_out_of_bounds; }; 
+      };
+      //dprintf(stderr_d, "index = %d" "\n", index); 
+      
+      
+      if ((0 == strcasecmp("", short_field_name)) || (0 == strcasecmp(".", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.membre[%15s].fils        =      " "\n", anime__string_stack__get(this, this -> membres_nom[index])); 
+	dprintf(stdprint_d, "graphique.membre[%15s].image       = %30s " "\n", anime__string_stack__get(this, this -> membres_nom[index]), anime__string_stack__get(this, this -> membres_image[index])); 
+	dprintf(stdprint_d, "graphique.membre[%15s].largeur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[index]), this -> membres_largeur[index]); 
+	dprintf(stdprint_d, "graphique.membre[%15s].hauteur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[index]), this -> membres_hauteur[index]); 
+	dprintf(stdprint_d, "graphique.membre[%15s].angle_max_y = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[index]), this -> membres_angle_max_y[index]); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".fils", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.membre[%15s].fils        =      " "\n", anime__string_stack__get(this, this -> membres_nom[index])); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".image", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.membre[%15s].image       = %30s " "\n", anime__string_stack__get(this, this -> membres_nom[index]), anime__string_stack__get(this, this -> membres_image[index])); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".largeur", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.membre[%15s].largeur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[index]), this -> membres_largeur[index]); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".hauteur", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.membre[%15s].hauteur     = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[index]), this -> membres_hauteur[index]); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".angle_max_y", short_field_name)) || 
+	  (0 == strcasecmp(".angle-max-y", short_field_name)) || 
+	  (0 == strcasecmp(".angle max y", short_field_name)) || 
+	  (0 == strcasecmp(".max_angle_y", short_field_name)) || 
+	  (0 == strcasecmp(".max-angle-y", short_field_name)) || 
+	  (0 == strcasecmp(".max angle y", short_field_name)) || 
+	  (0 == strcasecmp(".angle_y_max", short_field_name)) || 
+	  (0 == strcasecmp(".angle-y-max", short_field_name)) || 
+	  (0 == strcasecmp(".angle y max", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.membre[%15s].angle_max_y = %15f " "\n", anime__string_stack__get(this, this -> membres_nom[index]), this -> membres_angle_max_y[index]); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      
+      goto label__unknown_field; 
+    } while (false); 
+
+
+
+
+
+    do { 
+      const char * prefix = "graphique.racine["; 
+      const int prefix_len = strlen(prefix); 
+      if ((0 != strncasecmp(prefix, field_name, prefix_len))) break; 
+      int index_len = 0; const char * p = field_name + prefix_len; 
+      for (;;) { if (*p == ']') break; if (*p == '\0') { index_len = -1; break; }; p++; index_len++; }; 
+      const char * short_field_name = p + 1; 
+      while (isspace(*(p-1))) { p--; index_len--; }; 
+      if (0 != index_len) { 
+	p = field_name + prefix_len; 
+	while (isspace(*p)) { p++; index_len--; }; 
+      }; 
+
+      //dprintf(stderr_d, "index_len = %d" "\n", index_len); 
+      if (index_len < 0) { goto label__unknown_field; }; 
+
+      if (0 == index_len) { 
+	if ((0 == strcasecmp("", short_field_name)) || (0 == strcasecmp(".", short_field_name))) { 
+	  for (int i = 0; i < this -> racines_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.racine[%2d].qui     = %15s " "\n", i, anime__string_stack__get(this, this -> racines_qui[i])); 
+	    dprintf(stdprint_d, "graphique.racine[%2d].x       = %15f " "\n", i, this -> racines_x[i]); 
+	    dprintf(stdprint_d, "graphique.racine[%2d].y       = %15f " "\n", i, this -> racines_y[i]); 
+	    dprintf(stdprint_d, "graphique.racine[%2d].z       = %15f " "\n", i, this -> racines_z[i]); 
+	    dprintf(stdprint_d, "graphique.racine[%2d].angle_y = %15f " "\n", i, this -> racines_angle_y[i]); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".qui", short_field_name))) { 
+	  for (int i = 0; i < this -> racines_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.racine[%2d].qui     = %15s " "\n", i, anime__string_stack__get(this, this -> racines_qui[i])); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".x", short_field_name))) { 
+	  for (int i = 0; i < this -> racines_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.racine[%2d].x       = %15f " "\n", i, this -> racines_x[i]); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".y", short_field_name))) { 
+	  for (int i = 0; i < this -> racines_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.racine[%2d].y       = %15f " "\n", i, this -> racines_y[i]); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".z", short_field_name))) { 
+	  for (int i = 0; i < this -> racines_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.racine[%2d].z       = %15f " "\n", i, this -> racines_z[i]); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+	if ((0 == strcasecmp(".angle_y", short_field_name)) || 
+	    (0 == strcasecmp(".angle-y", short_field_name)) || 
+	    (0 == strcasecmp(".angle y", short_field_name))) { 
+	  for (int i = 0; i < this -> racines_nb; i++) { 
+	    dprintf(stdprint_d, "graphique.racine[%2d].angle_y = %15f " "\n", i, this -> racines_angle_y[i]); 
+	  }; 
+	  *error_id_r = ANIME__OK; 
+	  return *error_id_r; 
+	}; 
+
+	goto label__unknown_field; 
+      }; 
+      
+      //dprintf(stderr_d, "p = %s" "\n", p); 
+      int index; 
+      if (isdigit(*p)) { 
+	index = 0; 
+	for (int i = 0; i < index_len; i++) { 
+	  const char c = *(p + i); 
+	  if (!isdigit(c)) break; 
+	  index = 10 * index + (c - '0'); 
+	}; 
+	//dprintf(stderr_d, "index = %d" "\n", index); 
+	if (index >= this -> racines_nb) { goto error_label__index_out_of_bounds; }; 
+      } 
+      else { 
+	index = ~0; 
+	for (int i = 0; i < this -> racines_nb; i++) { 
+	  const int len = strlen(anime__string_stack__get(this, this -> racines_qui[i])); 
+	  if (len != index_len) continue; 
+	  if (0 != strncasecmp(p, anime__string_stack__get(this, this -> racines_qui[i]), index_len)) continue; 
+	  index = i; 
+	  break; 
+	}; 
+	//dprintf(stderr_d, "index = %d" "\n", index); 
+	if (index < 0) { goto error_label__index_out_of_bounds; }; 
+      };
+      //dprintf(stderr_d, "index = %d" "\n", index); 
+      
+      
+      if ((0 == strcasecmp("", short_field_name)) || (0 == strcasecmp(".", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.racine[%2d].qui     = %15s " "\n", index, anime__string_stack__get(this, this -> racines_qui[index])); 
+	dprintf(stdprint_d, "graphique.racine[%2d].x       = %15f " "\n", index, this -> racines_x[index]); 
+	dprintf(stdprint_d, "graphique.racine[%2d].y       = %15f " "\n", index, this -> racines_y[index]); 
+	dprintf(stdprint_d, "graphique.racine[%2d].z       = %15f " "\n", index, this -> racines_z[index]); 
+	dprintf(stdprint_d, "graphique.racine[%2d].angle_y = %15f " "\n", index, this -> racines_angle_y[index]); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".qui", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.racine[%2d].qui     = %15s " "\n", index, anime__string_stack__get(this, this -> racines_qui[index])); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".x", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.racine[%2d].x       = %15f " "\n", index, this -> racines_x[index]); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".y", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.racine[%2d].y       = %15f " "\n", index, this -> racines_y[index]); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".z", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.racine[%2d].z       = %15f " "\n", index, this -> racines_z[index]); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+      if ((0 == strcasecmp(".angle_y", short_field_name)) || 
+	  (0 == strcasecmp(".angle-y", short_field_name)) || 
+	  (0 == strcasecmp(".angle y", short_field_name))) { 
+	dprintf(stdprint_d, "graphique.racine[%2d].angle_y = %15f " "\n", index, this -> racines_angle_y[index]); 
+	*error_id_r = ANIME__OK; 
+	return *error_id_r; 
+      }; 
+
+
+      
+
+      goto label__unknown_field; 
+    } while (false); 
+
+
+
+    goto label__unknown_field; 
+  }; 
+
+
+
+
+
+  
+
+ error_label__index_out_of_bounds: { 
+    //dprintf(stderr_d, "STDLOG_D = %d" "\n", this -> stdlog_d); 
+    //dprintf(stderr_d, "(this -> stdlog_d  > 0) = %s" "\n", (this -> stdlog_d  > 0) ? "vrai" : "faux"); 
+  
+    *error_id_r = ANIME__INDEX_OF_OUT_BOUNDS; 
+    snprintf(error_str, error_size, "Index out of bounds: %s", field_name); 
+    if (stduser_d         > 0) { dprintf(stduser_d, "Error: " "%s" "\n", error_str); }; 
+    if (this -> stdlog_d  > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Error: " "%s" "\n", __func__, error_str); }; 
+    fflush(NULL); 
+    return *error_id_r; 
+  }; 
+  
+ label__unknown_field: { 
+    *error_id_r = ANIME__UNKNOWN_FIELD; 
+    snprintf(error_str, error_size, "Unknown field: %s", field_name); 
+    if (stduser_d         > 0) { dprintf(stduser_d, "Warning: " "%s" "\n", error_str); }; 
+    if (this -> stdlog_d  > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+    return *error_id_r; 
+  }; 
+  
+}; 

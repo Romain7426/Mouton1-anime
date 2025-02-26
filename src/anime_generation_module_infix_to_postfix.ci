@@ -1,0 +1,1113 @@
+
+
+
+#define PUSH_POSTFIX(__token__) {						\
+	if (postfix_buffer_itemsize <= postfix_buffer_nb) goto label__error__postfix_buffer_overflow; \
+	postfix_buffer[postfix_buffer_nb] = __token__;			\
+	postfix_buffer_nb++;						\
+      };								\
+      /* END OF MACRO */
+
+#define PUSH_OPERATOR(__token_i__,__token_type__) {			\
+	if (operator_stack_itemsize <= operator_stack_nb) goto label__error__operator_stack_overflow; \
+	operator_stack_id[operator_stack_nb] = __token_i__;		\
+	operator_stack_type[operator_stack_nb] = __token_type__;	\
+	operator_stack_nb++;						\
+      };								\
+      /* END OF MACRO */ 
+      
+#define CONSTANT_VALUE_HUH(token_type) (int_member_huh((token_type), ANIME_TOKEN_TRUE, ANIME_TOKEN_FALSE, ANIME_TOKEN_ENTIER, ANIME_TOKEN_REEL__VIRG, ANIME_TOKEN_REEL__DOT, ANIME_TOKEN_REEL__E, ANIME_TOKEN_CHAINE_C, ANIME_TOKEN_CHAINE_P, ANIME_TOKEN_NIL, ANIME_TOKEN_NULL_PTR, ANIME_TOKEN_IDENT))
+
+#define UNARY_PREFIX_OPERATOR_HUH(token_type) (int_member_huh((token_type), ANIME_TOKEN_LOGICAL_NOT, ANIME_TOKEN_IPLUS, ANIME_TOKEN_IMOINS, ANIME_TOKEN_RPLUS, ANIME_TOKEN_RMOINS))
+
+#define UNARY_POSTFIX_OPERATOR_HUH(token_type) (int_member_huh((token_type), ANIME_TOKEN_INC, ANIME_TOKEN_DEC))
+
+#define UNARY_OUTFIX_OPERATOR_HUH__OPEN(token_type) (int_member_huh((token_type), ANIME_TOKEN_OPENPAR, ANIME_TOKEN_OPENBRACKET))
+
+#define UNARY_OUTFIX_OPERATOR_HUH__CLOSE(token_type) (int_member_huh((token_type), ANIME_TOKEN_CLOSEPAR, ANIME_TOKEN_CLOSEBRACKET))
+
+#define BINARY_OPERATOR_HUH(token_type) (int_member_huh((token_type), ANIME_TOKEN_AFFECTATION, ANIME_TOKEN_AFFECTATION_SIMPLE, ANIME_TOKEN_AFFECTATION_IADD, ANIME_TOKEN_AFFECTATION_RADD, ANIME_TOKEN_AFFECTATION_ISUB, ANIME_TOKEN_AFFECTATION_RSUB, ANIME_TOKEN_AFFECTATION_IMULT, ANIME_TOKEN_AFFECTATION_RMULT, ANIME_TOKEN_AFFECTATION_IDIV, ANIME_TOKEN_AFFECTATION_RDIV, ANIME_TOKEN_AFFECTATION_IMOD, ANIME_TOKEN_AFFECTATION_L_AND, ANIME_TOKEN_AFFECTATION_L_OR, ANIME_TOKEN_AFFECTATION_L_XOR, ANIME_TOKEN_AFFECTATION_B_AND, ANIME_TOKEN_AFFECTATION_B_OR, ANIME_TOKEN_AFFECTATION_B_XOR, ANIME_TOKEN_AFFECTATION_B_RSHIFT, ANIME_TOKEN_AFFECTATION_B_LSHIFT, ANIME_TOKEN_LOGICAL_OR, ANIME_TOKEN_LOGICAL_AND, ANIME_TOKEN_LOGICAL_XOR, ANIME_TOKEN_BITWISE_OR, ANIME_TOKEN_BITWISE_AND, ANIME_TOKEN_BITWISE_XOR, ANIME_TOKEN_BITWISE_SHIFT_LEFT, ANIME_TOKEN_BITWISE_SHIFT_RIGHT, ANIME_TOKEN_EQUAL, ANIME_TOKEN_DIFF, ANIME_TOKEN_INF, ANIME_TOKEN_SUP, ANIME_TOKEN_INFEQ, ANIME_TOKEN_SUPEQ, ANIME_TOKEN_IPLUS, ANIME_TOKEN_RPLUS, ANIME_TOKEN_IMINUS, ANIME_TOKEN_RMINUS, ANIME_TOKEN_IMULT, ANIME_TOKEN_RMULT, ANIME_TOKEN_IDIV, ANIME_TOKEN_RDIV, ANIME_TOKEN_IMOD, ANIME_TOKEN_POINT, ANIME_TOKEN_FLECHE))
+
+
+// RL: Cette fonction ne vérifie pas si la syntaxe de l’expression infixe est correcte. 
+//     Cette fonction suppose que la syntaxe est correcte. 
+//     Une expression telle que
+//       1 2 + + 3 
+//    sera acceptée et calculée. 
+// ---   
+// RL: Cette fonction est mono-syntaxique. 
+//     (+, x, etc., ont la même syntaxe) 
+// 
+// RL: Un analyse poly-syntaxiques devrait intégrer un «pattern matching» qui ventilerait ensuite selon la syntaxe reconnue. 
+// ---  
+// RL: Il faudrait en amont écrire un vérificateur de syntaxe. 
+// RL: Un tel vérificateur devrait: 
+//      -- L’erreur pouvant être en profondeur, le vérificateur devrait se souvenir de son chemin. 
+// 
+// RL: En définitive, avec un répartiteur et une mémoire du chemin, un tel vérificater ressemblerait à un analyseur LALR. 
+// ---  
+// RL: Un tel vérificateur aurait besoin d’une mémoire tampon de la longueur de la plus longue règle de la grammaire. 
+//     Par définition, chaque règle serait inférieure à cette taille, et donc serait contenue dans la mémoire tampon. 
+//     En particulier, le sous-arbre en bas à gauche serait entièrement compris dans la mémoire tampon. 
+//     Il serait donc possible de le construire. 
+// RL: Notons que pour la reconnaissance de la syntaxe, il serait possible de s’arrêter en amont si chaque règle soit distincte au bout de 'k' caractères. 
+
+enum { ANIME__SYNTAX__LONGEST = 3 }; 
+#define ANIME__SYNTAX_TYPE__LIST				\
+  X(ANIME__SYNTAX_TYPE__NULL, = 0)				\
+    X(ANIME__SYNTAX_TYPE__ZEROARY_CONST,)			\
+    X(ANIME__SYNTAX_TYPE__UNARY_PREFIX,)			\
+    X(ANIME__SYNTAX_TYPE__UNARY_POSTFIX,)			\
+    X(ANIME__SYNTAX_TYPE__UNARY_OUTFIX,)			\
+    X(ANIME__SYNTAX_TYPE__BINARY_INFIX,)			\
+    X(ANIME__SYNTAX_TYPE__ERROR__GENERIC, = INT8_MIN)		\
+    X(ANIME__SYNTAX_TYPE__ERROR__LEXEMES_NULL,)			\
+    X(ANIME__SYNTAX_TYPE__ERROR__LEXEMES_EMPTY,)		\
+    X(ANIME__SYNTAX_TYPE__ERROR__NOT_ENOUGH_LEXEMES,)		\
+    X(ANIME__SYNTAX_TYPE__ERROR__DOES_NOT_MATCH_ANYTHING,)		\
+  /* LAST_LINE*/
+
+#define ANIME__SYNTAX_TYPE__H
+#define EXTERN static
+#include "anime_generation_module_syntax_type.ci"
+#undef  EXTERN
+#undef  ANIME__SYNTAX_TYPE__H
+
+
+static int8_t anime__generation__syntax_match__unary_outfix(const anime_t * this, const int_lexeme_t * lexemes, const int8_t lexemes_len) { 
+  if (2    >= lexemes_len) return -1; 
+  const int_anime_token_type_t token_open    = this -> lexeme_stack__type[lexemes[0]]; 
+  const int_anime_token_type_t token_between = this -> lexeme_stack__type[lexemes[1]]; 
+  const int_anime_token_type_t token_close   = this -> lexeme_stack__type[lexemes[2]]; 
+  if (not(UNARY_OUTFIX_OPERATOR_HUH__OPEN(token_open))) return 0; 
+  if (not(CONSTANT_VALUE_HUH(token_between))) return 0; // RL: Ou un non-terminal (id est, une sous-expression). 
+  if (not(UNARY_OUTFIX_OPERATOR_HUH__CLOSE(token_close))) return 0; 
+  if (ANIME_TOKEN_OPENPAR == token_open && ANIME_TOKEN_CLOSEPAR == token_close) return 3; 
+  if (ANIME_TOKEN_OPENBRACKET == token_open && ANIME_TOKEN_CLOSEBRACKET == token_close) return 3; 
+  return 0; 
+}; 
+
+static int8_t anime__generation__syntax_match__binary_infix(const anime_t * this, const int_lexeme_t * lexemes, const int8_t lexemes_len) { 
+  if (2    >= lexemes_len) return -1; 
+  const int_anime_token_type_t token_left     = this -> lexeme_stack__type[lexemes[0]]; 
+  const int_anime_token_type_t token_operator = this -> lexeme_stack__type[lexemes[1]]; 
+  const int_anime_token_type_t token_right    = this -> lexeme_stack__type[lexemes[2]]; 
+  if (not(CONSTANT_VALUE_HUH(token_left))) return 0; // RL: Ou un non-terminal (id est, une sous-expression). 
+  if (not(BINARY_OPERATOR_HUH(token_operator))) return 0; 
+  if (not(CONSTANT_VALUE_HUH(token_right))) return 0; // RL: Ou un non-terminal (id est, une sous-expression). 
+  return 3; 
+}; 
+
+static int8_t anime__generation__syntax_match__unary_postfix(const anime_t * this, const int_lexeme_t * lexemes, const int8_t lexemes_len) { 
+  if (1    >= lexemes_len) return -1; 
+  const int_anime_token_type_t token_left     = this -> lexeme_stack__type[lexemes[0]]; 
+  const int_anime_token_type_t token_operator = this -> lexeme_stack__type[lexemes[1]]; 
+  if (not(CONSTANT_VALUE_HUH(token_left))) return 0; // RL: Ou un non-terminal (id est, une sous-expression). 
+  if (not(UNARY_POSTFIX_OPERATOR_HUH(token_operator))) return 0; 
+  return 2; 
+}; 
+
+static int8_t anime__generation__syntax_match__unary_prefix(const anime_t * this, const int_lexeme_t * lexemes, const int8_t lexemes_len) { 
+  if (1    >= lexemes_len) return -1; 
+  const int_anime_token_type_t token_operator = this -> lexeme_stack__type[lexemes[0]]; 
+  const int_anime_token_type_t token_right    = this -> lexeme_stack__type[lexemes[1]]; 
+  if (not(UNARY_PREFIX_OPERATOR_HUH(token_operator))) return 0; 
+  if (not(CONSTANT_VALUE_HUH(token_right))) return 0; // RL: Ou un non-terminal (id est, une sous-expression). 
+  return 2; 
+}; 
+
+static int8_t anime__generation__syntax_match__zeroary_const(const anime_t * this, const int_lexeme_t * lexemes, const int8_t lexemes_len) { 
+  if (0    >= lexemes_len) return -1; 
+  const int_anime_token_type_t token_const = this -> lexeme_stack__type[lexemes[0]]; 
+  if (not(CONSTANT_VALUE_HUH(token_const))) return 0; // RL: Ou un non-terminal (id est, une sous-expression). 
+  return 1; 
+}; 
+
+
+
+
+
+static int_anime_syntax_type_t anime__generation__syntax_match(const anime_t * this, const int_lexeme_t * lexemes, const int8_t lexemes_len) { 
+  if (NULL == lexemes    ) return ANIME__SYNTAX_TYPE__ERROR__LEXEMES_NULL; 
+  if (0    >= lexemes_len) return ANIME__SYNTAX_TYPE__ERROR__LEXEMES_EMPTY; 
+  
+  if (0 < anime__generation__syntax_match__unary_outfix (this, lexemes, lexemes_len)) return ANIME__SYNTAX_TYPE__UNARY_OUTFIX; 
+  if (0 < anime__generation__syntax_match__binary_infix (this, lexemes, lexemes_len)) return ANIME__SYNTAX_TYPE__BINARY_INFIX; 
+  if (0 < anime__generation__syntax_match__unary_postfix(this, lexemes, lexemes_len)) return ANIME__SYNTAX_TYPE__UNARY_POSTFIX; 
+  if (0 < anime__generation__syntax_match__unary_prefix (this, lexemes, lexemes_len)) return ANIME__SYNTAX_TYPE__UNARY_PREFIX; 
+  if (0 < anime__generation__syntax_match__zeroary_const(this, lexemes, lexemes_len)) return ANIME__SYNTAX_TYPE__ZEROARY_CONST;
+
+  return ANIME__SYNTAX_TYPE__ERROR__DOES_NOT_MATCH_ANYTHING; 
+};
+
+
+
+// RL: La logique de cette fonction est aisée — elle réduit dès que elle peut:  
+//      -- Elle réduit les constantes. 
+//      -- Elle réduit les expressions postfixes. 
+//      -- Ensuite, elle ne réduit pas, mais elle met en attente; 
+//         Elle attend quoi? De trouver un opérateur dont la priorité soit plus faible (voire égale) que la priorité de l’opérateur précédent, 
+//         et alors elle réduit l’opérateur précédent. 
+static int_anime_error_t anime__generation__convert_infix_to_postfix(const anime_t * this, const int_lexeme_t lexeme_i_start, const int8_t lexeme_len, int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_itemsize, int8_t * postfix_buffer_nb_r) { 
+  assert(NULL != postfix_buffer_nb_r); 
+  assert(0 <= lexeme_i_start); 
+  assert(0 <= lexeme_len); 
+  if (0 == lexeme_len) { *postfix_buffer_nb_r = 0; return ANIME__OK; }; 
+  if (ANIME__LONGEST_INFIX_EXPRESSION < lexeme_len) return ANIME__ERROR_GENERIC; 
+  if (postfix_buffer_itemsize < lexeme_len) return ANIME__ERROR_GENERIC; 
+  if (1 == lexeme_len) { postfix_buffer[0] = lexeme_i_start; *postfix_buffer_nb_r = 1; return ANIME__OK; };
+  
+  // RL: Les opérateurs précédents moins prioritaires qui sont en attente. 
+  int_lexeme_t           operator_stack_id  [ANIME__LONGEST_INFIX_EXPRESSION]; 
+  int_anime_token_type_t operator_stack_type[ANIME__LONGEST_INFIX_EXPRESSION]; 
+  int8_t                 operator_stack_nb = 0; 
+  const int8_t           operator_stack_itemsize = ANIME__LONGEST_INFIX_EXPRESSION; 
+
+  int8_t postfix_buffer_nb = 0; 
+  //int8_t infix_buffer_nb = 0; 
+  int_lexeme_t lexeme_i;
+  goto label__body; 
+
+
+  label__body: { 
+    postfix_buffer_nb = 0; 
+    operator_stack_nb = 0; 
+    //infix_buffer_nb = 0; 
+    lexeme_i = 0;
+    
+    
+    for (;;) { 
+      //if (infix_buffer_itemsize <= infix_buffer_nb) goto label__eof_reached; 
+      if (lexeme_len <= lexeme_i) goto label__eof_reached; 
+      const int_lexeme_t token_i = lexeme_i + lexeme_i_start; 
+      const int_anime_token_type_t token_type = this -> lexeme_stack__type[token_i]; 
+      
+      const int8_t constant_value_huh = CONSTANT_VALUE_HUH(token_type); 
+      if (constant_value_huh) { PUSH_POSTFIX(token_i); lexeme_i++; continue; }; 
+      
+      const int infix_binary_operator_huh = BINARY_OPERATOR_HUH(token_type);
+      if (not(infix_binary_operator_huh)) goto label__error__not_an_operator; 
+      
+      // RL: Y a-t-il un opérateur précédent? 
+      if (0 == operator_stack_nb) { PUSH_OPERATOR(token_i,token_type); lexeme_i++; continue; }; 
+      
+      const int_anime_token_type_t top_type = operator_stack_type[operator_stack_nb-1]; 
+
+      if (top_type >= token_type) { 
+	operator_stack_nb--; 
+	PUSH_POSTFIX(operator_stack_id[operator_stack_nb]); 
+	//PUSH_OPERATOR(token_i,token_type); 
+	//lexeme_i++; 
+	continue; 
+      };
+      
+      if (top_type < token_type) { PUSH_OPERATOR(token_i,token_type); lexeme_i++; continue; }; 
+
+      /* NOT REACHED */ assert(false); 
+    }; 
+    /* NOT REACHED */ assert(false); 
+  };
+
+label__eof_reached: { 
+    for (;;) { 
+      if (0 == operator_stack_nb) break; 
+      operator_stack_nb--; 
+      PUSH_POSTFIX(operator_stack_id[operator_stack_nb]); 
+    };
+    *postfix_buffer_nb_r = postfix_buffer_nb; 
+    return ANIME__OK; 
+  }; 
+
+ label__error__postfix_buffer_overflow: {
+    return ANIME__ERROR_GENERIC; 
+  };
+
+ label__error__operator_stack_overflow: {
+    return ANIME__ERROR_GENERIC; 
+  };
+
+  label__error__not_an_operator: { 
+    return ANIME__ERROR_GENERIC; 
+  };
+  
+  assert(false);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0 
+
+
+static int_anime_error_t anime__generation__convert_infix_to_postfix(const anime_t * this, const int_lexeme_t lexeme_i_start, const int8_t lexeme_len, int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_itemsize, int8_t * postfix_buffer_nb_r) { 
+  assert(NULL != postfix_buffer_nb_r); 
+  assert(0 <= lexeme_i_start); 
+  assert(0 <= lexeme_len); 
+  if (0 == lexeme_len) { *postfix_buffer_nb_r = 0; return ANIME__OK; }; 
+  if (ANIME__LONGEST_INFIX_EXPRESSION < lexeme_len) return ANIME__ERROR_GENERIC; 
+  if (postfix_buffer_itemsize < lexeme_len) return ANIME__ERROR_GENERIC; 
+  if (1 == lexeme_len) { postfix_buffer[0] = lexeme_i_start; *postfix_buffer_nb_r = 1; return ANIME__OK; };
+  
+  // RL: Les opérateurs précédents moins prioritaires qui sont en attente. 
+  int_lexeme_t      operator_stack_id  [ANIME__LONGEST_INFIX_EXPRESSION]; 
+  int_anime_token_type_t operator_stack_type[ANIME__LONGEST_INFIX_EXPRESSION]; 
+  int8_t            operator_stack_nb = 0; 
+  const int8_t      operator_stack_itemsize = ANIME__LONGEST_INFIX_EXPRESSION; 
+
+  int8_t postfix_buffer_nb = 0; 
+  //int8_t infix_buffer_nb = 0; 
+  int_lexeme_t lexeme_i;
+  goto label__body; 
+
+
+  label__body: { 
+    postfix_buffer_nb = 0; 
+    operator_stack_nb = 0; 
+    //infix_buffer_nb = 0; 
+    lexeme_i = 0;
+    
+    
+    for (;;) { 
+      //if (infix_buffer_itemsize <= infix_buffer_nb) goto label__eof_reached; 
+      if (lexeme_len <= lexeme_i) goto label__eof_reached; 
+      const int_lexeme_t token_i = lexeme_i + lexeme_i_start; 
+      const int_anime_token_type_t token_type = this -> lexeme_stack__type[token_i]; 
+      
+      const int8_t constant_value_huh = CONSTANT_VALUE_HUH(token_type); 
+      if (constant_value_huh) { PUSH_POSTFIX(token_i); lexeme_i++; continue; }; 
+      
+      const int infix_binary_operator_huh = BINARY_OPERATOR_HUH(token_type);
+      if (not(infix_binary_operator_huh)) goto label__error__not_an_operator; 
+      
+      // RL: Y a-t-il un opérateur précédent? 
+      if (0 == operator_stack_nb) { PUSH_OPERATOR(token_i,token_type); lexeme_i++; continue; }; 
+      
+      const int_anime_token_type_t top_type = operator_stack_type[operator_stack_nb-1]; 
+
+      if (top_type >= token_type) { 
+	operator_stack_nb--; 
+	PUSH_POSTFIX(operator_stack_id[operator_stack_nb]); 
+	//PUSH_OPERATOR(token_i,token_type); 
+	//lexeme_i++; 
+	continue; 
+      };
+      
+      if (top_type < token_type) { PUSH_OPERATOR(token_i,token_type); lexeme_i++; continue; }; 
+
+      /* NOT REACHED */ assert(false); 
+    }; 
+    /* NOT REACHED */ assert(false); 
+  };
+
+label__eof_reached: { 
+    for (;;) { 
+      if (0 == operator_stack_nb) break; 
+      operator_stack_nb--; 
+      PUSH_POSTFIX(operator_stack_id[operator_stack_nb]); 
+    };
+    *postfix_buffer_nb_r = postfix_buffer_nb; 
+    return ANIME__OK; 
+  }; 
+
+ label__error__postfix_buffer_overflow: {
+    return ANIME__ERROR_GENERIC; 
+  };
+
+ label__error__operator_stack_overflow: {
+    return ANIME__ERROR_GENERIC; 
+  };
+
+  label__error__not_an_operator: { 
+    return ANIME__ERROR_GENERIC; 
+  };
+  
+  assert(false);
+};
+#endif 
+
+
+
+
+
+
+
+
+
+
+
+#if 0 
+
+
+enum { OPERATION_SYMBOL_STACK_UNITSIZE = LLFIXED_STACK_UNITSIZE }; 
+static       int8_t operation_symbol_stack     [OPERATION_SYMBOL_STACK_UNITSIZE] = {}; 
+static const char * operation_symbol_stack_argv[OPERATION_SYMBOL_STACK_UNITSIZE] = {}; 
+static       int8_t operation_symbol_stack_nb = 0; 
+
+static void operation_symbol_stack__check_and_assert(void) { 
+  operation_symbol_stack_nb = OPERATION_SYMBOL_STACK_UNITSIZE; 
+  assert(operation_symbol_stack_nb == OPERATION_SYMBOL_STACK_UNITSIZE); 
+}; 
+
+enum { OUTPUT_STACK_UNITSIZE = LLFIXED_STACK_UNITSIZE }; 
+static const char * output_stack[OUTPUT_STACK_UNITSIZE] = {}; 
+static int8_t output_stack_nb = 0; 
+
+static void output_stack__check_and_assert(void) { 
+  output_stack_nb = OUTPUT_STACK_UNITSIZE; 
+  assert(output_stack_nb == OUTPUT_STACK_UNITSIZE); 
+}; 
+
+
+int main(const int argc, const char * argv[]) { 
+  if (1 > argc) { 
+    write_string(STDERR_FILENO, "Does not make sense - ARGC is lower than 1: "); 
+    write_long_long_int(STDERR_FILENO, argc); 
+    write_eol(STDERR_FILENO); 
+    return 4; 
+  }; 
+  argv0 = argv[0]; 
+  
+  llfixed_stack__check_and_assert(); 
+  operation_symbol_stack__check_and_assert(); 
+  output_stack__check_and_assert(); 
+  goto label__body; 
+  
+  
+  label__error__stack_overflow: { 
+    assert(false); 
+  }; 
+  
+  label__error__exit: { 
+    return 1; 
+  }; 
+  
+  label__exit: { 
+    return 0; 
+  }; 
+  
+  label__body: { 
+    output_stack_nb = 0; 
+    operation_symbol_stack_nb = 0; 
+    
+    for (int arg_i = 1; arg_i < argc; arg_i++) { 
+      const char * argv_i = argv[arg_i]; 
+      const int16_t prefix_bytesize = llfixed__token_get_number_prefix_bytesize(argv_i, NULL); 
+      if (0 < prefix_bytesize) { 
+	if (OUTPUT_STACK_UNITSIZE <= output_stack_nb) goto label__error__stack_overflow; 
+	output_stack[output_stack_nb] = argv_i; 
+	output_stack_nb++; 
+	continue; 
+      }; 
+      const int8_t operation_symbol = operation_symbol__token_match(argv_i); 
+      if ((OPERATION_SYMBOL__NULL >= operation_symbol) || (OPERATION_SYMBOL__COUNT <= operation_symbol)) { 
+ 	write_string(STDERR_FILENO, argv0); 
+ 	write_string(STDERR_FILENO, ": something got wrong while trying to match token '"); 
+ 	write_string(STDERR_FILENO, argv_i); 
+ 	write_string(STDERR_FILENO, "' (argv[");
+	write_long_long_int(STDERR_FILENO, arg_i); 
+ 	write_string(STDERR_FILENO, "]) - got operation_symbol: ");
+	write_long_long_int(STDERR_FILENO, operation_symbol); 
+	write_eol(STDERR_FILENO); 
+	goto label__error__exit; 
+      }; 
+      if (OPERATION_SYMBOL__ERROR__EMPTY_SYMBOL == operation_symbol) continue; 
+      if (OPERATION_SYMBOL__ERROR__NOT_AN_OPERATION_SYMBOL == operation_symbol) { 
+ 	write_string(STDERR_FILENO, argv0); 
+ 	write_string(STDERR_FILENO, ": operation symbol not recognized: '"); 
+ 	write_string(STDERR_FILENO, argv_i); 
+ 	write_string(STDERR_FILENO, "' (argv[");
+	write_long_long_int(STDERR_FILENO, arg_i); 
+ 	write_string(STDERR_FILENO, "])");
+	write_eol(STDERR_FILENO); 
+	goto label__error__exit; 
+      }; 
+      if (0 == operation_symbol_stack_nb) { 
+	if (OPERATION_SYMBOL_STACK_UNITSIZE <= operation_symbol_stack_nb) goto label__error__stack_overflow; 
+	operation_symbol_stack     [operation_symbol_stack_nb] = operation_symbol; 
+	operation_symbol_stack_argv[operation_symbol_stack_nb] = argv_i; 
+	operation_symbol_stack_nb++; 
+	continue; 
+      }; 
+      const int8_t top = operation_symbol_stack[operation_symbol_stack_nb - 1]; 
+      if (top < operation_symbol) { 
+	if (OPERATION_SYMBOL_STACK_UNITSIZE <= operation_symbol_stack_nb) goto label__error__stack_overflow; 
+	operation_symbol_stack     [operation_symbol_stack_nb] = operation_symbol; 
+	operation_symbol_stack_argv[operation_symbol_stack_nb] = argv_i; 
+	operation_symbol_stack_nb++; 
+	continue; 
+      }; 
+      if (top >= operation_symbol) { 
+	operation_symbol_stack_nb--; 
+	if (OUTPUT_STACK_UNITSIZE <= output_stack_nb) goto label__error__stack_overflow; 
+	output_stack[output_stack_nb] = operation_symbol_stack_argv[operation_symbol_stack_nb]; 
+	output_stack_nb++; 
+	operation_symbol_stack     [operation_symbol_stack_nb] = operation_symbol; 
+	operation_symbol_stack_argv[operation_symbol_stack_nb] = argv_i; 
+	operation_symbol_stack_nb++; 
+	continue; 
+      }; 
+      /* NOT REACHED */
+    }; 
+
+#if 0 
+    write_string(STDOUT_FILENO, "operation_symbol_stack_nb = "); 
+    write_long_long_int(STDOUT_FILENO, operation_symbol_stack_nb); 
+    write_eol(STDOUT_FILENO); 
+#endif
+#if 0 
+    write_string(STDOUT_FILENO, "output_stack_nb = "); 
+    write_long_long_int(STDOUT_FILENO, output_stack_nb); 
+    write_eol(STDOUT_FILENO); 
+#endif 
+
+    for (; 0 < operation_symbol_stack_nb;) { 
+      operation_symbol_stack_nb--; 
+      if (OUTPUT_STACK_UNITSIZE <= output_stack_nb) goto label__error__stack_overflow; 
+      output_stack[output_stack_nb] = operation_symbol_stack_argv[operation_symbol_stack_nb]; 
+      output_stack_nb++; 
+    }; 
+    
+#if 0 
+    write_string(STDOUT_FILENO, "output_stack_nb = "); 
+    write_long_long_int(STDOUT_FILENO, output_stack_nb); 
+    write_eol(STDOUT_FILENO); 
+#endif 
+
+    for (int16_t i = 0; i < output_stack_nb; i++) { 
+      write_string_ln(STDOUT_FILENO, output_stack[i]); 
+    }; 
+
+    goto label__exit; 
+  }; 
+  
+}; 
+
+#endif 
+
+
+
+
+
+
+
+#if 0 
+
+
+#define get_current_token_type() (*current_token_ref < 0 ? ANIME_TOKEN_NULL : *current_token_ref >= anime_token__get_count(token_env) ? ANIME_TOKEN_EOF : (anime_token__get_type(token_env, *current_token_ref))) 
+
+// RL: TODO XXX FIXME 
+//#define get_next_token_type__()  (assert(false),0) 
+#define get_next_token_type__()  ((*current_token_ref < 0) ? ANIME_TOKEN_NULL : ((*current_token_ref + 1 >= anime_token__get_count(token_env)) ? ANIME_TOKEN_EOF : ((*current_token_ref)++, anime_token__get_type(token_env, *current_token_ref)))) 
+#if DEBUG_PARSER >= 2 
+#  define get_next_token_type()    (dputs_array(this -> stdlog_d, __FILE__ ":" STRINGIFY(__LINE__) ":<",__func__, ">", ":<get_next_token>", ": ", "current_token_ref = ", int_string__stack(*current_token_ref), "\n"), (get_next_token_type__())) 
+#else 
+#  define get_next_token_type()    (get_next_token_type__())
+#endif 
+
+
+
+static const int anime_syntax_filtering__postfix_operators[]   = { ANIME_TOKEN_INC, ANIME_TOKEN_DEC }; 
+static const int anime_syntax_filtering__postfix_operators__nb = ARRAY_SIZE(anime_syntax_filtering__postfix_operators); 
+
+
+static int_anime_error_t anime_syntax_filtering__lalr_automaton__aux(char * exception_data, anime_syntax_filtering_t * this, anime_token_env_t * token_env, const anime_custom_syntax_env_t * custom_syntax_env, int * current_token_ref) { 
+  
+#if DEBUG_PARSER >= 2 
+  dputs_array(this -> stdlog_d, __FILE__ ":" STRINGIFY(__LINE__) ":<",__func__, ">:", "[current_token: ", int_string__stack(*current_token_ref), "]\n"); 
+#endif 
+
+
+  // RL: This is where we need the LALR theory as we cannot reasonably use a LL1 analysis (any LL1 grammar matching that language looks terrible and does not fit our needs). 
+  // RL: Infix tokens: 
+  // expr  ANIME_TOKEN_OR           expr1 
+  // expr  ANIME_TOKEN_AND          expr1 
+  // expr  ANIME_TOKEN_XOR          expr1 
+  // expr1 ANIME_TOKEN_EQUAL        expr2 
+  // expr1 ANIME_TOKEN_DIFF         expr2 
+  // expr1 ANIME_TOKEN_INF          expr2 
+  // expr1 ANIME_TOKEN_SUP          expr2 
+  // expr1 ANIME_TOKEN_INFEQ        expr2 
+  // expr1 ANIME_TOKEN_SUPEQ        expr2 
+  // expr2 token_plus_symbol  expr3 
+  // expr2 token_minus_symbol expr3 
+  // expr3 ANIME_TOKEN_IMULT        expr4  
+  // expr3 ANIME_TOKEN_IDIV         expr4 
+  // expr3 ANIME_TOKEN_IMOD         expr4 
+  // expr3 ANIME_TOKEN_RMULT        expr4 
+  // expr3 ANIME_TOKEN_RDIV         expr4 
+  //       ANIME_TOKEN_NOT          expr4 
+  //       ANIME_TOKEN_IPLUS        expr4 
+  //       ANIME_TOKEN_IMOINS       expr4 
+  //       ANIME_TOKEN_RPLUS        expr4 
+  //       ANIME_TOKEN_RMOINS       expr4 
+  // expr5 ANIME_TOKEN_PTR 
+  //       ANIME_TOKEN_REF          expr5 
+  // expr5 ANIME_TOKEN_OPENBRACKET  expr  ANIME_TOKEN_CLOSEBRACKET 
+  // expr5 ANIME_TOKEN_POINT        nom 
+  // appel_funproc__expr 
+  // appel_methode__expr 
+  //       ANIME_TOKEN_OPENPAR      expr  ANIME_TOKEN_CLOSEPAR 
+  //       ANIME_TOKEN_TRUE 
+  //       ANIME_TOKEN_FALSE 
+  //       ANIME_TOKEN_ENTIER 
+  //       ANIME_TOKEN_REEL 
+  //       ANIME_TOKEN_CHAINE 
+  //       ANIME_TOKEN_IDENT 
+  //       ANIME_TOKEN_NIL 
+  // --- 
+  // RL: Premier(expr): // RL: TODO XXX FIXME: Add ANIME_TOKEN_BITCOMPLEMENT, bit_shift, assign, side_effect_assigns, etc. 
+  //       ANIME_TOKEN_NOT 
+  //       ANIME_TOKEN_IPLUS 
+  //       ANIME_TOKEN_IMOINS 
+  //       ANIME_TOKEN_RPLUS 
+  //       ANIME_TOKEN_RMOINS 
+  //       ANIME_TOKEN_OPENPAR 
+  //       ANIME_TOKEN_TRUE 
+  //       ANIME_TOKEN_FALSE 
+  //       ANIME_TOKEN_ENTIER 
+  //       ANIME_TOKEN_REEL 
+  //       ANIME_TOKEN_CHAINE 
+  //       ANIME_TOKEN_IDENT 
+  //       ANIME_TOKEN_NIL 
+  // 
+  // RL: As per the LALR theory, two stacks are needed: (i) one for the outputs (trees being built); (ii) one for the current path in the automaton [used when reducing, in order to backtrack in the automaton]. 
+  //const int8_t path__size = 63; // RL: This represents the nestedness of an expression. If an expression is more nested than that, then we wouldn't be able to parse it. 
+  enum { path__size = 63 }; 
+  int8_t path__array[path__size]; 
+  int8_t path__nb = 0; 
+  //const int8_t outputs__size = path__size; // RL: They should be the same as it would not make any sense otherwise. 
+  enum { outputs__size = path__size }; 
+  int16_t outputs__array[outputs__size]; 
+  int8_t outputs__nb = 0; 
+  // RL: Extra stacks, as the automaton could be simplified in adding variables instead of extending all these into states. 
+  //const int8_t operator__size = path__size; // RL: They should be the same as it would not make any sense otherwise. 
+  enum { operator__size = path__size }; 
+  int8_t operator__array[operator__size]; 
+  int8_t operator__nb = 0; 
+  //const int8_t arity__size = path__size; // RL: They should be the same as it would not make any sense otherwise. 
+  enum { arity__size = path__size }; 
+  int8_t arity__array[arity__size]; 
+  int8_t arity__nb = 0; 
+  //const int8_t master__size = path__size; // RL: They should be the same as it would not make any sense otherwise. 
+  enum { master__size = path__size }; 
+  int8_t master__array[master__size]; 
+  int8_t master__nb = 0; 
+  //const int8_t rule_idx__size = path__size; // RL: They should be the same as it would not make any sense otherwise. 
+  enum { rule_idx__size = path__size }; 
+  int8_t rule_idx__array[rule_idx__size]; 
+  int8_t rule_idx__nb = 0; 
+  //const int8_t rule_pos__size = path__size; // RL: They should be the same as it would not make any sense otherwise. 
+  enum { rule_pos__size = path__size }; 
+  int8_t rule_pos__array[rule_pos__size]; 
+  int8_t rule_pos__nb = 0; 
+  // Output tree stack [node is at the top] 
+  enum {   output_token_tree_stack__size = 127 }; 
+  uint16_t output_token_tree_stack__array[output_token_tree_stack__size]; 
+  uint8_t  output_token_tree_stack__arity[output_token_tree_stack__size]; 
+  uint8_t  output_token_tree_stack__nb = 0; 
+  // Automaton 
+  int8_t  current_lalr_state; 
+  int16_t current_symbol; 
+#define PUSH_OUTPUT(x)   { assert( outputs__nb <  outputs__size);  outputs__array[ outputs__nb++] = (x); }; 
+#define PUSH_PATH(x)     { assert(    path__nb <     path__size);     path__array[    path__nb++] = (x); }; 
+#define PUSH_OPERATOR(x) { assert(operator__nb < operator__size); operator__array[operator__nb++] = (x); }; 
+#define PUSH_ARITY(x)    { assert(   arity__nb <    arity__size);    arity__array[   arity__nb++] = (x); }; 
+#define POP_OUTPUT(x)    { assert( outputs__nb > 0); (x) =  outputs__array[-- outputs__nb]; }; 
+#define POP_PATH(x)      { assert(    path__nb > 0); (x) =     path__array[--    path__nb]; }; 
+#define POP_OPERATOR(x)  { assert(operator__nb > 0); (x) = operator__array[--operator__nb]; }; 
+#define POP_ARITY(x)     { assert(   arity__nb > 0); (x) =    arity__array[--   arity__nb]; }; 
+#define POP_MASTER(x)    { assert(  master__nb > 0); (x) =   master__array[--  master__nb]; }; 
+#define POP_RULE_IDX(x)  { assert(rule_idx__nb > 0); (x) = rule_idx__array[--rule_idx__nb]; }; 
+#define POP_RULE_POS(x)  { assert(rule_pos__nb > 0); (x) = rule_pos__array[--rule_pos__nb]; }; 
+#define DROP_OUTPUT()    { assert( outputs__nb > 0);  outputs__nb--; }; 
+#define DROP_OPERATOR(x) { assert(operator__nb > 0); operator__nb--; }; 
+#define DROP_ARITY(x)    { assert(   arity__nb > 0);    arity__nb--; }; 
+#define INC_ARITY()      { assert(   arity__nb > 0); arity__array[arity__nb]++; }; 
+#define OUTPUT_TREE_PUSH(token_root,arity,new_tree_r) { assert(output_token_tree_stack__nb < output_token_tree_stack__size); output_token_tree_stack__arity[output_token_tree_stack__nb] = (arity); output_token_tree_stack__array[output_token_tree_stack__nb] = (token_root); (new_tree_r) = output_token_tree_stack__nb; output_token_tree_stack__nb++; }; 
+#define EXPR_CASE_GOTO(id) case id: goto glue(label__expr_state,id); break;  
+#define EXPR_LABEL_STATE(id) glue(label__expr_state,id) 
+  
+  // Start! 
+  current_lalr_state = 0; 
+  current_symbol = get_current_token_type(); 
+  PUSH_PATH(11); 
+  
+  for (;;) { 
+#if DEBUG_PARSER >= 2
+    dputs_array(this -> stdlog_d, __FILE__ ":" STRINGIFY(__LINE__) ":<",__func__, ">: ", " current_lalr_state: ", int_string__stack(current_lalr_state), " - current_token: ", int_string__stack(*current_token_ref), " - current_symbol: ", current_symbol >= 0 && current_symbol < ANIME_TOKEN_TYPE_COUNT ? anime_token__type_get_cstr(current_symbol) : "_", "(", int_string__stack(current_symbol), ")", "\n"); 
+#endif 
+#if DEBUG_PARSER >= 3 
+    dputs_array(this -> stdlog_d, "\t", "PATH: [ "); for (int i = 0; i < path__nb; i++) { dputs_array(this -> stdlog_d, int_string__stack(path__array[i]), " -> "); }; dputs_array(this -> stdlog_d, " ]", "\n" ); 
+#endif 
+#if DEBUG_PARSER >= 3 
+    dputs_array(this -> stdlog_d, "\t", "OUTPUTS: [ "); for (int i = 0; i < outputs__nb; i++) { dputs_array(this -> stdlog_d, int_string__stack(outputs__array[i]), " -> "); }; dputs_array(this -> stdlog_d, " ]", "\n" ); 
+#endif 
+    switch (current_lalr_state) { 
+      EXPR_CASE_GOTO(0);  // RL: S → . S   _   S | . _ S | . S _ | . ( S ) | ... 
+      EXPR_CASE_GOTO(1);  // RL: S →   S . _   S 
+      EXPR_CASE_GOTO(6);  // RL: S →       _ . S 
+      EXPR_CASE_GOTO(7);  // RL: S → ( S . ) 
+      EXPR_CASE_GOTO(8);  // RL: S → ident ( . ... // <funcall>  
+      EXPR_CASE_GOTO(9);  // RL: arg_list: expecting ', S+' or ')' -- A 'S' was read and is on the output stack. 
+      EXPR_CASE_GOTO(10); // RL: arg_list: we have read at least one comma - expecting ', S+' or ')' -- An 'ident' and a 'arg_list' were read and are on the output stack. 
+      EXPR_CASE_GOTO(11); // RL: An expression was recognized! 
+      EXPR_CASE_GOTO(12); // RL: S →   S   _   S . 
+      EXPR_CASE_GOTO(13); // RL: S →   S [  S . ] 
+      EXPR_CASE_GOTO(14); // RL: S →   S ? . S :   S 
+      EXPR_CASE_GOTO(15); // RL: S →   S ?   S : . S 
+    }; 
+    // Default case: unexpected 'current_lalr_state' 
+    SYNTAX__EXCEPTION__ASSERT(false,"Unexpected 'current_lalr_state'"); 
+    // RL: TODO FIXME XXX 
+    assert(false); 
+      
+    
+  EXPR_LABEL_STATE(0): { 
+      if (-1 == current_symbol) { current_symbol = get_next_token_type(); }; 
+      
+      //RL: Constant value? 
+      if (int_member_huh(current_symbol, ANIME_TOKEN_TRUE, ANIME_TOKEN_FALSE, ANIME_TOKEN_ENTIER, ANIME_TOKEN_REEL__VIRG, ANIME_TOKEN_REEL__DOT, ANIME_TOKEN_REEL__E, ANIME_TOKEN_CHAINE_C, ANIME_TOKEN_CHAINE_P, ANIME_TOKEN_NIL, ANIME_TOKEN_NULL_PTR, ANIME_TOKEN_IDENT)) { 
+	int16_t new_tree; 
+	OUTPUT_TREE_PUSH(*current_token_ref,/*arity*/~0,new_tree); 
+	PUSH_OUTPUT(new_tree); 
+	current_lalr_state = 1; // We reduced, so now go there. 
+	current_symbol = get_next_token_type(); 
+	continue; 
+      }; 
+      
+      // RL: Prefix unary operator? 
+      if (int_member_huh(current_symbol, ANIME_TOKEN_LOGICAL_NOT, ANIME_TOKEN_IPLUS, ANIME_TOKEN_IMOINS, ANIME_TOKEN_RPLUS, ANIME_TOKEN_RMOINS)) { 
+	PUSH_OPERATOR(current_symbol); 
+	PUSH_OUTPUT(*current_token_ref); 
+	PUSH_ARITY(1); 
+	PUSH_PATH(1); // RL: Where we will go after having built the whole unary tree. 
+	PUSH_PATH(6); // RL: Where we will go when the sub expression will be reduced. 
+	current_lalr_state = 0; // RL: Right now, go there. 
+	current_symbol = get_next_token_type(); 
+	continue; 
+      }; 
+ 
+      // RL: Parenthesis? 
+      if (ANIME_TOKEN_OPENPAR == current_symbol) { 
+	PUSH_OPERATOR(current_symbol); // RL: We need to tell the next operator that it should not look backward. 
+	PUSH_ARITY(1); 
+	PUSH_PATH(1); // RL: Where we will go after having built the whole parenthesis tree. 
+	PUSH_PATH(7); // RL: Where we will go when the sub expression will be reduced. 
+	current_lalr_state = 0; // RL: Right now, go there. 
+	current_symbol = get_next_token_type(); 
+	continue; 
+      }; 
+      
+      // RL: TODO XXX FIXME: We might need to handle empty expressions. We'll see. (If so, it might be done right at the start, not here.) 
+      
+      // RL: No case matched. So we abort the analysis and tell the user. 
+      SYNTAX__EXPECTING_ONE_OF_THESE_TOKENS(current_symbol,ANIME_TOKEN_TRUE, ANIME_TOKEN_FALSE, ANIME_TOKEN_ENTIER, ANIME_TOKEN_REEL__VIRG, ANIME_TOKEN_REEL__DOT, ANIME_TOKEN_REEL__E, ANIME_TOKEN_CHAINE_C, ANIME_TOKEN_CHAINE_P, ANIME_TOKEN_NIL, ANIME_TOKEN_IDENT, ANIME_TOKEN_LOGICAL_NOT, ANIME_TOKEN_IPLUS, ANIME_TOKEN_IMOINS, ANIME_TOKEN_RPLUS, ANIME_TOKEN_RMOINS, ANIME_TOKEN_OPENPAR, ANIME_TOKEN_LAMBDA, ANIME_TOKEN_SYNTAX_MASTER); 
+      
+      // We should not be here. 
+      assert(false); 
+    };  
+    
+    
+    
+    
+    
+    
+  EXPR_LABEL_STATE(1): { 
+      // RL: We have read one expression (one S). Now we will read the operator applied to that left expression. 
+      if (-1 == current_symbol) { current_symbol = get_next_token_type(); }; 
+      
+      const int infix_binary_operator_huh = int_member_huh(current_symbol, ANIME_TOKEN_AFFECTATION, ANIME_TOKEN_AFFECTATION_SIMPLE, ANIME_TOKEN_AFFECTATION_IADD, ANIME_TOKEN_AFFECTATION_RADD, ANIME_TOKEN_AFFECTATION_ISUB, ANIME_TOKEN_AFFECTATION_RSUB, ANIME_TOKEN_AFFECTATION_IMULT, ANIME_TOKEN_AFFECTATION_RMULT, ANIME_TOKEN_AFFECTATION_IDIV, ANIME_TOKEN_AFFECTATION_RDIV, ANIME_TOKEN_AFFECTATION_IMOD, ANIME_TOKEN_AFFECTATION_L_AND, ANIME_TOKEN_AFFECTATION_L_OR, ANIME_TOKEN_AFFECTATION_L_XOR, ANIME_TOKEN_AFFECTATION_B_AND, ANIME_TOKEN_AFFECTATION_B_OR, ANIME_TOKEN_AFFECTATION_B_XOR, ANIME_TOKEN_AFFECTATION_B_RSHIFT, ANIME_TOKEN_AFFECTATION_B_LSHIFT, ANIME_TOKEN_LOGICAL_OR, ANIME_TOKEN_LOGICAL_AND, ANIME_TOKEN_LOGICAL_XOR, ANIME_TOKEN_BITWISE_OR, ANIME_TOKEN_BITWISE_AND, ANIME_TOKEN_BITWISE_XOR, ANIME_TOKEN_BITWISE_SHIFT_LEFT, ANIME_TOKEN_BITWISE_SHIFT_RIGHT, ANIME_TOKEN_EQUAL, ANIME_TOKEN_DIFF, ANIME_TOKEN_INF, ANIME_TOKEN_SUP, ANIME_TOKEN_INFEQ, ANIME_TOKEN_SUPEQ, ANIME_TOKEN_IPLUS, ANIME_TOKEN_RPLUS, ANIME_TOKEN_IMINUS, ANIME_TOKEN_RMINUS, ANIME_TOKEN_IMULT, ANIME_TOKEN_RMULT, ANIME_TOKEN_IDIV, ANIME_TOKEN_RDIV, ANIME_TOKEN_IMOD, ANIME_TOKEN_POINT, ANIME_TOKEN_FLECHE); 
+      
+      // RL: Infix binary operator? 
+      if (infix_binary_operator_huh) { 
+	// RL: Do we reduce or do we shift? 
+	//     The default behavior is to shift. 
+	//     However, shifting could be an undesirable behavior to handle priorities: 
+	//        " 1 * 2 + 3 " 
+	//     In such case, we should not shift first, but reduce first. 
+	//     In order to implement that, we just have to compare operator priorities: 
+	//       if priority(previous_operator) > priority(current_operator) then reduce else shift 
+	//     
+	// RL: The above interpretation is the LA(1)LR(0) one. 
+	//     Conversely, the local-LL(1) interpretation is we need to figure out the place of that 
+	//     operator on the right branch: if its priority is lower than the bottom item on that 
+	//     right branch, then the operator place is upper on the branch; and that bottom item can 
+	//     be pushed on the stack of the left sub-trees. 
+	int reduce_huh = false; 
+	if (operator__nb > 0) { 
+	  const int previous_operator = operator__array[operator__nb-1]; 
+	  reduce_huh = (previous_operator >= current_symbol); // RL: Property of token-types: first the lowest priority, last the highest priority. 
+	}; 
+	if (reduce_huh) { 
+	  POP_PATH(current_lalr_state); 
+	  continue; 
+	} 
+	else { 
+	  PUSH_OPERATOR(current_symbol); 
+	  PUSH_OUTPUT(*current_token_ref); 
+	  PUSH_ARITY(2); 
+	  PUSH_PATH(12); // RL: Where we will go after the whole infix expression will have been reduced. 
+	  current_lalr_state = 0; // RL: Right now, go there. 
+	  current_symbol = get_next_token_type(); 
+	  continue; 
+	}; 
+      }; 
+	
+      // RL: Bracket array? 
+      if (ANIME_TOKEN_OPENBRACKET == current_symbol) { 
+	PUSH_OPERATOR(current_symbol); 
+	PUSH_OUTPUT(*current_token_ref); 
+	PUSH_ARITY(2); 
+	PUSH_PATH(13); // RL: Where we will go after the sub-expression will have been reduced. 
+	current_lalr_state = 0; // RL: Right now, go there. 
+	current_symbol = get_next_token_type(); 
+	continue; 
+      }; 
+	
+      // RL: Parenthesis funcall? 
+      if (ANIME_TOKEN_OPENPAR == current_symbol) { 
+	PUSH_PATH(1); // RL: Where we will go back after having built the whole fun-call tree. 
+	current_lalr_state = 8; // RL: Now, go to arg parsing. 
+	continue;
+      }; 
+	
+      // RL: Inline-if operator? 
+      if (ANIME_TOKEN_HUH == current_symbol) { 
+	PUSH_OPERATOR(current_symbol); 
+	PUSH_OUTPUT(*current_token_ref); 
+	PUSH_ARITY(3); 
+	PUSH_PATH(14); // RL: Where we will go after the first sub-expression will have been reduced. 
+	current_lalr_state = 0; // RL: Right now, go there. 
+	current_symbol = get_next_token_type(); 
+	continue; 
+      }; 
+      
+      // RL: Postfix operator? 
+      if (int_member_array_nb(current_symbol, anime_syntax_filtering__postfix_operators__nb, anime_syntax_filtering__postfix_operators)) { 
+	int subtree; 
+	POP_OUTPUT(subtree); 
+	const int operator_token = *current_token_ref; 
+	const int operator = current_symbol; 
+	int16_t new_tree; 
+	OUTPUT_TREE_PUSH(*current_token_ref,1,new_tree); // By connexity, subtree should be at the top. 
+	PUSH_OUTPUT(new_tree); 
+	current_lalr_state = 1; // RL: Right now, go there. 
+	current_symbol = get_next_token_type(); 
+	continue; 
+      }; 
+      
+      // RL: Anything that is not expected triggers a reduction. 
+      POP_PATH(current_lalr_state); 
+      continue; 
+      
+      assert(false); 
+    }; 
+      
+      
+
+
+
+
+
+
+  EXPR_LABEL_STATE(6): { // RL: PREFIX OPERATOR got read 
+      // RL: A unary symbol was read, and a sub-tree was built and is on the ouput stack. 
+      // RL: So, we have to get that tree from the stack, make a new tree, and push it onto the stack. 
+      // RL: After that, we should backtrack by one. 
+      int subtree; 
+      POP_OUTPUT(subtree); 
+      int operator_token; 
+      POP_OUTPUT(operator_token); 
+      int operator; 
+      POP_OPERATOR(operator); 
+      DROP_ARITY(); 
+      int16_t new_tree; 
+      OUTPUT_TREE_PUSH(operator_token,1,new_tree); // By connexity, subtree should be at the top. 
+      PUSH_OUTPUT(new_tree); 
+      POP_PATH(current_lalr_state); // RL: Backtrack 
+      continue; 
+    }; 
+      
+  EXPR_LABEL_STATE(7): { // RL: A '(' and a 'S' were read. Now we expect a ')'. 
+      if (-1 == current_symbol) { current_symbol = get_next_token_type(); }; 
+      SYNTAX__EXPECTING_THIS_TOKEN(current_symbol, ANIME_TOKEN_CLOSEPAR); 
+      // RL: We do not touch the tree on the stack, as we won't build a superfluous tree. 
+      // RL: Now, we backtrack by one. 
+      int operator; 
+      POP_OPERATOR(operator); 
+      DROP_ARITY(); 
+      POP_PATH(current_lalr_state); 
+      current_symbol = get_next_token_type(); 
+      continue; 
+    }; 
+
+  EXPR_LABEL_STATE(8): { // RL: funcall: S → ident . ( ... 
+      // RL: Here, we expect a comma-separated list of expressions, that could be empty. 
+      SYNTAX__EXPECTING_THIS_TOKEN(current_symbol, ANIME_TOKEN_OPENPAR); 
+      current_symbol = get_next_token_type(); 
+      // RL: Is it empty? 
+      if (current_symbol == ANIME_TOKEN_CLOSEPAR) { 
+	int ident_subtree; 
+	POP_OUTPUT(ident_subtree); 
+	int16_t new_tree; 
+	OUTPUT_TREE_PUSH(ident_subtree,0,new_tree); // By connexity, subtree should be at the top. 
+	PUSH_OUTPUT(new_tree); 
+	POP_PATH(current_lalr_state); // backtracking 
+	current_symbol = get_next_token_type(); 
+	continue; 
+      }; 
+      
+      // RL: As it is not empty, we expect a list of arguments. 
+      PUSH_OPERATOR(ANIME_TOKEN_VIRGULE); 
+      PUSH_ARITY(0); 
+      PUSH_PATH(9); // After having reduced 
+      current_lalr_state = 0; // Current next step 
+      continue;
+    }; 
+      
+  EXPR_LABEL_STATE(9): { // RL: arg_list: S . , S OR ')' 
+      // RL: OK. We've just read one 'S'. Now we expect a ')' or a ','. Anything else is an error. 
+      if (-1 == current_symbol) { current_symbol = get_next_token_type(); }; 
+      
+      INC_ARITY(); // Top operator is ANIME_TOKEN_VIRGULE 
+      
+      if (current_symbol == ANIME_TOKEN_CLOSEPAR) { 
+	int operator; 
+	POP_OPERATOR(operator); 
+	assert(ANIME_TOKEN_VIRGULE == operator); 
+	int virgule_arity; 
+	POP_ARITY(virgule_arity); 
+	assert(1 == virgule_arity); 
+	// By connectivity, all the subtrees are already on the output tree stack. 
+	for (int i = 0; i < virgule_arity; i++) { 
+	  int virgule_subtree; 
+	  POP_OUTPUT(virgule_subtree); 
+	}; 
+	int ident_subtree; 
+	POP_OUTPUT(ident_subtree); 
+	int16_t new_tree; 
+	OUTPUT_TREE_PUSH(ident_subtree,virgule_arity,new_tree); // By connexity, subtrees should be at the top. 
+	PUSH_OUTPUT(new_tree); 
+	POP_PATH(current_lalr_state); // backtracking 
+	current_symbol = get_next_token_type(); 
+	continue; 
+      }; 
+      
+      if (current_symbol == ANIME_TOKEN_VIRGULE) { 
+	PUSH_PATH(10);          // After having reduced the next sub-tree 
+	current_lalr_state = 0; // Current next step 
+	current_symbol = -1;    // Current symbol got read. 
+	continue; 
+      }; 
+      
+      SYNTAX__EXPECTING_ONE_OF_THESE_TOKENS(current_symbol,ANIME_TOKEN_VIRGULE,ANIME_TOKEN_CLOSEPAR);       
+      assert(false); 
+    }; 
+    
+    
+    
+  EXPR_LABEL_STATE(10): { // RL: arg_list with two or more items (at least one comma read): S . , S OR ) 
+      // RL: OK, we've just read one 'S'. Before that, we read a ',', and before that we read a 'S'. 
+      if (-1 == current_symbol) { current_symbol = get_next_token_type(); }; 
+      
+      INC_ARITY(); // Top operator is ANIME_TOKEN_VIRGULE 
+      
+      if (current_symbol == ANIME_TOKEN_CLOSEPAR) { 
+	int operator; 
+	POP_OPERATOR(operator); 
+	assert(ANIME_TOKEN_VIRGULE == operator); 
+	
+	int virgule_arity; 
+	POP_ARITY(virgule_arity); 
+	
+	// By connectivity, all the subtrees are already on the output tree stack. 
+	for (int i = 0; i < virgule_arity; i++) { 
+	  int virgule_subtree; 
+	  POP_OUTPUT(virgule_subtree); 
+	}; 
+	int ident_subtree; 
+	POP_OUTPUT(ident_subtree); 
+	int16_t new_tree; 
+	OUTPUT_TREE_PUSH(ident_subtree,virgule_arity,new_tree); // By connexity, subtree should be at the top. 
+	PUSH_OUTPUT(new_tree); 
+	POP_PATH(current_lalr_state); // Going to the state after having reduced. 
+	current_symbol = -1; // Current symbol got read. 
+	continue; 
+      }; 
+	
+      if (current_symbol == ANIME_TOKEN_VIRGULE) { 
+	PUSH_PATH(10);           // After having reduced 
+	current_lalr_state =  0; // Current next step 
+	current_symbol     = -1; // Current symbol got read. 
+	continue; 
+      }; 
+      
+      SYNTAX__EXPECTING_ONE_OF_THESE_TOKENS(current_symbol,ANIME_TOKEN_VIRGULE,ANIME_TOKEN_CLOSEPAR); 
+      assert(false); 
+    }; 
+
+
+  EXPR_LABEL_STATE(11): { // RL: S EOF . 
+      break; 
+    }; 
+
+  EXPR_LABEL_STATE(12): { // RL: S →   S   _   S . 
+      int right_subtree; 
+      POP_OUTPUT(right_subtree); 
+      int operator_token; 
+      POP_OUTPUT(operator_token); 
+      int left_subtree; 
+      POP_OUTPUT(left_subtree); 
+      int operator; 
+      POP_OPERATOR(operator); 
+      DROP_ARITY(); 
+      int16_t new_tree; 
+      OUTPUT_TREE_PUSH(operator_token,2,new_tree); // By connexity, subtrees should be at the top. 
+      PUSH_OUTPUT(new_tree); 
+      current_lalr_state = 1; // RL: Right now, go there (the left part of the rule) 
+      continue; 
+    }; 
+    
+    
+  EXPR_LABEL_STATE(13): { // RL: S →   S [  S . ] 
+      if (-1 == current_symbol) { current_symbol = get_next_token_type(); }; 
+      
+      SYNTAX__EXPECTING_THIS_TOKEN(current_symbol, ANIME_TOKEN_CLOSEBRACKET); 
+      current_symbol = get_next_token_type(); // RL: Eating the token. 
+      
+      int right_subtree; 
+      POP_OUTPUT(right_subtree); 
+      int operator_token; 
+      POP_OUTPUT(operator_token); 
+      int left_subtree; 
+      POP_OUTPUT(left_subtree); 
+      int operator; 
+      POP_OPERATOR(operator); 
+      DROP_ARITY(); 
+      int16_t new_tree; 
+      OUTPUT_TREE_PUSH(operator_token,2,new_tree); // By connexity, subtrees should be at the top. 
+      PUSH_OUTPUT(new_tree); 
+      current_lalr_state = 1; // RL: Right now, go there (the left part of the rule) 
+      continue; 
+    }; 
+
+
+  EXPR_LABEL_STATE(14): { // RL: S →   S ?  S . : S  
+      SYNTAX__EXPECTING_THIS_TOKEN(current_symbol, ANIME_TOKEN_DEUXPOINTS); 
+      current_symbol = get_next_token_type(); // RL: Eating the token. 
+      PUSH_PATH(15); // RL: Where we will go after having recognized S 
+      current_lalr_state = 0; // RL: Right now, go there (we have to recognize a S) 
+      continue; 
+    }; 
+    
+  EXPR_LABEL_STATE(15): { // RL: S →   S ?  S : S . 
+      int right_subtree; 
+      POP_OUTPUT(right_subtree); 
+      int middle_subtree; 
+      POP_OUTPUT(middle_subtree); 
+      int operator_token; 
+      POP_OUTPUT(operator_token); 
+      int left_subtree; 
+      POP_OUTPUT(left_subtree); 
+      int operator; 
+      POP_OPERATOR(operator); 
+      DROP_ARITY(); 
+      int16_t new_tree; 
+      OUTPUT_TREE_PUSH(operator_token,2,new_tree); // By connexity, both subtrees should be at the top. 
+      PUSH_OUTPUT(new_tree); 
+      current_lalr_state = 1; // RL: Right now, go there (the left part of the rule) 
+      continue; 
+    }; 
+
+	
+	
+    
+    
+    
+    assert(false); 
+  }; // for (;;) 
+
+  
+  
+  
+  
+  // HERE WE ARE! 
+#if DEBUG_PARSER >= 3 
+  dputs_array(this -> stdlog_d, "output_token_tree_stack__nb       = ", int_string__stack(output_token_tree_stack__nb      ), "\n" ); 
+  dputs_array(this -> stdlog_d, "output_token_tree_stack__array[0] = ", int_string__stack(output_token_tree_stack__array[0]), "\n" ); 
+  dputs_array(this -> stdlog_d, "output_token_tree_stack__arity[0] = ", int_string__stack(output_token_tree_stack__arity[0]), "\n" ); 
+#endif 
+
+  DROP_OUTPUT(); 
+  
+  // Now, we just have to: 
+  //  - copy the content of 'output_token_tree_stack' into 'syntax_filtering__output_postfix_buffer' 
+  //  - change the token type of unary plus and unary minus 
+  // 
+  if (ANIME__SYNTAX_FILTERING__OUTPUT_POSTFIX_BUFFER_SIZE < output_token_tree_stack__nb) { goto error__output_postfix_buffer_too_small; }; 
+  for (int i = 0; i < output_token_tree_stack__nb; i++) { 
+    this -> syntax_filtering__output_postfix_buffer__array[i] = output_token_tree_stack__array[i]; 
+  }; 
+  this -> syntax_filtering__output_postfix_buffer__nb = output_token_tree_stack__nb; 
+  this -> syntax_filtering__output_postfix_buffer__i = 0; 
+  for (int i = 0; i < output_token_tree_stack__nb; i++) { 
+    if (1 != output_token_tree_stack__arity[i]) continue; 
+    const int token_i    = output_token_tree_stack__array[i];
+    const int token_type = anime_token__get_type(token_env, token_i); 
+    if (ANIME_TOKEN_IPLUS  == token_type) { anime_token__syntax_filtering__adjust_type(token_env, token_i, ANIME_TOKEN_IPLUS_UNAIRE ); continue; }; 
+    if (ANIME_TOKEN_RPLUS  == token_type) { anime_token__syntax_filtering__adjust_type(token_env, token_i, ANIME_TOKEN_RPLUS_UNAIRE ); continue; }; 
+    if (ANIME_TOKEN_IMOINS == token_type) { anime_token__syntax_filtering__adjust_type(token_env, token_i, ANIME_TOKEN_IMOINS_UNAIRE); continue; }; 
+    if (ANIME_TOKEN_RMOINS == token_type) { anime_token__syntax_filtering__adjust_type(token_env, token_i, ANIME_TOKEN_RMOINS_UNAIRE); continue; }; 
+    continue; 
+  };
+  
+  
+  
+  return ANIME__OK; 
+
+
+ error__output_postfix_buffer_too_small: { 
+    this -> error_id = ANIME__SYNTAX_FILTERING__OUTPUT_POSTFIX_BUFFER_TOO_SMALL; 
+    snprintf(this -> error_str, ANIME_SYNTAX_FILTERING__ERROR_BUFFER_SIZE, "Output postfix buffer too small (current size: %d — required: %d", ANIME__SYNTAX_FILTERING__OUTPUT_POSTFIX_BUFFER_SIZE, output_token_tree_stack__nb); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, this -> error_str); }; 
+    return this -> error_id; 
+  }; 
+  
+  
+}; 
+
+
+
+#endif 
+
+
+
+
+
+
+#define ANIME__SYNTAX_TYPE__C
+#define EXTERN static
+#include "anime_generation_module_syntax_type.ci"
+#undef  EXTERN
+#undef  ANIME__SYNTAX_TYPE__C

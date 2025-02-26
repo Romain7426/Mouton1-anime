@@ -1,0 +1,12 @@
+
+
+const char * anime__convert_token_cstring_to_regular_string(anime_t * this, const char * cstr) { 
+  if (NULL ==  cstr) return cstr; 
+  if ('\0' == *cstr) return this -> string_stack; 
+  const size_t len0 = strlen(cstr); 
+  //char tmp[len0]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  char * tmp = alloca(len0); 
+  bcopy(cstr+1, tmp, len0-2); 
+  tmp[len0-2] = '\0'; 
+  return anime__strcopy(this, tmp); 
+}; 

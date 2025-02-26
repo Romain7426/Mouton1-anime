@@ -1,0 +1,536 @@
+#ifndef LIB__08__CSTRING_CI
+#define LIB__08  CSTRING_CI
+
+
+// =================================================================================================== 
+// BOOL 2 CSTRING 
+
+static const char * bool_2_cstr(const int b) {
+  //return (b) ? "true" : "false"; 
+  switch (b) {
+  case true: return "true"; 
+  case false: return "false"; 
+  case undecided_boolean: return "?"; 
+  };
+  assert(false); 
+  return NULL; 
+}; 
+
+#define bool_string bool_2_cstr 
+#define bool_string__stack bool_2_cstr 
+#define bool_string__heap(b) strcopy(bool_2_cstr(b))
+
+
+// =================================================================================================== 
+// CHAR 2 CSTRING 
+
+static char * char_cstring__in_the_buffer(const char c, const int buffer_size, char * buffer) { 
+  char temp_buffer[3] = { '\\', 0, 0}; 
+  switch (c) {
+  default: temp_buffer[0] = c; temp_buffer[1] = '\0'; break; 
+  case '\0': temp_buffer[1] = '0'; break; 
+  case '\a': temp_buffer[1] = 'a'; break; 
+  case '\b': temp_buffer[1] = 'b'; break; 
+  case '\t': temp_buffer[1] = 't'; break; 
+  case '\n': temp_buffer[1] = 'n'; break; 
+  case '\v': temp_buffer[1] = 'v'; break; 
+  case '\f': temp_buffer[1] = 'f'; break; 
+  case '\r': temp_buffer[1] = 'r'; break; 
+  case '\e': temp_buffer[1] = 'e'; break; 
+  case '\\': temp_buffer[1] = '\\'; break; 
+  case '\'': temp_buffer[1] = '\''; break; 
+  } 
+  
+  assert(buffer != NULL); 
+  if (buffer_size == 0) return buffer; 
+  bzero(buffer, buffer_size); 
+  if (buffer_size == 1) return buffer; 
+  buffer[0] = temp_buffer[0]; 
+  if (buffer_size == 2) return buffer; 
+  buffer[1] = temp_buffer[1]; 
+  return buffer;
+}
+
+static char * char_cstring(const char c);
+static char * char_cstring__on_the_heap(const char c);
+static char * char_cstring__on_the_stack(const char c);
+static char * char_cstring__on_the_stack__libc_alloca(const char c);
+static char * char_cstring__on_the_stack__local_alloca(const char c);
+static char * char_cstring__in_the_buffer(const char c, const int buffer_size, char * buffer);
+#define char_cstring__on_the_heap(c)  char_cstring__in_the_buffer((c), 3, malloc(3))
+#define char_cstring__on_the_stack__libc_alloca(c) char_cstring__in_the_buffer((c), 3, alloca(3))
+#define char_cstring__on_the_stack__local_alloca(c) char_cstring__in_the_buffer((c), 3, LOCAL_ALLOCA(3))
+#define char_cstring__on_the_stack char_cstring__on_the_stack__local_alloca
+#define char_cstring char_cstring__on_the_stack
+
+// =================================================================================================== 
+// FLOAT 2 CSTRING 
+static int float_string__compute_buffer_size(const float x_given) {
+  return snprintf(NULL, 0, "%f", x_given); 
+}; 
+
+static char * float_string__in_the_buffer(const float x_given, const int buffer_size, char buffer[]) {
+  snprintf(buffer, buffer_size, "%f", x_given); 
+  return buffer; 
+}; 
+
+extern char * float_string(const float x);
+extern char * float_string__on_the_heap(const float x);
+extern char * float_string__on_the_stack(const float x);
+extern char * float_string__on_the_stack__libc_alloca(const float x);
+extern char * float_string__on_the_stack__local_alloca(const float x);
+extern char * float_string__in_the_buffer(const float x_given, const int buffer_size, char * buffer);
+#define float_string__buffer_size(n) (float_string__compute_buffer_size((n)))
+#define float_string__on_the_heap(n)  float_string__in_the_buffer((n), float_string__buffer_size(n), malloc(sizeof(char) * (float_string__buffer_size(n))))
+#define float_string__on_the_stack__libc_alloca(n) float_string__in_the_buffer((n), float_string__buffer_size(n), alloca(sizeof(char) * (float_string__buffer_size(n))))
+#define float_string__on_the_stack__local_alloca(n) float_string__in_the_buffer((n), float_string__buffer_size(n), LOCAL_ALLOCA(sizeof(char) * (float_string__buffer_size(n))))
+#define float_string__on_the_stack float_string__on_the_stack__local_alloca
+#define float_string        float_string__on_the_stack
+#define float_string__stack float_string__on_the_stack
+
+
+// =================================================================================================== 
+// INT 2 CSTRING 
+
+static char * int_string_in_the_buffer(const int n_given, const int buffer_size, char buffer[]) { 
+#if 0 
+  dputs(stderr__fileno, "HERE " STRINGIFY(__LINE__) "\n"); 
+  if (buffer_size <= 0) dputs(stderr__fileno, "BUFFER_SIZE IS NEG" "\n"); 
+  if (buffer_size <= 100) dputs(stderr__fileno, "BUFFER_SIZE IS < 100" "\n"); 
+#endif 
+  if (1 >= buffer_size) { return NULL; }; 
+  //if (0 == n_given) { return strcpy(buffer, "0"); }; 
+  if (0 == n_given) { strlcpy(buffer, "0", buffer_size); return buffer; }; 
+  
+  int i = 0;
+  int n = n_given;
+ 
+  if (INT_MIN == n) {
+    // Necessary as "n = -n" raises "illegal instruction" (logically, -n does not have a matching positive integer). 
+    static const char n_string8[] = "-128";
+    static const char n_string16[] = "-32768";
+    static const char n_string32[] = "-2147483648";
+    static const char n_string64[] = "-9223372036854775808";
+    const char * n_string = (8 == INT_BITSIZE ? n_string8 : 16 == INT_BITSIZE ? n_string16 : 32 == INT_BITSIZE ? n_string32 : 64 == INT_BITSIZE ? n_string64 : NULL); 
+    strlcpy(buffer, n_string, buffer_size); 
+    return buffer; 
+  };
+  
+  if (0 > n) {
+    buffer[i] = '-';
+    n = -n;
+    i++;
+  };
+  
+  assert(n > 0);
+  while (n > 0) {
+    const int quotient = n / 10;
+    const int remainder = n % 10;
+    assert(i < buffer_size);
+    buffer[i] = remainder + '0';
+    i++;
+    n = quotient;
+  };
+  
+  assert(i < buffer_size);
+  buffer[i] = '\0';
+  const int nb_chars_computed = i;
+  assert(nb_chars_computed+1 <= buffer_size);
+  
+  do { 
+    // For some unknown reasons, VLAs & ALLOCAs make «-fstack-protector» fail. 
+    //char temp[nb_chars_computed+1]; // Fails. 
+    //char temp[buffer_size]; // Fails. 
+    //char temp[255]; // Works. 
+    //char * temp = malloc(nb_chars_computed+1); // Works. 
+    //char * temp = alloca(nb_chars_computed+1); // Fails. 
+    //enum { temp_sizeof = 1 + (8 == INT_BITSIZE ? (sizeof("256")) : 16 == INT_BITSIZE ? (sizeof("65536")) : 32 == INT_BITSIZE ? (sizeof("4294967296")) : 64 == INT_BITSIZE ? (sizeof("18446744073709551616")) : -1) };  
+    enum { temp_sizeof = INT_SIZEOF__TO__STRING_SIZEOF(sizeof(n_given)) }; 
+    char temp[temp_sizeof]; // Works. 
+    //strcpy(temp, buffer);
+    //{ int i = 1; if (0 != (nb_chars_computed >> i)) {} else { dputs(stderr, "LEN >= 0b"); dputc(stderr, '1'); for (int j = 0; j < i; j++) dputc(stderr, '0'); dputc(stderr, '\n');  }; }; 
+    //assert(sizeof(temp) == (unsigned) (nb_chars_computed+1)); 
+    //strlcpy(temp, buffer, sizeof(*temp));
+    //strlcpy(temp, buffer, nb_chars_computed+1);
+    strlcpy(temp, buffer, sizeof(temp)); assert(((int)sizeof(temp)) >= (nb_chars_computed+1)); 
+    if (n_given < 0) { buffer[0] = '-'; }; 
+    for (int j = ((n_given < 0) ? 1 : 0); j < nb_chars_computed; j++) { 
+      buffer[j] = temp[nb_chars_computed-(j-((n_given < 0) ? 1 : 0))-1]; 
+    }; 
+    assert('\0' == buffer[nb_chars_computed]); 
+    break; 
+  } while (false);
+  
+  return buffer;
+};
+
+
+
+
+static char * uint_string_in_the_buffer(const unsigned int n_given, const int buffer_size, char buffer[]) {
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  if (1 >= buffer_size) return NULL; 
+  if (0 == n_given) return strcpy(buffer, "0"); 
+  
+  int i = 0;
+  unsigned int n = n_given;
+  assert(n > 0);
+  while (n > 0) {
+    const int quotient = n / 10;
+    const int remainder = n % 10;
+    assert(i < buffer_size);
+    buffer[i] = remainder + '0';
+    i++;
+    n = quotient;
+  }
+  assert(i < buffer_size);
+  buffer[i] = '\0';
+  const int nb_chars_computed = i;
+  assert(nb_chars_computed+1 <= buffer_size);
+  
+  for (;;) { 
+    // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+    //char temp[nb_chars_computed+1]; // Fails. 
+    //char temp[buffer_size]; // Fails. 
+    //char temp[255]; // Works. 
+    //char * temp = alloca(nb_chars_computed+1); // Works. 
+    char * temp = LOCAL_ALLOCA(nb_chars_computed+1); 
+    strcpy(temp, buffer); 
+    for (int j = 0; j < nb_chars_computed; j++) 
+      buffer[j] = temp[nb_chars_computed-j-1]; 
+    assert(buffer[nb_chars_computed] == '\0'); 
+    break; 
+  }; 
+  
+  return buffer;
+}
+
+
+extern char * int_string(const int n);
+extern char * int_string_on_the_heap(const int n);
+extern char * int_string_on_the_stack(const int n);
+extern char * int_string_on_the_stack__libc_alloca(const int n);
+extern char * int_string_on_the_stack__local_alloca(const int n);
+extern char * int_string_in_the_buffer(const int n_given, const int buffer_size, char * buffer);
+//#define int_string__buffer_size(n) (2+((sizeof((n)) << 3)))
+#define int_string__buffer_size(n) (INT_SIZEOF__TO__STRING_SIZEOF(sizeof((n))))
+#define int_string_on_the_heap(n)  int_string_in_the_buffer((n), (int_string__buffer_size(n)), malloc(sizeof(char) * (int_string__buffer_size(n))))
+#define int_string_on_the_stack__libc_alloca(n) int_string_in_the_buffer((n), (int_string__buffer_size(n)), alloca(sizeof(char) * (int_string__buffer_size(n))))
+#define int_string_on_the_stack__local_alloca(n) int_string_in_the_buffer((n), (int_string__buffer_size(n)), LOCAL_ALLOCA(sizeof(char) * (int_string__buffer_size(n))))
+#define int_string_on_the_stack int_string_on_the_stack__local_alloca 
+#define int_string         int_string_on_the_stack
+#define int_to_str_stack   int_string_on_the_stack
+#define int_to_str__stack  int_string_on_the_stack
+#define int_string__stack  int_string_on_the_stack
+#define int_string__buffer int_string_in_the_buffer
+#define int2cstr__stack    int_string_on_the_stack
+#define int_2_cstr__stack  int_string_on_the_stack
+
+extern char * uint_string(const unsigned int n);
+extern char * uint_string_on_the_heap(const unsigned int n);
+extern char * uint_string_on_the_stack(const unsigned int n);
+extern char * uint_string_on_the_stack__libc_alloca(const unsigned int n);
+extern char * uint_string_on_the_stack__local_alloca(const unsigned int n);
+extern char * uint_string_in_the_buffer(const unsigned int n, const int buffer_size, char * buffer);
+#define uint_string_buffer_size(n)   ((sizeof((n)) << 3)+1)
+#define uint_string_on_the_heap(n)   uint_string_in_the_buffer((n), uint_string_buffer_size((n)), malloc(uint_string_buffer_size((n))))
+#define uint_string_on_the_stack__libc_alloca(n)  uint_string_in_the_buffer((n), uint_string_buffer_size((n)), alloca(uint_string_buffer_size((n))))
+#define uint_string_on_the_stack__local_alloca(n)  uint_string_in_the_buffer((n), uint_string_buffer_size((n)), LOCAL_ALLOCA(uint_string_buffer_size((n))))
+#define uint_string_on_the_stack uint_string_on_the_stack__local_alloca
+#define uint_string         uint_string_on_the_stack
+#define uint_string__stack  uint_string_on_the_stack
+#define uint_string__heap   uint_string_on_the_heap
+
+
+static char * int_string_base2_in_the_buffer(const int n_given, const int buffer_size, char * buffer) {
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  if (1 >= buffer_size) return NULL; 
+  if (0 == n_given) return strcpy(buffer, "0"); 
+  
+  int i = 0;
+  int n = n_given;
+  if (n < 0) {
+    buffer[i] = '-';
+    n = -n;
+    i++;
+  }
+
+  const int base = 2; 
+  
+  assert(n > 0);
+  while (n > 0) {
+    const int quotient = n / base; 
+    const int remainder = n % base; 
+    assert(i < buffer_size);
+    buffer[i] = remainder + '0';
+    i++;
+    n = quotient;
+  }
+  assert(i < buffer_size);
+  buffer[i] = '\0';
+  const int nb_chars_computed = i;
+  assert(nb_chars_computed+1 <= buffer_size);
+  
+  for (;;) { 
+    // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+    //char temp[nb_chars_computed+1]; // Fails. 
+    //char temp[buffer_size]; // Fails. 
+    //char temp[255]; // Works. 
+    //char * temp = alloca(nb_chars_computed+1); // Works 
+    char * temp = LOCAL_ALLOCA(nb_chars_computed+1); 
+    strcpy(temp, buffer);
+    if (n_given < 0) buffer[0] = '-';
+    for (int j = ((n_given < 0) ? 1 : 0); j < nb_chars_computed; j++)
+      buffer[j] = temp[nb_chars_computed-(j-((n_given < 0) ? 1 : 0))-1];
+    assert(buffer[nb_chars_computed] == '\0');
+    break;
+  };
+  
+  return buffer;
+}
+
+extern char * int_string_base2(const int n);
+extern char * int_string_base2_on_the_heap(const int n);
+extern char * int_string_base2_on_the_stack(const int n);
+extern char * int_string_base2_on_the_stack__libc_alloca(const int n);
+extern char * int_string_base2_on_the_stack__local_alloca(const int n);
+extern char * int_string_base2_in_the_buffer(const int n_given, const int buffer_size, char * buffer);
+#define int_string_base2_size_for_n(n)   ((sizeof((n)) << 3)+1)
+#define int_string_base2_on_the_heap(n)  int_string_base2_in_the_buffer((n), int_string_base2_size_for_n(n), malloc(sizeof(char) * (1+int_string_base2_size_for_n(n))))
+#define int_string_base2_on_the_stack__libc_alloca(n) int_string_base2_in_the_buffer((n), int_string_base2_size_for_n(n), alloca(sizeof(char) * (1+int_string_base2_size_for_n(n))))
+#define int_string_base2_on_the_stack__local_alloca(n) int_string_base2_in_the_buffer((n), int_string_base2_size_for_n(n), LOCAL_ALLOCA(sizeof(char) * (1+int_string_base2_size_for_n(n))))
+#define int_string_base2_on_the_stack int_string_base2_on_the_stack__local_alloca
+#define int_string_base2        int_string_base2_on_the_stack
+#define int_to_str_base2_stack  int_string_base2_on_the_stack
+#define int_to_str_base2__stack int_string_base2_on_the_stack
+
+
+
+static char * int_string_base16_in_the_buffer(const int n_given, const int buffer_size, char * buffer) {
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  if (1 >= buffer_size) return NULL; 
+  if (0 == n_given) return strcpy(buffer, "0"); 
+  
+  int i = 0;
+  int n = n_given;
+  if (n < 0) {
+    buffer[i] = '-';
+    n = -n;
+    i++;
+  }
+
+  const int base = 16; 
+  
+  assert(n > 0);
+  while (n > 0) {
+    const int quotient = n / base; 
+    const int remainder = n % base; 
+    assert(i < buffer_size);
+    buffer[i] = hexdigit(remainder); 
+    i++;
+    n = quotient;
+  }
+  assert(i < buffer_size);
+  buffer[i] = '\0';
+  const int nb_chars_computed = i;
+  assert(nb_chars_computed+1 <= buffer_size);
+  
+  for (;;) { 
+    // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+    //char temp[nb_chars_computed+1]; // Fails. 
+    //char temp[buffer_size]; // Fails. 
+    //char temp[255]; // Works. 
+    //char * temp = alloca(nb_chars_computed+1); // Works. 
+    char * temp = LOCAL_ALLOCA(nb_chars_computed+1); 
+    strcpy(temp, buffer);
+    if (n_given < 0) buffer[0] = '-';
+    for (int j = ((n_given < 0) ? 1 : 0); j < nb_chars_computed; j++)
+      buffer[j] = temp[nb_chars_computed-(j-((n_given < 0) ? 1 : 0))-1];
+    assert(buffer[nb_chars_computed] == '\0');
+    break; 
+  }; 
+  
+  return buffer;
+}
+
+extern char * int_string_base16(const int n);
+extern char * int_string_base16_on_the_heap(const int n);
+extern char * int_string_base16_on_the_stack(const int n);
+extern char * int_string_base16_on_the_stack__libc_alloca(const int n);
+extern char * int_string_base16_on_the_stack__local_alloca(const int n);
+extern char * int_string_base16_in_the_buffer(const int n_given, const int buffer_size, char * buffer);
+#define int_string_base16_size_for_n(n)   ((sizeof((n)) << 1)+1)
+#define int_string_base16_on_the_heap(n)  int_string_base16_in_the_buffer((n), int_string_base16_size_for_n(n), malloc(sizeof(char) * (1+int_string_base16_size_for_n(n))))
+#define int_string_base16_on_the_stack__libc_alloca(n) int_string_base16_in_the_buffer((n), int_string_base16_size_for_n(n), alloca(sizeof(char) * (1+int_string_base16_size_for_n(n))))
+#define int_string_base16_on_the_stack__local_alloca(n) int_string_base16_in_the_buffer((n), int_string_base16_size_for_n(n), LOCAL_ALLOCA(sizeof(char) * (1+int_string_base16_size_for_n(n))))
+#define int_string_base16_on_the_stack int_string_base16_on_the_stack__local_alloca
+#define int_string_base16        int_string_base16_on_the_stack
+#define int_to_str_base16_stack  int_string_base16_on_the_stack
+#define int_to_str_base16__stack int_string_base16_on_the_stack
+
+
+
+
+
+
+
+#define number_2_string(byte) ( (int_string_on_the_stack((int)byte)))
+
+
+
+
+
+// =================================================================================================== 
+// CSTRING 
+
+static int cstring__has_prefix_char1(const char c1, const char * cstr) {
+  if (NULL == cstr) return false; 
+  const int cstr_len = strlen(cstr); 
+  if (0 == cstr_len) return false; 
+  return (c1 == cstr[0]); 
+}; 
+
+static int cstring__has_prefix_char2(const char c1, const char c2, const char * cstr) {
+  if (NULL == cstr) return false; 
+  const int cstr_len = strlen(cstr); 
+  if (2 > cstr_len) return false; 
+  return ((c1 == cstr[0]) && (c2 == cstr[1])); 
+}; 
+
+static int cstring__concat_length(const int cstr_nb, const char * cstr_array[]) {
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  if (0 >= cstr_nb) return 0; 
+  //int len_array[cstr_nb]; // VLAs make «-fstack-protector» fail. 
+  //int * len_array = alloca((sizeof(*len_array)) * cstr_nb); 
+  int * len_array = LOCAL_ALLOCA((sizeof(*len_array)) * cstr_nb); 
+  for (int i = 0; i < cstr_nb; i++) { len_array[i] = strlen(cstr_array[i]); }; 
+  int catlen = 0; 
+  for (int i = 0; i < cstr_nb; i++) { catlen += len_array[i]; }; 
+  return catlen; 
+}; 
+
+static char * cstring__concat__array__in_the_buffer(const int cstr_nb, const char * cstr_array[], const int buffer_size, char * buffer) {
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  if (0 >= cstr_nb) { assert(buffer_size > 0); *buffer = '\0'; return buffer; }; 
+  //int len_array[cstr_nb]; // VLAs make «-fstack-protector» fail. 
+  //int * len_array = alloca((sizeof(*len_array)) * cstr_nb); 
+  int * len_array = LOCAL_ALLOCA((sizeof(*len_array)) * cstr_nb); 
+  for (int i = 0; i < cstr_nb; i++) { len_array[i] = strlen(cstr_array[i]); }; 
+  char * ptr = buffer; 
+  int cumulated_len = 0; 
+  for (int i = 0; i < cstr_nb; i++) { 
+    const int avail_size = buffer_size - 1 - cumulated_len; 
+    const int len_to_be_copied = MIN(len_array[i], avail_size); 
+    bcopy(cstr_array[i], ptr, len_to_be_copied); 
+    ptr += len_to_be_copied; 
+  }; 
+  *ptr = '\0'; 
+  return buffer; 
+}; 
+
+extern char * cstring__concat__array__on_the_heap  (const int cstr_nb, const char * cstr_array[]); 
+extern char * cstring__concat__array__on_the_stack (const int cstr_nb, const char * cstr_array[]); 
+extern char * cstring__concat__array__on_the_stack__libc_alloca (const int cstr_nb, const char * cstr_array[]); 
+extern char * cstring__concat__array__on_the_stack__local_alloca(const int cstr_nb, const char * cstr_array[]); 
+extern char * cstring__concat__array__in_the_buffer(const int cstr_nb, const char * cstr_array[], const int buffer_size, char * buffer); 
+#define cstring__concat__array__buffer_size(cstr_nb,cstr_array)  (1+cstring__concat_length((cstr_nb), (cstr_array)))
+#define cstring__concat__array__on_the_heap(cstr_nb,cstr_array)  cstring__concat__array__in_the_buffer((cstr_nb), (cstr_array), cstring__concat__array__buffer_size((cstr_nb),(cstr_array)), malloc(sizeof(char) * cstring__concat__array__buffer_size((cstr_nb),(cstr_array))))
+#define cstring__concat__array__on_the_stack__lib_alloca(cstr_nb,cstr_array) cstring__concat__array__in_the_buffer((cstr_nb), (cstr_array), cstring__concat__array__buffer_size((cstr_nb),(cstr_array)), alloca(sizeof(char) * cstring__concat__array__buffer_size((cstr_nb),(cstr_array))))
+#define cstring__concat__array__on_the_stack__local_alloca(cstr_nb,cstr_array) cstring__concat__array__in_the_buffer((cstr_nb), (cstr_array), cstring__concat__array__buffer_size((cstr_nb),(cstr_array)), LOCAL_ALLOCA(sizeof(char) * cstring__concat__array__buffer_size((cstr_nb),(cstr_array))))
+#define cstring__concat__array__on_the_stack cstring__concat__array__on_the_stack__local_alloca
+#define cstring__concat__array__heap_  cstring__concat__array__on_the_heap 
+#define cstring__concat__array__stack_ cstring__concat__array__on_the_stack
+#define cstring__concat__array         cstring__concat__array__stack_ 
+
+#define cstring__concat__zarray__heap(cstr_zarray)  (cstring__concat__array__heap_ (zcarray_length(cstr_zarray),(cstr_zarray)))
+#define cstring__concat__zarray__stack(cstr_zarray) (cstring__concat__array__stack_(zcarray_length(cstr_zarray),(cstr_zarray)))
+#define cstring__concat__zarray                      cstring__concat__zarray__heap_
+
+#define cstring__concat__array__stack(cstr_array)  cstring__concat__array__on_the_stack(ARRAY_SIZE((cstr_array)),((cstr_array)))
+
+#define strconcat2__stack(cstr1,cstr2) cstring__concat__array__on_the_stack(2,((const char * []) { (cstr1), (cstr2) }))
+#define strconcat3__stack(cstr1,cstr2,cstr3) cstring__concat__array__on_the_stack(3,((const char * []) { (cstr1), (cstr2), (cstr3) }))
+
+//#define strconcat__stack(...) cstring__concat__zarray__stack(((const char * []) { __VA_ARGS__, NULL }))
+#define strconcat__stack(...) cstring__concat__array__on_the_stack(ARRAY_SIZE(((const char * []) { __VA_ARGS__ })),((const char * []) { __VA_ARGS__ }))
+#define strconcat__stack_nb(nb_,array_) cstring__concat__array__on_the_stack((nb_),(array_))
+
+#define strconcat__heap(...) cstring__concat__array__on_the_heap(ARRAY_SIZE(((const char * []) { __VA_ARGS__ })),((const char * []) { __VA_ARGS__ }))
+
+
+
+
+
+static char * cstring__tolower__in_the_buffer(const char * cstr, const int buffer_size, char * buffer) {
+  if (cstr == NULL) return NULL; 
+  const int cstr_len = strlen(cstr); 
+  const int nb = MIN(cstr_len, buffer_size-1); 
+  const char * c = cstr; 
+  char * b = buffer; 
+  for (int i = 0; i < nb; i++) { 
+    *b = tolower(*c); 
+    b++; 
+    c++; 
+  }; 
+  *b = '\0'; 
+  return buffer; 
+}; 
+
+
+
+
+
+
+
+extern char * cstring__tolower(const char * cstr);
+extern char * cstring__tolower__on_the_heap(const char * cstr);
+extern char * cstring__tolower__on_the_stack(const char * cstr);
+extern char * cstring__tolower__in_the_buffer(const char * cstr, const int buffer_size, char * buffer);
+#define cstring__tolower__buffer_size(cstr) (strlen(cstr)+1)
+#define cstring__tolower__on_the_heap(n)  cstring__tolower__in_the_buffer((n), cstring__tolower__buffer_size(n), malloc(sizeof(char) * (cstring__tolower__buffer_size(n))))
+#define cstring__tolower__on_the_stack__libc_alloca(n) cstring__tolower__in_the_buffer((n), cstring__tolower__buffer_size(n), alloca(sizeof(char) * (cstring__tolower__buffer_size(n))))
+#define cstring__tolower__on_the_stack__local_alloca(n) cstring__tolower__in_the_buffer((n), cstring__tolower__buffer_size(n), LOCAL_ALLOCA(sizeof(char) * (cstring__tolower__buffer_size(n))))
+#define cstring__tolower__on_the_stack cstring__tolower__on_the_stack__local_alloca
+#define cstring__tolower        cstring__tolower__on_the_stack
+#define cstring__tolower__stack cstring__tolower__on_the_stack
+
+
+
+
+
+// =================================================================================================== 
+// FUNCTIONS USED BY PIPE BUFFERING 
+
+static int cstr_length(const char * cstr1) { 
+  if (NULL == cstr1) return -1; 
+  if ('\0' == *cstr1) return 0; 
+  const char * p = cstr1; 
+  for (;;) { 
+    if ('\0' == *p) return (p - cstr1); 
+    p++; 
+  }; 
+}; 
+ 
+static int cstr_equal_huh(const char * cstr1, const char * cstr2) { 
+  if (cstr1 == cstr2) return true; 
+  if (NULL == cstr1) return false; 
+  if ('\0' == *cstr1) return ('\0' == *cstr2); 
+  for (;;) { 
+    if (*cstr1 != *cstr2) return false; 
+    if ('\0' == *cstr1) return true; 
+    cstr1++; 
+    cstr2++;
+  };   
+}; 
+
+
+
+
+
+
+
+
+
+
+
+#endif/* LIB__08  CSTRING_CI */

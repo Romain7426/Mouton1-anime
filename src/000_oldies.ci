@@ -1,0 +1,68 @@
+
+
+
+#if 0 
+int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d) { 
+  LOCAL_ALLOCA__DECLARE(uint16_t,UINT16_MAX); 
+  int_anime_error_t         error_id; 
+  anime_token_input_env_t   input_env[1]; 
+  //dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
+  char                    * token_env_b = LOCAL_ALLOCA(anime_token_env__sizeof); 
+  anime_token_env_t       * token_env; 
+
+#if 0
+  dputs_array(stderr_d, "TOKEN_ENV_SIZEOF = ", int_string(sizeof(token_env_b)), "\n"); 
+  dputs_array(stderr_d, "TOKEN_ENV_B IS NULL HUH = ", bool_string(token_env_b == NULL), "\n"); 
+  dputs_array(stderr_d, "local_alloca__requested = ", int_string(local_alloca__requested), "\n"); 
+  dputs_array(stderr_d, "anime_token_env__sizeof = ", int_string(anime_token_env__sizeof), "\n"); 
+  dputs_array(stderr_d, "local_alloca__left = ", int_string(local_alloca__left), "\n"); 
+  dputs_array(stderr_d, "local_alloca__used = ", int_string(local_alloca__used), "\n"); 
+#endif 
+
+  int input_i = -1; 
+  
+  goto label__body; 
+
+
+ error_label__input_error: { 
+    this -> error_id = ANIME__TOKEN__INPUT__ERROR; 
+    snprintf(this -> error_str, this -> error_size, "Error while initializing input buffer for tokenizing: %d", input_i); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, this -> error_str); }; 
+    return this -> error_id; 
+  }; 
+  
+
+
+  label__body: { 
+    if (0 >= buffer_bytesize) return -1; 
+  
+    anime_token_input_env__make_r(input_env, this -> stdlog_d); 
+    
+    token_env = anime_token_env__make_b(anime_token_env__sizeof, token_env_b, NULL, this -> stdlog_d); 
+    assert(NULL != token_env); 
+    //dputs_array(stderr_d, "TOKEN_ENV IS NULL HUH = ", bool_string(token_env == NULL), "\n"); 
+    
+    this -> filename = anime__string_stack__push_lookup(this, input_name); 
+
+    
+    //const int input_i = anime_token_input__stack_push__filedes(input_env, input_fd, input_name); 
+    input_i = anime_token_input__stack_push__memory(input_env, buffer_bytesize, buffer, input_name); 
+    if (input_i < 0) { goto error_label__input_error; }; 
+    
+    error_id = anime_token__parser(token_env, input_env, input_i, &this -> error_id, this -> error_size, this -> error_str); 
+    if (error_id != ANIME__OK) { return error_id; }; 
+    
+    if (this -> stdlog_d > 0) { anime_token__print_all_tokens(this -> stdlog_d, token_env); fflush(NULL); }; 
+    
+    assert(NULL != token_env); 
+    assert(NULL != this); 
+    error_id = anime_data_generation_003_from_syntax_filtering(token_env, this, stduser_d); 
+    if (error_id != ANIME__OK) { return error_id; }; 
+    
+    error_id = anime__consistency_check(this, stduser_d); 
+    return error_id; 
+  };
+  
+}; 
+#endif 
+

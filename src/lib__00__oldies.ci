@@ -1,0 +1,729 @@
+#if 0 
+
+// RL: Ce fichier contient d’anciennes définitions. 
+// RL: Il n’a pas vocation à être inclu. 
+
+
+
+#ifndef	_STDIO_H_
+
+#ifndef NULL 
+#define NULL ((void *) 0) 
+#endif 
+enum { EOF = (-1) }; 
+enum { EOL = '\n' }; 
+enum { F_OK = 0, X_OK = (1 << 0), W_OK = (1 << 1), R_OK = (1 << 2)}; 
+
+enum { O_RDONLY   = 0x0000 }; 
+enum { O_WRONLY   = 0x0001 }; 
+enum { O_RDWR     = 0x0002 }; 
+enum { O_ACCMODE  = 0x0003 }; 
+enum { O_NONBLOCK = 0x0004 }; 
+enum { O_APPEND   = 0x0008 }; 
+enum { O_TRUNC    = 0x0400 }; 
+
+#ifndef __TINYC__ 
+
+#define	O_SHLOCK	0x0010		/* open with shared file lock */
+#define	O_EXLOCK	0x0020		/* open with exclusive file lock */
+#define	O_ASYNC		0x0040		/* signal pgrp when data ready */
+#define	O_FSYNC		O_SYNC		/* source compatibility: do not use */
+#define O_NOFOLLOW  	0x0100		/* don't follow symlinks */
+#define	O_CREAT		0x0200		/* create if nonexistant */
+#define	O_EXCL		0x0800		/* error if already exists */
+
+#define AT_FDCWD		-2
+#define AT_EACCESS		0x0010	/* Use effective ids in access check */
+#define AT_SYMLINK_NOFOLLOW	0x0020	/* Act on the symlink itself not the target */
+#define AT_SYMLINK_FOLLOW	0x0040	/* Act on target of symlink */
+#define AT_REMOVEDIR		0x0080	/* Path refers to directory */
+
+#define	O_EVTONLY	0x8000		/* descriptor requested for event notifications only */
+#define	O_NOCTTY	0x20000		/* don't assign controlling terminal */
+#define O_DIRECTORY	0x100000
+#define O_SYMLINK	0x200000	/* allow open of a symlink */
+#define	O_CLOEXEC	0x1000000	/* implicitly set FD_CLOEXEC */
+
+#define	FAPPEND		O_APPEND	/* kernel/compat */
+#define	FASYNC		O_ASYNC		/* kernel/compat */
+#define	FFSYNC		O_FSYNC		/* kernel */
+#define	FFDSYNC		O_DSYNC		/* kernel */
+#define	FNONBLOCK	O_NONBLOCK	/* kernel */
+#define	FNDELAY		O_NONBLOCK	/* compat */
+#define	O_NDELAY	O_NONBLOCK	/* compat */
+
+#define	F_DUPFD		0		/* duplicate file descriptor */
+#define	F_GETFD		1		/* get file descriptor flags */
+#define	F_SETFD		2		/* set file descriptor flags */
+#define	F_GETFL		3		/* get file status flags */
+#define	F_SETFL		4		/* set file status flags */
+#define	F_GETOWN	5		/* get SIGIO/SIGURG proc/pgrp */
+#define F_SETOWN	6		/* set SIGIO/SIGURG proc/pgrp */
+#define	F_GETLK		7		/* get record locking information */
+#define	F_SETLK		8		/* set record locking information */
+#define	F_SETLKW	9		/* F_SETLK; wait if blocked */
+#define F_SETLKWTIMEOUT 10		/* F_SETLK; wait if blocked, return on timeout */
+#define F_FLUSH_DATA    40
+#define F_CHKCLEAN      41              /* Used for regression test */
+#define F_PREALLOCATE   42		/* Preallocate storage */
+#define F_SETSIZE       43		/* Truncate a file without zeroing space */	
+#define F_RDADVISE      44              /* Issue an advisory read async with no copy to user */
+#define F_RDAHEAD       45              /* turn read ahead off/on for this fd */
+#define F_NOCACHE       48              /* turn data caching off/on for this fd */
+#define F_LOG2PHYS	49		/* file offset to device offset */
+#define F_GETPATH       50              /* return the full path of the fd */
+#define F_FULLFSYNC     51		/* fsync + ask the drive to flush to the media */
+#define F_PATHPKG_CHECK 52              /* find which component (if any) is a package */
+#define F_FREEZE_FS     53              /* "freeze" all fs operations */
+#define F_THAW_FS       54              /* "thaw" all fs operations */
+#define	F_GLOBAL_NOCACHE 55		/* turn data caching off/on (globally) for this file */
+#define F_ADDSIGS	59		/* add detached signatures */
+#define F_ADDFILESIGS	61		/* add signature from same file (used by dyld for shared libs) */
+#define F_NODIRECT	62		/* used in conjunction with F_NOCACHE to indicate that DIRECT, synchonous writes */
+#define F_GETPROTECTIONCLASS	63		/* Get the protection class of a file from the EA, returns int */
+#define F_SETPROTECTIONCLASS	64		/* Set the protection class of a file for the EA, requires int */
+#define F_LOG2PHYS_EXT  65		/* file offset to device offset, extended */
+#define	F_GETLKPID		66		/* get record locking information, per-process */
+#define F_SETBACKINGSTORE	70	/* Mark the file as being the backing store for another filesystem */
+#define F_GETPATH_MTMINFO	71 	/* return the full path of the FD, but error in specific mtmd circumstances */
+#define F_GETCODEDIR		72	/* Returns the code directory, with associated hashes, to the caller */
+#define F_SETNOSIGPIPE		73	/* No SIGPIPE generated on EPIPE */
+#define F_GETNOSIGPIPE		74	/* Status of SIGPIPE for this fd */
+#define F_TRANSCODEKEY		75 	/* For some cases, we need to rewrap the key for AKS/MKB */
+#define F_SINGLE_WRITER		76	/* file being written to a by single writer... if throttling enabled, writes */
+#define F_GETPROTECTIONLEVEL	77	/* Get the protection version number for this filesystem */
+#define F_FINDSIGS		78	/* Add detached code signatures (used by dyld for shared libs) */
+#define	F_DUPFD_CLOEXEC		67	/* mark the dup with FD_CLOEXEC */
+
+/* file descriptor flags (F_GETFD, F_SETFD) */
+#define	FD_CLOEXEC	1		/* close-on-exec flag */
+
+/* record locking flags (F_GETLK, F_SETLK, F_SETLKW) */
+#define	F_RDLCK		1		/* shared or read lock */
+#define	F_UNLCK		2		/* unlock */
+#define	F_WRLCK		3		/* exclusive or write lock */
+
+/* lock operations for flock(2) */
+#define	LOCK_SH		0x01		/* shared file lock */
+#define	LOCK_EX		0x02		/* exclusive file lock */
+#define	LOCK_NB		0x04		/* don't block when locking */
+#define	LOCK_UN		0x08		/* unlock file */
+
+#endif /* __TINYC__ */ 
+
+enum { SEEK_SET = 0 }; 
+enum { SEEK_CUR = 1 }; 
+enum { SEEK_END = 2 }; 
+ 
+enum { EBADF = 9 }; 
+
+#endif 
+
+
+
+
+
+
+
+//extern void assert(int); 
+extern char * strcpy(char *restrict dst, const char *restrict src);
+//extern char * strncpy(char *restrict dst, const char *restrict src, size_t n);
+extern size_t strlcpy(char * restrict dst, const char * restrict src, size_t size); // Src must be a true c-string (id est null terminated). 
+extern size_t strlcat(char * restrict dst, const char * restrict src, size_t size);
+extern void bzero(void *s, size_t n);
+extern ssize_t write(int fildes, const void *buf, size_t nbyte); 
+extern size_t strlen(const char *s);
+extern size_t strnlen(const char *s, size_t maxlen);
+extern void * memset(void *b, int c, size_t len); 
+extern void * alloca(size_t size);
+extern int  asprintf(char **ret, const char *format, ...);
+extern void free(void *ptr);
+extern void * malloc(size_t size);
+extern int access(const char *path, int amode);
+//extern int stat(const char *restrict path, struct stat *restrict buf);
+extern int bcmp(const void *s1, const void *s2, size_t n); 
+extern void bcopy(const void *src, void *dst, size_t len); 
+extern void * memcpy(void *restrict dst, const void *restrict src, size_t n);
+extern void srandomdev(void);
+extern long random(void);
+extern int open(const char *path, int oflag, ...);
+extern ssize_t read(int fildes, void *buf, size_t nbyte);
+extern int close(int fildes); 
+extern void abort(void);
+extern off_t lseek(int fildes, off_t offset, int whence);
+extern int strcmp(const char *s1, const char *s2);
+extern int strncmp(const char *s1, const char *s2, size_t len);
+extern int strcasecmp(const char *s1, const char *s2);
+extern int strcasencmp(const char *s1, const char *s2, size_t len);
+extern int atoi(const char *str); 
+extern void exit(int status);
+extern int isatty(int fd); 
+extern int snprintf(char * str, size_t size, const char * format, ...); 
+extern int tolower(int c); 
+extern int fcntl(int fd, int cmd, ...); 
+
+#ifndef errno
+int *__errno(void);
+#define	errno (*__errno())
+#endif /* errno */
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0 
+void assert(int test) {
+  if (!(test)) abort(); 
+}; 
+#endif 
+
+#ifndef assert 
+#define assert(b) {if (!(b)) { dputs(stderr_d, __FUNCTION__); abort(); };};
+//#define assert_message(b,m) {if (!(b)) { dputs(stderr, __FUNCTION__ ": "); dputs(stderr, STRINGIFY(__LINE__) ": "); dputs(stderr, m); dputs(stderr, "\n"); abort(); };};
+//#define assert_message(b,m) {if (!(b)) { dputs(stderr, __FUNCTION__ ": "); dputs(stderr, m); dputs(stderr, "\n"); abort(); };};
+//#define assert_message(b,m) {if (!(b)) { dputs(stderr, __FUNCTION__); dputs(stderr, m); dputs(stderr, "\n"); abort(); };};
+#endif 
+#define assert_message(b,m) {if (!(b)) { dputs(stderr_d, __FILE__); dputs(stderr_d, ": <"); dputs(stderr_d, __FUNCTION__); dputs(stderr_d, ">: "); dputs(stderr_d, STRINGIFY(__LINE__)); dputs(stderr_d, ": "); dputs(stderr_d, m); dputs(stderr_d, "\n"); abort(); };};
+
+#define ASSERT_DEBUG_STOP assert 
+
+
+
+
+
+#ifndef alloca
+#if 0
+#define alloca(bytesize_) { size_t bytesize = (bytesize_); char a[bytesize]; &a } 
+// Because stack-allocated space is deallocated when the current function returns. 
+// The difficulty here that this expression is a GCC construct and is not portable. 
+#else 
+#define alloca __builtin_alloca 
+#endif 
+#endif 
+
+
+#ifdef stderr 
+static FILE * stderr_FILE = stderr; 
+//#undef stderr 
+#endif 
+#ifdef stdin
+static FILE * stdin_FILE = stdin; 
+//#undef stdin 
+#endif 
+#ifdef stdout 
+static FILE * stdout_FILE = stdout; 
+//#undef stdout 
+#endif 
+
+
+
+#endif
+
+
+
+
+#if 0 
+
+// =================================================================================================== 
+// BUFFERED WRITE STREAM 
+
+enum { BUFFERED_WRITE_STREAM__COUNT = 16 }; 
+static int     buffered_write_stream__pipe    [BUFFERED_WRITE_STREAM__COUNT][2] = {}; // RL: [0] is output (read end), [1] is input (write end) 
+static int     buffered_write_stream__write_fd[BUFFERED_WRITE_STREAM__COUNT]    = {}; 
+static char *  buffered_write_stream__buffer         [BUFFERED_WRITE_STREAM__COUNT] = {}; 
+static int16_t buffered_write_stream__buffer_bytesize[BUFFERED_WRITE_STREAM__COUNT] = {}; 
+static int16_t buffered_write_stream__buffer_used    [BUFFERED_WRITE_STREAM__COUNT] = {}; 
+
+static int buffered_write_stream__init_huh = false; 
+static int buffered_write_stream__handler_installed_huh = false; 
+
+static void (* buffered_write_stream__former_handler)(int) = NULL; 
+static void buffered_write_stream__handler(const int signal_id) { 
+  // RL: Dans cette routine, nous appelons write(2) qui génère des SIGIO. 
+  //     Donc nous devons désactiver le mask, et réinstaller le former_handler. 
+  // RL: Symétriquement, notre handler devra être réinstallé à la sortie. 
+  //     En revanche, le masque est remis automatiquement à chaque génération du signal SIGIO. 
+  // RL: #include <signal.h> 
+  { 
+    sigset_t sigset[1]; 
+    sigemptyset(sigset);
+    sigaddset(sigset, SIGIO);
+    signal(SIGIO, buffered_write_stream__former_handler); 
+    sigprocmask(SIG_UNBLOCK, sigset, NULL); 
+  }; 
+  goto label__body;
+
+  label__exit: { 
+    signal(SIGIO, buffered_write_stream__handler); 
+    return; 
+  }; 
+ 
+  label__pas_nous: {
+    if (NULL == buffered_write_stream__former_handler) goto label__exit; 
+    buffered_write_stream__former_handler(signal_id); 
+    goto label__exit; 
+  }; 
+  
+  label__body: { 
+    // RL: Ici, nous avons un problème: nous ne savons pas qui généra le signal. 
+    //     En particulier, était-ce le nôtre ou un autre? 
+    //     Donc il faut tester. 
+    //     Et pour tester, pas le choix, il faut faire un read(2). 
+    //     Et cette lecture doit être non bloquante, et donc le flag O_NONBLOCK doit avoir été allumé en amont. 
+    //     Sinon, on reste bloqué ici. 
+    
+    // RL: Pour une raison quelconque, le buffer est peut-être déjà plein. 
+    int my_stream_id; 
+    for (my_stream_id = 0; my_stream_id < BUFFERED_WRITE_STREAM__COUNT; my_stream_id++) { 
+      if (-1 == buffered_write_stream__write_fd[my_stream_id]) continue; 
+      if (buffered_write_stream__buffer_bytesize[my_stream_id] == buffered_write_stream__buffer_used[my_stream_id]) { 
+	write(buffered_write_stream__write_fd[my_stream_id], buffered_write_stream__buffer[my_stream_id], buffered_write_stream__buffer_used[my_stream_id]); 
+	buffered_write_stream__buffer_used[my_stream_id] = 0; 
+      }; 
+    }; 
+
+    int at_least_one_found_huh = false; 
+    
+    // RL: Polling 
+    for (my_stream_id = 0; my_stream_id < BUFFERED_WRITE_STREAM__COUNT; my_stream_id++) { 
+      const int my_fd = buffered_write_stream__write_fd[my_stream_id]; 
+      if (-1 == my_fd) continue; 
+      int * my_pipe = *(buffered_write_stream__pipe + my_stream_id); 
+      char * my_buffer = buffered_write_stream__buffer[my_stream_id]; 
+      int16_t my_used = buffered_write_stream__buffer_used[my_stream_id]; 
+      const int16_t my_bytesize = buffered_write_stream__buffer_bytesize[my_stream_id]; 
+      const ssize_t read_nb = read(my_pipe[0], my_buffer + my_used, my_bytesize - my_used); 
+      if (0 >= read_nb) continue; 
+      
+      buffered_write_stream__buffer_used[my_stream_id] += read_nb; 
+      my_used = buffered_write_stream__buffer_used[my_stream_id]; 
+
+      at_least_one_found_huh = true; 
+      
+      for (;;) { 
+	// RL: On flush dès que le buffer est plein. 
+	if (my_bytesize == my_used) { 
+	  write(my_fd, my_buffer, my_bytesize); 
+	  buffered_write_stream__buffer_used[my_stream_id] = 0; 
+	  my_used = 0; 
+	}; 
+	
+	// RL: On continue à lire tant que il y a des données. 
+	const ssize_t read_nb = read(my_pipe[0], my_buffer + my_used, my_bytesize - my_used); 
+	if (0 >= read_nb) break; 
+	buffered_write_stream__buffer_used[my_stream_id] += read_nb; 
+	my_used = buffered_write_stream__buffer_used[my_stream_id]; 
+      }; 
+
+    }; 
+
+    if (!at_least_one_found_huh) goto label__pas_nous; 
+    
+    goto label__exit; 
+  }; 
+}; 
+
+static int buffered_write_stream__open(const char *path, const int flags, char * buffer, const int16_t buffer_bytesize) { 
+  int my_stream_id; 
+  if (!buffered_write_stream__init_huh) goto label__init; 
+  if (!buffered_write_stream__handler_installed_huh) goto label__install_handler; 
+  goto label__body; 
+
+ label__error__installing_SIGIO_handler_failed: {
+    return -1; 
+  }; 
+  
+ label__install_handler: { 
+    buffered_write_stream__former_handler = signal(SIGIO, buffered_write_stream__handler); 
+    if (SIG_ERR == buffered_write_stream__former_handler) goto label__error__installing_SIGIO_handler_failed; 
+    buffered_write_stream__handler_installed_huh = true; 
+    goto label__body; 
+  }; 
+
+  label__init: { 
+    for (int i = 0; i < BUFFERED_WRITE_STREAM__COUNT; i++) { 
+      buffered_write_stream__write_fd[i] = -1; 
+    }; 
+    buffered_write_stream__init_huh = true; 
+    goto label__install_handler; 
+  }; 
+
+ label__error__no_slot_left: { 
+    return -2; 
+  }; 
+  
+  label__error__making_pipe_failed: {
+    close(buffered_write_stream__write_fd[my_stream_id]); 
+    buffered_write_stream__write_fd[my_stream_id] = -1; 
+    return -3; 
+  }; 
+
+  label__error__buffer_is_null: {
+    return -4; 
+  }; 
+
+  label__error__buffer_bytesize_is_not_positive: {
+    return -5; 
+  }; 
+
+  label__error__open_failed: { 
+    return -6; 
+  }; 
+
+ label__body: { 
+    if (NULL == buffer) goto label__error__buffer_is_null; 
+    if (0 >= buffer_bytesize) goto label__error__buffer_bytesize_is_not_positive; 
+    
+    my_stream_id = 0; 
+    for (;;) { 
+      if (BUFFERED_WRITE_STREAM__COUNT <= my_stream_id) break; 
+      if (-1 == buffered_write_stream__write_fd[my_stream_id]) break; 
+      my_stream_id++; 
+    }; 
+    if (BUFFERED_WRITE_STREAM__COUNT <= my_stream_id) goto label__error__no_slot_left; 
+    
+    buffered_write_stream__write_fd[my_stream_id] = open(path, flags, (mode_t) 0666); 
+    if (-1 == buffered_write_stream__write_fd[my_stream_id]) goto label__error__open_failed; 
+
+
+    int * my_pipe = *(buffered_write_stream__pipe + my_stream_id); 
+    if (-1 == pipe(my_pipe)) goto label__error__making_pipe_failed; 
+    fcntl(my_pipe[0], F_SETOWN, getpid()); // RL: Qui recevra le signal SIGIO? 
+    fcntl(my_pipe[0], F_SETFL, O_ASYNC | O_NONBLOCK); // RL: Générer le signal SIGIO + Ne pas bloquer en cas de poll. 
+
+    // RL: Inutile. 
+    // RL: Utile uniquement quand on veut réassigner stdout. 
+    //dup2(pipe_write_fd, fileno(stdout)); 
+
+    buffered_write_stream__buffer         [my_stream_id] = buffer; 
+    buffered_write_stream__buffer_bytesize[my_stream_id] = buffer_bytesize; 
+    buffered_write_stream__buffer_used    [my_stream_id] = 0; 
+    
+    return my_pipe[1]; 
+  }; 
+  
+}; 
+
+static int buffered_write_stream__close(const int pipe1) { 
+  goto label__body; 
+  
+  label__error__pipe1_neg: { 
+    return -1; 
+  }; 
+
+  label__error__not_init: { 
+    return -2; 
+  }; 
+
+  label__error__handler_not_installed: { 
+    return -3; 
+  }; 
+
+  label__error__not_found: { 
+    return -4; 
+  }; 
+
+
+  label__body: { 
+    if (0 > pipe1) goto label__error__pipe1_neg; 
+    if (!buffered_write_stream__init_huh) goto label__error__not_init; 
+    if (!buffered_write_stream__handler_installed_huh) goto label__error__handler_not_installed; 
+
+    int my_stream_id = 0; 
+    for (;;) { 
+      if (BUFFERED_WRITE_STREAM__COUNT <= my_stream_id) break; 
+      if (-1 == buffered_write_stream__write_fd[my_stream_id]) continue; 
+      if (pipe1 == buffered_write_stream__pipe[my_stream_id][1]) break; 
+      my_stream_id++; 
+    }; 
+    if (BUFFERED_WRITE_STREAM__COUNT <= my_stream_id) goto label__error__not_found; 
+    
+    close(buffered_write_stream__write_fd[my_stream_id]); 
+    close(buffered_write_stream__pipe[my_stream_id][0]); 
+    close(pipe1); 
+    buffered_write_stream__buffer[my_stream_id] = NULL; 
+    buffered_write_stream__buffer_bytesize[my_stream_id] = -1; 
+    buffered_write_stream__buffer_used[my_stream_id] = -1; 
+    buffered_write_stream__write_fd[my_stream_id] = -1; 
+    
+    return 0; 
+  }; 
+}; 
+
+
+#endif 
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0 
+
+// =================================================================================================== 
+// FILE 
+
+static int file_exists_huh(const char * file_name) {
+  return (0 == access(file_name, F_OK)); 
+};
+
+static int file_exists_huh__stat(const char * file_name) {
+  return false;
+#if 0
+  int ret; 
+  struct stat sb;
+  ret = stat(file_name, &sb); 
+  return (0 == ret);
+#endif 
+};
+
+static int file_size_get(const char * file_name) { 
+  int handle; 
+  handle = open(file_name, O_RDONLY | O_NONBLOCK); 
+  if (-1 == handle) return -1; 
+  off_t pos; 
+  pos = lseek(handle, 0, SEEK_END); 
+  close(handle); 
+  return pos; 
+};
+
+static int64_t file_size_get__stat(const char * file_name) { 
+  return -1; 
+#if 0
+  int ret; 
+  struct stat sb;
+  ret = stat(file_name, &sb); 
+  //assert(0 == ret);
+  if (0 != ret) return -1; 
+  return ((int64_t) sb.st_size);
+#endif 
+};
+
+static void assert_log(int a) {
+}; 
+
+#endif 
+
+
+
+
+
+#if 0 
+
+//extern int fputs(const char *restrict s, FILE *restrict stream);
+//extern int fputc(int c, FILE *stream);
+//extern int dputs(const int handle, const char * restrict s);
+//extern int dputc(const int handle, const int c);
+
+static int dputc(const int fd, const char c) {
+  return write(fd, &c, 1); 
+}; 
+
+static int dputs(const int fd, const char *restrict s) { 
+  return write(fd, s, strlen(s)); 
+}; 
+
+
+
+// =================================================================================================== 
+// DPUTS 
+
+// man3 strnlen 
+// man 3 dputs 
+// man 3 fwrite 
+// int dputs(const char *restrict s, const intrestrict stream); 
+static int dputs3(const int out_stream, const char * s1, const char * s2, const char * s3) {
+  const char * s1_adjusted = NULL == s1 ? "" : s1; 
+  const char * s2_adjusted = NULL == s2 ? "" : s2; 
+  const char * s3_adjusted = NULL == s3 ? "" : s3; 
+#if 1 
+  const int len1 = strlen(s1); 
+  const int len2 = strlen(s2); 
+  const int len3 = strlen(s3); 
+#endif 
+  int written = 0; 
+  written += write(out_stream, s1_adjusted, len1); 
+  written += write(out_stream, s2_adjusted, len2); 
+  written += write(out_stream, s3_adjusted, len3); 
+  return written;
+}; 
+
+static int dputs5(const int out_stream, const char * s1, const char * s2, const char * s3, const char * s4, const char * s5) {
+  int written = 0; 
+  if ((NULL != s1) && ('\0' != *s1)) written += write(out_stream, s1, strlen(s1)); 
+  if ((NULL != s2) && ('\0' != *s2)) written += write(out_stream, s2, strlen(s2)); 
+  if ((NULL != s3) && ('\0' != *s3)) written += write(out_stream, s3, strlen(s3)); 
+  if ((NULL != s4) && ('\0' != *s4)) written += write(out_stream, s4, strlen(s4)); 
+  if ((NULL != s5) && ('\0' != *s5)) written += write(out_stream, s5, strlen(s5)); 
+  return written;
+}; 
+
+static int dputs_array__(const int out_stream, const int nb, const char * cstr_array[]) { 
+  int written = 0; 
+  for (int i = 0; i < nb; i++) { 
+    const char * cstr = cstr_array[i]; 
+    if ((NULL != cstr) && ('\0' != *cstr)) written += write(out_stream, cstr, strlen(cstr)); 
+  }; 
+  return written; 
+}; 
+ 
+#if 1 
+#define dputs_array(out_stream,...) (dputs_array__((out_stream),ARRAY_SIZE(((const char * []) { __VA_ARGS__ } )), ((const char * []) { __VA_ARGS__ } )))
+#endif 
+
+static int dputs7(const int out_stream, const char * s1, const char * s2, const char * s3, const char * s4, const char * s5, const char * s6, const char * s7) { 
+#if defined(__clang__)
+  const char * cstr_array[] = ((const char * []) { s1, s2, s3, s4, s5, s6, s7 } ); 
+  const int cstr_array_len = ARRAY_SIZE(cstr_array); 
+  return dputs_array__(out_stream, cstr_array_len, cstr_array); 
+#else 
+  return dputs_array__(out_stream, 7, ((const char * []) { s1, s2, s3, s4, s5, s6, s7 } ));
+#endif 
+};
+
+static int dputs8(const int out_stream, const char * s1, const char * s2, const char * s3, const char * s4, const char * s5, const char * s6, const char * s7, const char * s8) { 
+  return dputs_array__(out_stream, 8, ((const char * []) { s1, s2, s3, s4, s5, s6, s7, s8 } ));
+};
+
+
+static int dputsl(const int out_stream, const char * s, const size_t size) { 
+  if (s == NULL) return 0; 
+  //char buff[size]; 
+  //strlcpy(buff, s, size); 
+  //dputs(buff, out_stream); 
+  //return fwrite(s, 1, strnlen(s, size), out_stream); 
+  return write(out_stream, s, strnlen(s, size)); 
+}; 
+
+static int dputb(const int out_stream, const char buf[], const int size) { 
+  //return fwrite(buf, 1, size, out_stream); 
+  return write(out_stream, buf, size); 
+}; 
+
+static void dput_eol(const int out_stream) {
+  const char c = '\n'; 
+   write(out_stream, &c, 1); 
+}; 
+
+static void dputc_rep(const int out_stream, const int rep_n, const int c) {
+  if (rep_n <= 0) return; 
+  //char tab[1+rep_n]; // For some unknown reasons, VLAs make «-fstack-protector» fail. 
+  //char * tab = alloca(1+rep_n); 
+  char tab[1 << 14]; assert(((int)sizeof(tab)) >= (1+rep_n)); 
+  memset(tab, c, rep_n); 
+  tab[rep_n] = '\0'; 
+  //dputs(tab, out_stream); 
+  dputs(out_stream, tab); 
+}; 
+
+static void dput_spaces(const int out_stream, const int nb_spaces) {
+  dputc_rep(out_stream, nb_spaces, ' '); 
+}; 
+
+static int dputn(const int out_stream, const int n) { 
+  //return dputs(out_stream, int_string_on_the_stack(n)); 
+  return dputs(out_stream, int_string_on_the_heap(n)); 
+}; 
+
+static int dputc_str(const int out_stream, const char c) { 
+  return dputs(out_stream, char_string__on_the_stack(c)); 
+}; 
+
+static int dputf(const int out_stream, const double x) { 
+#if 1
+  return dputs(out_stream, float_string__on_the_stack(x)); 
+#else 
+  char * str; 
+  asprintf(&str, "%f", x); 
+  const int retval = dputs(out_stream, str); 
+  free(str); 
+  return retval; 
+#endif 
+}; 
+
+
+
+
+
+#endif 
+
+
+
+
+
+#if 0 
+
+
+static int write_long_long_int_old(const int file_des, long long int n) { 
+  enum { BUF_SIZE = INT16_MAX }; 
+  static char buffer[BUF_SIZE] = {}; 
+  char * p; 
+  p = buffer + BUF_SIZE; 
+  p--; 
+  *p = '\0'; 
+  p--; 
+  for (;;) { 
+    *p = '0' + (n % 10); 
+    n = n / 10; 
+    if (0 == n) break; 
+    if (p == buffer) { return ~0; }; 
+    p--; 
+  }; 
+  const int len = BUF_SIZE - (p - buffer) - 1; 
+  write(file_des, p, len); 
+  return len; 
+}; 
+
+
+
+#define STRINGIFYX(s) #s
+#define STRINGIFY(s) STRINGIFYX(s) 
+
+#define ARRAY_SIZE(__some_array__) ((sizeof((__some_array__))) / (sizeof(*(__some_array__))))
+
+#define ASSERT_COMPILE(a) { int tab[((a) ? 1 : (-1))]; }; 
+
+#define assert(__cond__) { if (!(__cond__)) { write(STDERR_FILENO, "assertion failed\n", 17); _exit(1); }; }; 
+
+
+
+
+// =================================================================================================== 
+// CHAR 2 CSTRING 
+
+static char * char_string__in_the_buffer(const char c_given, char * buffer, const int16_t buffer_bytesize, int16_t * buffer_bytesize_used_r) {
+  if (1 >= buffer_bytesize) { return NULL; }; 
+  *buffer = c_given; 
+  *(buffer+1) = '\0'; 
+  if (NULL != buffer_bytesize_used_r) *buffer_bytesize_used_r = 2; 
+  return buffer; 
+}; 
+
+#define char_string__min_buffer_bytesize(n) (2) 
+
+extern char * char_string(const char c);
+extern char * char_string__on_the_heap(const char c);
+extern char * char_string__on_the_stack(const char c);
+extern char * char_string__in_the_buffer(const char c_given, const int buffer_size, char * buffer);
+#define char_string__buffer_size(n) (2)
+#define char_string__on_the_heap(n)  char_string__in_the_buffer((n), char_string__buffer_size(n), malloc(sizeof(char) * (char_string__buffer_size(n))))
+#define char_string__on_the_stack(n) char_string__in_the_buffer((n), char_string__buffer_size(n), alloca(sizeof(char) * (char_string__buffer_size(n))))
+#define char_string        char_string__on_the_heap
+#define char_string__stack char_string__on_the_stack
+
+
+#endif 

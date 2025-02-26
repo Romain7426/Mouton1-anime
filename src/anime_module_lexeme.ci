@@ -1,0 +1,72 @@
+#ifndef ANIME_MODULE_LEXEME_CI
+#define ANIME_MODULE_LEXEME_CI
+
+static int_lexeme_value_t anime__lexeme_value_stack__push_no_lookup(anime_t * this, const char * rstr, const int8_t len0) { 
+  if (NULL == rstr) return -3; 
+  if (len0 < 0) return -2; 
+  const int8_t len1 = len0 + 1;
+  if (this -> lexeme_value_stack__nb + len1 >= this -> lexeme_value_stack__size) return -1; 
+  bcopy(/*src*/rstr,/*dst*/this -> lexeme_value_stack + this -> lexeme_value_stack__nb,/*len*/len0); 
+  this -> lexeme_value_stack[this -> lexeme_value_stack__nb + len0] = '\0';
+  const int_lexeme_value_t lexeme_value_i = this -> lexeme_value_stack__nb; 
+  this -> lexeme_value_stack__nb += len1; 
+  return lexeme_value_i; 
+};
+
+static int_lexeme_value_t anime__lexeme_value_stack__lookup(anime_t * this, const char * rstr, const int8_t len) { 
+  if (NULL ==  rstr) { return -1; }; 
+  if ('\0' == *rstr) { return 0; }; 
+  const int rstr_len1 = 1 + len; 
+  const int_lexeme_value_t last_start_pos = this -> lexeme_value_stack__size - rstr_len1; 
+  if (last_start_pos < 0) return -1; 
+  int_lexeme_value_t pos; 
+  pos = 1; 
+  for (;;) { 
+    if (pos > last_start_pos) return -1; 
+    if (('\0' == this -> lexeme_value_stack[pos + rstr_len1 - 1]) && (0 == bcmp(this -> lexeme_value_stack + pos, rstr, len))) { return pos; }; 
+    while ('\0' != this -> lexeme_value_stack[pos]) pos++; 
+    pos++; 
+  }; 
+  assert(false); 
+}; 
+
+static int_lexeme_value_t anime__lexeme_value_stack__push_lookup(anime_t * this, const char * rstr, const int8_t len) { 
+  const int_lexeme_value_t looked_up_lexeme_value_i = anime__lexeme_value_stack__lookup(this, rstr, len); 
+  if (0 <= looked_up_lexeme_value_i) return looked_up_lexeme_value_i; 
+  return anime__lexeme_value_stack__push_no_lookup(this, rstr, len); 
+};
+
+
+
+int_lexeme_t anime__lexeme_stack__push(anime_t * this, const int8_t type, const char * rstr, const int8_t len, const int16_t line1, const int8_t col0, const int16_t offset0) { 
+  assert(0 <= len);
+  const int_lexeme_value_t lexeme_value_i = anime__lexeme_value_stack__push_lookup(this, rstr, len); 
+  if (0 > lexeme_value_i) return -1; 
+  if (this -> lexeme_stack__nb >= this -> lexeme_stack__size) return -1; 
+  const int_lexeme_t lexeme_i = this -> lexeme_stack__nb; 
+  this -> lexeme_stack__nb++; 
+  
+  this -> lexeme_stack__type   [lexeme_i] = type; 
+  this -> lexeme_stack__value  [lexeme_i] = lexeme_value_i; 
+  this -> lexeme_stack__line1  [lexeme_i] = line1; 
+  this -> lexeme_stack__col0   [lexeme_i] = col0; 
+  this -> lexeme_stack__offset0[lexeme_i] = offset0; 
+  this -> lexeme_stack__len    [lexeme_i] = len; 
+  
+  return lexeme_i; 
+}; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif /* ANIME_MODULE_LEXEME_CI */

@@ -1,0 +1,145 @@
+
+// *** PRINT *** 
+
+void anime__lexeme__print_one(const anime_t * this, const int token_i, const int filedes) {
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+
+  const char * token_i__str                 = int_string__stack(token_i); 
+  const int    token_i__str__spaces_nb      = MAX(0, 6 - strlen(token_i__str)); 
+  
+  const int    token_type                   = this -> lexeme_stack__type[token_i]; 
+  const char * token_type_i_str             = int_string__stack(token_type); //anime_parser__token_type__get_cstr(token_type); 
+  const int    token_type_i_str__spaces_nb  = MAX(0, 3 - strlen(token_type_i_str)); 
+  const char * token_type_str               = anime_token__type_get_cstr(token_type); //anime_parser__token_type__get_cstr(token_type); 
+  const int    token_type_str__spaces_nb    = MAX(0, 18 - strlen(token_type_str)); 
+  
+  const char * token_srcval_cstr            = this -> lexeme_value_stack + (this -> lexeme_stack__value[token_i]);
+  const int    token_srcval_cstr__spaces_nb = MAX(0, 47 - strlen(token_srcval_cstr)); 
+  const char * token_value_i_str            = int_string__stack(this -> lexeme_stack__value[token_i]); 
+  const int    token_value_i_str__spaces_nb = MAX(0, 4 - strlen(token_value_i_str)); 
+
+  const int    token_len                    = this -> lexeme_stack__len[token_i]; 
+  const char * token_len_str                = int_string__stack(token_len); 
+  const int    token_len_str_len            = strlen(token_len_str); 
+  const int    token_len_str_len_spaces_nb  = MAX(0, 6 - token_len_str_len); 
+  
+  const int    token_line1                    = this -> lexeme_stack__line1[token_i]; 
+  const char * token_line1_cstr               = int_string__stack(token_line1); 
+  const int    token_line1_cstr_len           = strlen(token_line1_cstr); 
+  const int    token_line1_cstr_len_spaces_nb = MAX(0, 6 - token_line1_cstr_len); 
+  
+  const int    token_column0                    = this -> lexeme_stack__col0[token_i]; 
+  const char * token_column0_cstr               = int_string__stack(token_column0); 
+  const int    token_column0_cstr_len           = strlen(token_column0_cstr); 
+  const int    token_column0_cstr_len_spaces_nb = MAX(0, 6 - token_column0_cstr_len); 
+
+  const int    token_offset0                    = this -> lexeme_stack__offset0[token_i]; 
+  const char * token_offset0_cstr               = int_string__stack(token_offset0); 
+  const int    token_offset0_cstr_len           = strlen(token_offset0_cstr); 
+  const int    token_offset0_cstr_len_spaces_nb = MAX(0, 6 - token_offset0_cstr_len); 
+
+  const char * token_srcfile_cstr               = this -> string_stack + (this -> filename); 
+  const int    token_srcfile_cstr_len           = strlen(token_srcfile_cstr); 
+  const int    token_srcfile_cstr_len_spaces_nb = MAX(0, 6 - token_srcfile_cstr_len); 
+  
+  dputs(filedes, "IDX "); 
+  dput_spaces(filedes, token_i__str__spaces_nb); 
+  dputs2(filedes, token_i__str, ": "); 
+  dputs(filedes, "["); 
+  dput_spaces(filedes, token_type_i_str__spaces_nb); 
+  dputs3(filedes, token_type_i_str, "]", token_type_str); 
+  dput_spaces(filedes, token_type_str__spaces_nb); 
+#if 0 
+  dputs(filedes, " [len =  "); 
+  dput_spaces(filedes, token_len_str_len_spaces_nb); 
+  dputs(filedes, token_len_str); 
+  dputs(filedes, " ] : "); 
+#endif 
+  dputs(filedes, " : "); 
+  dputs(filedes, "[");
+  dput_spaces(filedes, token_value_i_str__spaces_nb); 
+  dputs(filedes, token_value_i_str); 
+  dputs(filedes, "]"); 
+  dputs(filedes, token_srcval_cstr); 
+  dput_spaces(filedes, token_srcval_cstr__spaces_nb); 
+  dputs(filedes, " [ srcfile: "); 
+  dput_spaces(filedes, token_srcfile_cstr_len_spaces_nb); 
+  dputs(filedes, "<"); 
+  dputs(filedes, token_srcfile_cstr); 
+  dputs(filedes, ">@"); 
+  dputs(filedes, token_offset0_cstr); 
+  dput_spaces(filedes, token_offset0_cstr_len_spaces_nb); 
+  dputs(filedes, " - line1: "); 
+  dput_spaces(filedes, token_line1_cstr_len_spaces_nb); 
+  dputs(filedes, token_line1_cstr); 
+  dputs(filedes, " - column0: "); 
+  dput_spaces(filedes, token_column0_cstr_len_spaces_nb); 
+  dputs(filedes, token_column0_cstr); 
+  dputs(filedes, " ] "); 
+#if 0
+  const char * str = cstring__concat__zarray__stack(((const char *[]) {
+     "" , ": ", 
+	anime_token__get_srcval_cstr(this, token_i), 
+	NULL})); 
+  dputs(filedes, str); 
+#endif 
+}; 
+
+static void anime__lexeme__print_stats__base(const anime_t * this, const int base, const int8_t new_line_huh, const int filedes) {
+  dputs(filedes, "TOKEN_VALUE_STACK("); 
+  dputn(filedes, this -> lexeme_value_stack__nb); 
+  dputs(filedes, " / "); 
+  dputn(filedes, this -> lexeme_value_stack__size); 
+  dputs(filedes, " = "); 
+  dputn(filedes, (int) (((double) (100 * this -> lexeme_value_stack__nb)) / ((double) this -> lexeme_value_stack__size))); 
+  dputs(filedes, "% ) \n"); 
+
+#if 1 
+  write(filedes, this -> lexeme_value_stack, this -> lexeme_value_stack__nb); 
+  dputs(filedes, "\n"); 
+#endif 
+
+#if 0 
+  write(filedes, this -> string_stack, this -> string_stack_nb); 
+  dputs(filedes, "\n"); 
+#endif 
+
+  dputs(filedes, "TOKEN_STACK("); 
+  dputn(filedes, this -> lexeme_stack__nb); 
+  dputs(filedes, " / "); 
+  dputn(filedes, base); 
+  dputs(filedes, " = "); 
+  dputn(filedes, (int) (((double) (100 * this -> lexeme_stack__nb)) / ((double) base))); 
+  if (new_line_huh) { 
+    dputs(filedes, "% ) \n"); 
+  } 
+  else {
+    dputs(filedes, "% )"); 
+  };
+}; 
+
+void anime__lexeme__print_stats(const anime_t * this, const int8_t new_line_huh, const int filedes) {
+  anime__lexeme__print_stats__base(this, ANIME__LEXEME_STACK_SIZE, new_line_huh, filedes); 
+}; 
+
+static void anime__lexeme__print_nb(const anime_t * this, const int_lexeme_t requested_nb, const int filedes) { 
+  anime__lexeme__print_stats(this, /*new_line_huh*/false, filedes); 
+  dputs(filedes, " = { \n"); 
+  const int nb = MIN(this -> lexeme_stack__nb,requested_nb); 
+  for (int i = 0; i < nb; i++) {
+    dputs(filedes, "  "); 
+    anime__lexeme__print_one(this, i, filedes);
+    dputs(filedes, "\n"); 
+  }; 
+  dputs(filedes, "} \n"); 
+}; 
+
+void anime__lexeme__print_all(const anime_t * this, const int stdout_d) { 
+  anime__lexeme__print_nb(this, this -> lexeme_stack__nb, stdout_d); 
+}; 
+
+
+
+
+
+

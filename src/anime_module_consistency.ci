@@ -1,0 +1,133 @@
+
+
+static int_anime_error_t anime__post_syntax__consistency_check_aux(const anime_t * this, char * error_str, int8_t * filled_huh_r, const int stduser_d); 
+
+int_anime_error_t anime__post_syntax__consistency_check(anime_t * this, const int stduser_d) { 
+  this -> error_id = anime__post_syntax__consistency_check_aux(this, this -> error_str, &this -> filled_huh, stduser_d); 
+  return this -> error_id; 
+}; 
+
+static int_anime_error_t anime__post_syntax__consistency_check_aux(const anime_t * this, char * error_str, int8_t * filled_huh_r, const int stduser_d) { 
+  //char error_str[ANIME__ERROR_BUFFER_SIZE]; 
+  if (NULL == this) return ANIME__NULL_STRUCT; 
+  if (   0 == this -> filled_huh) { 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Anime data structure empty — checking consistency meaningless — aborting."); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+    return ANIME__EMPTY_STRUCTURE; 
+  };
+  if (  -1 == this -> filled_huh) { 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Anime data structure only partially filled — checking consistency meaningless — aborting."); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+    return ANIME__FILLING_NOT_COMPLETED; 
+  };
+  if (   1 == this -> filled_huh) { 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Anime structure consistency already checked (as ok) — doing it again though."); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+  } 
+  else if (2 == this -> filled_huh) { } 
+  else if (3 == this -> filled_huh) { 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Anime structure consistency already checked (as having breaking unconsistencies) — doing it again though."); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+  } 
+  else if (4 == this -> filled_huh) { 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Anime structure consistency already checked (as having non-breaking unconsistencies) — doing it again though."); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+  } 
+  else { 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Unknown filled status: %d — checking consistency anyways.", this -> filled_huh); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+  };
+
+  int breaking_inconsistencies = 0; 
+  int non_breaking_inconsistencies = 0; 
+  
+  for (int i = 0; i < this -> membres_nb; i++) { 
+    const int_anime_string_t m_nom = this -> membres_nom[i]; 
+    //dprintf(stderr_d, "m_nom = %d\n", (int) m_nom); 
+    int found_huh = false; 
+    for (int j = 0; j < this -> racines_nb; j++) { 
+      const int_anime_string_t r_nom = this -> racines_qui[j]; 
+      //dprintf(stderr_d, "r_nom = [%d] %s\n", (int) r_nom, anime__string_stack__get(this, r_nom)); 
+      if (m_nom == r_nom) { found_huh = true; break; }; 
+    }; 
+    //dprintf(stderr_d, "------------\n"); 
+    if (found_huh) continue; 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "<Non-breaking inconsistency>: " "The member '%s' is not used (not rooted).", anime__string_stack__get(this, m_nom)); 
+    if (stduser_d > 0) { dprintf(stduser_d, "<%s>: " "%s" "\n", anime__string_stack__get(this, this -> filename), error_str); }; 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+    non_breaking_inconsistencies++; 
+  };
+  
+  for (int i = 0; i < this -> membres_nb; i++) { 
+    const int_anime_string_t m_nom1 = this -> membres_nom[i]; 
+    //dprintf(stderr_d, "m_nom1 = %d\n", (int) m_nom1); 
+    //dprintf(stderr_d, "m_nom1 = %s\n", anime__string_stack__get(this, m_nom1)); 
+    int count_nb = 1; 
+    for (int i2 = i+1; i2 < this -> membres_nb; i2++) { 
+      const int_anime_string_t m_nom2 = this -> membres_nom[i2]; 
+      //dprintf(stderr_d, "m_nom2 = %d\n", (int) m_nom2); 
+      //dprintf(stderr_d, "m_nom2 = %s\n", anime__string_stack__get(this, m_nom2)); 
+      if (m_nom1 == m_nom2) { count_nb++; }; 
+    }; 
+    if (count_nb == 1) continue; 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "<Non-breaking inconsistency>: " "There are %d members named '%s' (only the first one gonna be used, others will be ignored).", count_nb, anime__string_stack__get(this, m_nom1)); 
+    if (stduser_d > 0) { dprintf(stduser_d, "<%s>: " "%s" "\n", anime__string_stack__get(this, this -> filename), error_str); }; 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+    non_breaking_inconsistencies++; 
+  };
+  
+  for (int j = 0; j < this -> racines_nb; j++) { 
+    const int_anime_string_t r_nom = this -> racines_qui[j]; 
+    int found_huh = false; 
+    for (int i = 0; i < this -> membres_nb; i++) { 
+      const int_anime_string_t m_nom = this -> membres_nom[i]; 
+      if (m_nom == r_nom) { found_huh = true; break; }; 
+    }; 
+    if (found_huh) continue; 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "<Breaking inconsistency>: " "The root '%s' is referencing a missing member.", anime__string_stack__get(this, r_nom)); 
+    if (stduser_d > 0) { dprintf(stduser_d, "<%s>: " "%s" "\n", anime__string_stack__get(this, this -> filename), error_str); }; 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+    breaking_inconsistencies++; 
+  }; 
+
+  for (int j = 0; j < this -> racines_nb; j++) { 
+    const int_anime_string_t r_nom1 = this -> racines_qui[j]; 
+    int count_nb = 1; 
+    for (int j2 = j+1; j2 < this -> racines_nb; j2++) { 
+      const int_anime_string_t r_nom2 = this -> racines_qui[j2]; 
+      if (r_nom1 == r_nom2) { count_nb++; }; 
+    }; 
+    if (count_nb == 1) continue; 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "<Non-breaking inconsistency>: " "There are %d root named '%s'.", count_nb, anime__string_stack__get(this, r_nom1)); 
+    if (stduser_d > 0) { dprintf(stduser_d, "<%s>: " "%s" "\n", anime__string_stack__get(this, this -> filename), error_str); }; 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+    non_breaking_inconsistencies++; 
+  };
+  
+  
+  
+  int_anime_error_t error_id; 
+  if (0 != breaking_inconsistencies) { 
+    error_id = ANIME__HAS_BREAKING_UNCONSISTENCIES; 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Anime data struct has %d breaking consistency issues.", breaking_inconsistencies); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+    //this -> filled_huh = 3; 
+    if (NULL != filled_huh_r) *filled_huh_r = 3; 
+    return error_id; 
+  }; 
+  
+  if (0 != non_breaking_inconsistencies) { 
+    error_id = ANIME__HAS_NON_BREAKING_UNCONSISTENCIES; 
+    snprintf(error_str, ANIME__ERROR_BUFFER_SIZE, "Anime data struct has %d non-breaking consistency issues.", non_breaking_inconsistencies); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
+    //this -> filled_huh = 4; 
+    if (NULL != filled_huh_r) *filled_huh_r = 4; 
+    return error_id; 
+  }; 
+  
+  error_id = ANIME__OK; 
+  //this -> filled_huh = 1; 
+  if (NULL != filled_huh_r) *filled_huh_r = 1; 
+  return error_id; 
+}; 
+

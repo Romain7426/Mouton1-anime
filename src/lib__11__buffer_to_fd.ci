@@ -1,0 +1,489 @@
+
+#ifdef BUFFER_TO_FD__H 
+#  ifdef BUFFER_TO_FD__C 
+#    error Exclusivement soit BUFFER_TO_FD__H soit BUFFER_TO_FD__C 
+#  endif 
+#else
+#  ifndef BUFFER_TO_FD__C 
+#    define BUFFER_TO_FD__H 
+#  endif 
+#endif 
+
+#ifdef BUFFER_TO_FD__H 
+#  define BUFFER_TO_FD__H__ALREADY_INCLUDED 
+#endif 
+
+#ifdef BUFFER_TO_FD__C 
+#  define BUFFER_TO_FD__C__ALREADY_INCLUDED 
+#endif 
+
+
+// RL: Pour transformer un buffer en fd, l’idée est d’utiliser un pipe. 
+// RL:  -- On crée un pipe. 
+// RL:  -- pipe[0] sera le fd recherché (en lecture). 
+// RL:  -- Nous, on écrit dans pipe[1]. 
+// RL:  -- Le problème est que la mémoire tampon du pipe doit être de 4k. 
+//         Or, qu’arrive-t-il si nous écrivons un buffer de 32k? 
+//         En temps normal, write n’en écrit qu’une partie (voire bloque). 
+// RL:  -- Comme nous ne sommes pas multi-threadés (heureusement!), 
+//         nous sommes à la fois le consommateur et le producteur. 
+//         Quand le consommateur a fini de lire, il faut prévenir le producteur d’écrire. 
+// RL:  -- Ici, interrogation: read(2) génère-t-il un SIGIO? 
+//         read(2) prévient-il le producteur? Ou il ne fait rien? 
+// RL:  -- read(2) génère-t-il un SIGIO quand il n’y a rien à lire? 
+// RL:  -- Dans l’hypothèse où read(2) prévient le producteur (par un signal SIGIO), 
+//         alors le producteur continue à écrire le buffer dans le pipe. 
+//         Et on itère. 
+// RL:  -- Sinon, installer un timer? 
+// RL:  -- ... 
+// RL:  -- ... 
+// RL:  -- ... 
+// RL:  -- ... 
+// RL:  -- En fait, ça paraît sûr que un signal SIGIO est généré. 
+//         Mais généré par le pipe, pas par read(2). 
+// RL:  -- Par exemple, supposons que un processus père écrive 1MO au processus fils à travers un pipe. 
+//         En dépit de son buffer trop petit (65534?), les données seront transmises du père au fils par le pipe sans intervention d’un des processus. 
+//         Donc, quand le buffer du pipe est vide, le pipe va chercher les données chez les père. 
+// RL:  -- Dans le cas où le père est O_NONBLOCK, alors le pipe attend que le père vienne écrire.  
+//         En sus de O_NONBLOCK, si le père est O_ASYNC, alors le pipe générera un signal SIGIO. 
+//         Ça paraît logique. 
+// RL:  -- 
+// RL:  -- 
+// RL:  -- 
+
+#include <unistd.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/unistd.h.html */ /* https://en.wikipedia.org/wiki/Unistd.h */ 
+#include <signal.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/signal.h.html */ 
+#include <fcntl.h>  /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/fcntl.h.html  */ 
+// <unistd.h> -> pipe(2), getpid(2), _exit(2) 
+// <fcntl.h>  -> fcntl(2) 
+// <signal.h> -> raise(3), signal(3), sigprocmask(2), sigaddset(3), sigemptyset(3) 
+
+#ifndef assert
+//#define assert(cond) { if (!(cond)) { _exit(-128); }; }; 
+#  define assert(cond) { if (!(cond)) { raise(SIGABRT); }; }; 
+#endif 
+
+#ifndef ARRAY_SIZE 
+#  define ARRAY_SIZE(s) (sizeof(s)/sizeof(*s)) 
+// Beware of a string like "bob\0and\0mary", whose the preprocessor STRLEN will never behave like the compile-one (12 vs 3). 
+// Therefore this one is kind of more accurate. 
+#endif 
+
+#ifdef BUFFER_TO_FD__H 
+#  define EXTERN extern
+#  define EMPTY_ARRAY_DEFINITION 
+#  define VALUE_DEFINITION(value)
+#else 
+#  define EXTERN 
+#  define EMPTY_ARRAY_DEFINITION = { } 
+#  define VALUE_DEFINITION(value) = value
+#endif 
+
+
+#ifdef BUFFER_TO_FD__C 
+#  ifndef BUFFER_TO_FD__MAX 
+enum { BUFFER_TO_FD__COUNT = 8 }; 
+#  else 
+enum { BUFFER_TO_FD__COUNT = BUFFER_TO_FD__MAX }; 
+#  endif 
+#endif /* BUFFER_TO_FD__C */
+
+
+#ifdef BUFFER_TO_FD__C 
+
+static int     buffer_to_fd__init_huh = false; 
+static int     buffer_to_fd__handler_installed_huh = false; 
+
+static int          buffer_to_fd__pipe           [BUFFER_TO_FD__COUNT << 1] EMPTY_ARRAY_DEFINITION; // RL: [0] is output (read end), [1] is input (write end) 
+static int8_t       buffer_to_fd__slot_in_use_huh[BUFFER_TO_FD__COUNT]      EMPTY_ARRAY_DEFINITION; 
+static const char * buffer_to_fd__buffer         [BUFFER_TO_FD__COUNT]      EMPTY_ARRAY_DEFINITION; 
+static int16_t      buffer_to_fd__buffer_bytesize[BUFFER_TO_FD__COUNT]      EMPTY_ARRAY_DEFINITION; 
+static int16_t      buffer_to_fd__buffer_pos     [BUFFER_TO_FD__COUNT]      EMPTY_ARRAY_DEFINITION; 
+
+static void (* buffer_to_fd__former_handler)(int) = NULL; 
+static void    buffer_to_fd__handler(const int signal_id); 
+
+#endif /* BUFFER_TO_FD__C */
+
+
+
+#ifdef BUFFER_TO_FD__H 
+
+#define BUFFER_TO_FD__ERROR__LIST					\
+  X(BUFFER_TO_FD__ERROR__NONE, = 0)					\
+    X(BUFFER_TO_FD__ERROR__HANDLER_CANNOT_BE_INSTALLED, )		\
+    X(BUFFER_TO_FD__ERROR__HANDLER_NOT_INSTALLED, )			\
+    X(BUFFER_TO_FD__ERROR__WRITE_FD_IS_NEGATIVE, )			\
+    X(BUFFER_TO_FD__ERROR__FILENAME_IS_NULL, )				\
+    X(BUFFER_TO_FD__ERROR__FILENAME_IS_EMPTY, )				\
+    X(BUFFER_TO_FD__ERROR__BUFFER_IS_NULL, )				\
+    X(BUFFER_TO_FD__ERROR__BUFFER_BYTESIZE_IS_NEG, )		\
+    X(BUFFER_TO_FD__ERROR__BUFFER_BYTESIZE_IS_NULL, )			\
+  X(BUFFER_TO_FD__ERROR__NO_SLOT_LEFT, )				\
+  X(BUFFER_TO_FD__ERROR__CANNOT_OPEN_FILE, )				\
+  X(BUFFER_TO_FD__ERROR__CANNOT_MAKE_PIPE, )				\
+  X(BUFFER_TO_FD__ERROR__PIPE0_NEG, )					\
+  X(BUFFER_TO_FD__ERROR__PIPE0_NOT_FOUND, )				\
+  X(BUFFER_TO_FD__ERROR__NOT_INIT, )					\
+  /* LAST_LINE*/
+
+// RLE: Devrait être appelée une fois (juste une fois) afin de s’assurer que il n’y a pas d’incohérence. 
+static void int_buffer_to_fd__error__check_and_assert(void); 
+
+#endif /* BUFFER_TO_FD__H */ 
+
+
+#ifdef BUFFER_TO_FD__C
+static void buffer_to_fd__init(void) { 
+  if (buffer_to_fd__init_huh) return; 
+  for (int i = 0; i < BUFFER_TO_FD__COUNT; i++) { 
+    buffer_to_fd__pipe[(i << 1) + 0] = -1; 
+    buffer_to_fd__pipe[(i << 1) + 1] = -1; 
+    buffer_to_fd__slot_in_use_huh[i] = false; 
+    buffer_to_fd__buffer[i] = NULL; 
+    buffer_to_fd__buffer_bytesize[i] = -1; 
+    buffer_to_fd__buffer_pos[i] = -1; 
+  }; 
+  buffer_to_fd__init_huh = true; 
+};
+#endif /* BUFFER_TO_FD__C */
+
+#ifdef BUFFER_TO_FD__C 
+static int buffer_to_fd__get_new_slot_id(void) { 
+  for (int slot_i = 0; slot_i < BUFFER_TO_FD__COUNT; slot_i++) { 
+    if (buffer_to_fd__slot_in_use_huh[slot_i]) continue; 
+    return slot_i; 
+  }; 
+  return -1; 
+};
+#endif /* BUFFER_TO_FD__C */
+
+#ifdef BUFFER_TO_FD__C 
+static int buffer_to_fd__lookup_slot_by_pipe1(const int pipe1) { 
+  for (int slot_i = 0; slot_i < BUFFER_TO_FD__COUNT; slot_i++) { 
+    if (pipe1 == buffer_to_fd__pipe[(slot_i << 1) + 1]) return slot_i; 
+  }; 
+  return -1; 
+};
+#endif /* BUFFER_TO_FD__C */
+
+
+#ifdef BUFFER_TO_FD__C 
+static int buffer_to_fd__lookup_slot_by_pipe0(const int pipe0) { 
+  for (int slot_i = 0; slot_i < BUFFER_TO_FD__COUNT; slot_i++) { 
+    if (pipe0 == buffer_to_fd__pipe[(slot_i << 1) + 0]) return slot_i; 
+  }; 
+  return -1; 
+};
+#endif /* BUFFER_TO_FD__C */
+
+
+
+
+EXTERN int buffer_to_fd__open(const char * buffer, const int16_t buffer_bytesize) 
+#ifdef BUFFER_TO_FD__H
+;
+#else /* BUFFER_TO_FD__C */
+{ 
+  int error_id = BUFFER_TO_FD__ERROR__NONE; 
+  if (!buffer_to_fd__init_huh) goto label__init; 
+  if (!buffer_to_fd__handler_installed_huh) goto label__install_handler; 
+  goto label__body; 
+
+  label__exit: { 
+    return error_id; 
+  }; 
+  
+ label__install_handler: { 
+    buffer_to_fd__former_handler = signal(SIGIO, buffer_to_fd__handler); 
+    if (SIG_ERR == buffer_to_fd__former_handler) { error_id = BUFFER_TO_FD__ERROR__HANDLER_CANNOT_BE_INSTALLED; goto label__exit; }; 
+    buffer_to_fd__handler_installed_huh = true; 
+    goto label__body; 
+  }; 
+  
+  label__init: { 
+    buffer_to_fd__init(); 
+    goto label__install_handler; 
+  }; 
+  
+  label__body: { 
+    if (NULL ==       buffer) { error_id = BUFFER_TO_FD__ERROR__BUFFER_IS_NULL;              goto label__exit; }; 
+    if (0 >  buffer_bytesize) { error_id = BUFFER_TO_FD__ERROR__BUFFER_BYTESIZE_IS_NEG; goto label__exit; }; 
+    if (0 == buffer_bytesize) { error_id = BUFFER_TO_FD__ERROR__BUFFER_BYTESIZE_IS_NULL;     goto label__exit; }; 
+    
+    const int slot_id = buffer_to_fd__get_new_slot_id(); 
+    if (0 > slot_id) { error_id = BUFFER_TO_FD__ERROR__NO_SLOT_LEFT; goto label__exit; }; 
+    
+    int * my_pipe = (buffer_to_fd__pipe + (slot_id << 1)); 
+    if (-1 == pipe(my_pipe)) { error_id = BUFFER_TO_FD__ERROR__CANNOT_MAKE_PIPE; goto label__exit; }; 
+
+    // RL: [0] is output (read end), [1] is input (write end) 
+    // RL: Lors de la réception d’un signal SIGIO, 
+    //     nous testerons en tentant d’écrire sur my_pipe[1]. 
+    //     Or, si le buffer du pipe est déjà plein, alors nous serons bloqué. 
+    //     Pour tester, O_NONBLOCK est impératif. 
+    // RL: Ensuite, nous ne savons pas quand écrire. 
+    //     Nous demandons donc au pipe de nous prévenir par SIGIO. 
+    //     D’où O_ASYNC. 
+    // RL: Enfin, le pipe étant dans le kernel, il a besoin de savoir 
+    //     à qui il lancera le signal SIGIO. 
+    //     D’où F_SETOWN. 
+    fcntl(my_pipe[1], F_SETOWN, getpid()); // RL: Qui recevra le signal SIGIO? 
+    fcntl(my_pipe[1], F_SETFL, O_ASYNC | O_NONBLOCK); // RL: Générer le signal SIGIO + Ne pas bloquer en cas de poll. 
+    //fcntl(my_pipe[1], F_SETSIG, SIGUSR);// RL: Pour générer autre chose que SIOGIO? 
+
+    buffer_to_fd__slot_in_use_huh[slot_id] = true; 
+    buffer_to_fd__buffer         [slot_id] = buffer; 
+    buffer_to_fd__buffer_bytesize[slot_id] = buffer_bytesize; 
+    buffer_to_fd__buffer_pos     [slot_id] = 0; 
+    
+    return my_pipe[0]; 
+  }; 
+};
+#endif /* BUFFER_TO_FD__H */
+
+EXTERN int buffer_to_fd__flush(const int pipe1) 
+#ifdef BUFFER_TO_FD__H
+;
+#else /* BUFFER_TO_FD__C */
+{ 
+  assert(false); 
+  int error_id = BUFFER_TO_FD__ERROR__NONE; 
+  goto label__body; 
+  
+  label__exit: { 
+    return error_id; 
+  }; 
+  
+  label__body: { 
+    if (0 > pipe1)                                  { error_id = BUFFER_TO_FD__ERROR__PIPE0_NEG;             goto label__exit; }; 
+    if (!buffer_to_fd__init_huh)              { error_id = BUFFER_TO_FD__ERROR__NOT_INIT;              goto label__exit; }; 
+    if (!buffer_to_fd__handler_installed_huh) { error_id = BUFFER_TO_FD__ERROR__HANDLER_NOT_INSTALLED; goto label__exit; }; 
+    const int slot_id = buffer_to_fd__lookup_slot_by_pipe1(pipe1); 
+    if (0 > slot_id)                                { error_id = BUFFER_TO_FD__ERROR__PIPE0_NOT_FOUND;       goto label__exit; }; 
+    
+    //write(buffer_to_fd__slot_in_use_huh[slot_id]
+    write(buffer_to_fd__slot_in_use_huh[slot_id], buffer_to_fd__buffer[slot_id], buffer_to_fd__buffer_pos[slot_id]); 
+    buffer_to_fd__buffer_pos[slot_id] = 0; 
+    return error_id; 
+  }; 
+};
+#endif /* BUFFER_TO_FD__H */
+
+EXTERN int buffer_to_fd__close(const int pipe0) 
+#ifndef BUFFER_TO_FD__C 
+;
+#else /* BUFFER_TO_FD__C */
+{ 
+  int error_id = BUFFER_TO_FD__ERROR__NONE; 
+  goto label__body; 
+  
+  label__exit: { 
+    return error_id; 
+  }; 
+  
+  label__body: { 
+    if (0 > pipe0)                            { error_id = BUFFER_TO_FD__ERROR__PIPE0_NEG;             goto label__exit; }; 
+    if (!buffer_to_fd__init_huh)              { error_id = BUFFER_TO_FD__ERROR__NOT_INIT;              goto label__exit; }; 
+    if (!buffer_to_fd__handler_installed_huh) { error_id = BUFFER_TO_FD__ERROR__HANDLER_NOT_INSTALLED; goto label__exit; }; 
+    const int slot_id = buffer_to_fd__lookup_slot_by_pipe0(pipe0); 
+    if (0 > slot_id)                          { error_id = BUFFER_TO_FD__ERROR__PIPE0_NOT_FOUND;       goto label__exit; }; 
+    
+    close(buffer_to_fd__pipe[(slot_id << 1) + 0]); 
+    close(buffer_to_fd__pipe[(slot_id << 1) + 1]); 
+    
+    buffer_to_fd__pipe           [(slot_id << 1) + 0] = -1; 
+    buffer_to_fd__pipe           [(slot_id << 1) + 1] = -1; 
+    buffer_to_fd__slot_in_use_huh[slot_id] = false; 
+    buffer_to_fd__buffer         [slot_id] = NULL; 
+    buffer_to_fd__buffer_bytesize[slot_id] = -1; 
+    buffer_to_fd__buffer_pos     [slot_id] = -1; 
+    
+    return error_id; 
+  }; 
+}; 
+#endif /* BUFFER_TO_FD__C */
+
+
+#ifdef BUFFER_TO_FD__C
+static void buffer_to_fd__handler(const int signal_id) { 
+  // RL: Dans cette routine, nous appelons write(2) et read(2) qui génèrent des SIGIO. 
+  //     Autrement, nous générerons un signal alors que nous sommes dans un traitement de signal. 
+  // RL: Or nous avons besoin que ces opérations fonctionnent. 
+  //     Nous ne pouvons donc pas simplement éteindre les signaux. 
+  // RL: Il faut donc filtrer les signaux. 
+  // RL: Pour ce faire, nous devons désactiver le mask, et réinstaller le former_handler. 
+  // RL: Symétriquement, notre handler devra être réinstallé à la sortie. 
+  //     En revanche, le masque est remis automatiquement à chaque génération du signal SIGIO. 
+  // RL: #include <signal.h> 
+  { 
+    sigset_t sigset[1]; 
+    sigemptyset(sigset);
+    sigaddset(sigset, SIGIO);
+    signal(SIGIO, buffer_to_fd__former_handler); 
+    sigprocmask(SIG_UNBLOCK, sigset, NULL); 
+  }; 
+  goto label__body;
+
+  label__exit: { 
+    signal(SIGIO, buffer_to_fd__handler); 
+    return; 
+  }; 
+  
+  label__pas_nous: {
+    if (NULL == buffer_to_fd__former_handler) goto label__exit; 
+    buffer_to_fd__former_handler(signal_id); 
+    goto label__exit; 
+  }; 
+  
+  label__body: { 
+    // RL: Ici, nous avons un problème: nous ne savons pas qui généra le signal. 
+    //     À qui le signal était-il destiné? À nous? Un autre? 
+    //     Nous ne pouvons pas savoir. Rien dans la structure du signal nous le permet. 
+    //     Donc, pas le choix, il faut tester. 
+    // RL: Et pour tester, pas le choix, il faut faire un write(2). 
+    //     Et cette écriture doit être non bloquante, et donc le flag O_NONBLOCK doit avoir été allumé en amont. 
+    //     Sinon, on resterait bloqué ici. 
+    
+    // RL: Tout d’abord, nous fermons les pipe[1] dont le buffer serait vide. 
+    //     Ainsi, au lieu de générer un signal, le pipe généra un EOF. 
+    int slot_id; 
+    for (slot_id = 0; slot_id < BUFFER_TO_FD__COUNT; slot_id++) { 
+      if (not(buffer_to_fd__slot_in_use_huh[slot_id])) continue; 
+      if (buffer_to_fd__buffer_pos[slot_id] < buffer_to_fd__buffer_bytesize[slot_id]) continue; 
+      close(buffer_to_fd__pipe[(slot_id << 1) + 1]); 
+      buffer_to_fd__pipe[(slot_id << 1) + 1] = -1; 
+    }; 
+    
+    // RL: Polling 
+    int at_least_one_found_huh = false; 
+    for (slot_id = 0; slot_id < BUFFER_TO_FD__COUNT; slot_id++) { 
+      if (not(buffer_to_fd__slot_in_use_huh[slot_id])) continue; 
+      if (-1 == buffer_to_fd__pipe[(slot_id << 1) + 1]) continue; 
+      int *         my_pipe     = (buffer_to_fd__pipe         + (slot_id << 1)); 
+      const char *  my_buffer   =  buffer_to_fd__buffer         [slot_id]; 
+      int16_t       my_pos      =  buffer_to_fd__buffer_pos     [slot_id]; 
+      const int16_t my_bytesize =  buffer_to_fd__buffer_bytesize[slot_id]; 
+      
+      // RL: Test. 
+      const ssize_t write_nb = write(my_pipe[1], my_buffer + my_pos, my_bytesize - my_pos); 
+      if (0 >= write_nb) continue; 
+      
+      buffer_to_fd__buffer_pos[slot_id] += write_nb; 
+      my_pos = buffer_to_fd__buffer_pos[slot_id]; 
+      at_least_one_found_huh = true; 
+      
+      // RL: On continue à écrire. 
+      for (;;) { 
+	// RL: Auparavant, on teste si le buffer est vide. 
+	if (my_bytesize <= my_pos) { 
+	  close(buffer_to_fd__pipe[(slot_id << 1) + 1]); 
+	  buffer_to_fd__pipe[(slot_id << 1) + 1] = -1; 
+	  break; 
+	}; 
+	
+	const ssize_t write_nb = write(my_pipe[1], my_buffer + my_pos, my_bytesize - my_pos); 
+	if (0 >= write_nb) continue; 
+	buffer_to_fd__buffer_pos[slot_id] += write_nb; 
+	my_pos = buffer_to_fd__buffer_pos[slot_id]; 
+      }; 
+    }; 
+
+    if (!at_least_one_found_huh) goto label__pas_nous; 
+    
+    goto label__exit; 
+  }; 
+}; 
+#endif /* BUFFER_TO_FD__C */
+
+
+
+
+
+
+
+// ___________________________________ 
+// **** BUFFER_TO_FD__ERROR **** 
+
+#ifdef BUFFER_TO_FD__H 
+
+#define X(ident, value) ident value, 
+enum { 
+  BUFFER_TO_FD__ERROR__LIST
+}; 
+#undef X 
+
+#define X(ident, value) ident##___ID, 
+enum { 
+  BUFFER_TO_FD__ERROR__LIST
+  BUFFER_TO_FD__ERROR__COUNT
+}; 
+#undef X 
+
+typedef      int8_t               int_buffer_to_fd__error_t;
+// int_buffer_to_fd__error -> cstr 
+EXTERN const char *               int_buffer_to_fd__error__get_cstr(const int_buffer_to_fd__error_t error_id); 
+// int_buffer_to_fd__error__id -> value 
+EXTERN const  int_buffer_to_fd__error_t int_buffer_to_fd__error__id_value[BUFFER_TO_FD__ERROR__COUNT]; 
+enum {                            int_buffer_to_fd__error__id_value__size = ARRAY_SIZE(int_buffer_to_fd__error__id_value) }; 
+EXTERN const uint8_t              int_buffer_to_fd__error__id_value__size__compiled_value; 
+// int_buffer_to_fd__error__id -> cstr 
+EXTERN const char *               int_buffer_to_fd__error__id_cstr [BUFFER_TO_FD__ERROR__COUNT + 1]; 
+enum {                            int_buffer_to_fd__error__id_cstr__size = ARRAY_SIZE(int_buffer_to_fd__error__id_cstr) }; 
+EXTERN const uint8_t              int_buffer_to_fd__error__id_cstr__size__compiled_value; 
+
+#define X(ident, value) EXTERN const int_buffer_to_fd__error_t ident##__compiled_value; 
+BUFFER_TO_FD__ERROR__LIST 
+#undef X 
+
+static void int_buffer_to_fd__error__check_and_assert(void) { 
+  assert(BUFFER_TO_FD__ERROR__COUNT <= UINT8_MAX); 
+#define X(ident, value) assert(ident == ident##__compiled_value); 
+BUFFER_TO_FD__ERROR__LIST 
+#undef X 
+  assert(int_buffer_to_fd__error__id_cstr__size  == int_buffer_to_fd__error__id_cstr__size__compiled_value ); 
+  assert(int_buffer_to_fd__error__id_value__size == int_buffer_to_fd__error__id_value__size__compiled_value); 
+}; 
+
+#else /* BUFFER_TO_FD__C */
+
+#define X(ident, value) const int_buffer_to_fd__error_t ident##__compiled_value = ident; 
+BUFFER_TO_FD__ERROR__LIST 
+#undef X 
+
+#define X(ident, value) #ident, 
+const char * int_buffer_to_fd__error__id_cstr[BUFFER_TO_FD__ERROR__COUNT + 1] = { 
+BUFFER_TO_FD__ERROR__LIST 
+  NULL
+}; 
+#undef X 
+ 
+const uint8_t int_buffer_to_fd__error__id_cstr__size__compiled_value = ARRAY_SIZE(int_buffer_to_fd__error__id_cstr); 
+
+#define X(ident, value) ident, 
+const int_buffer_to_fd__error_t int_buffer_to_fd__error__id_value[BUFFER_TO_FD__ERROR__COUNT] = { 
+BUFFER_TO_FD__ERROR__LIST 
+}; 
+#undef X 
+
+const uint8_t int_buffer_to_fd__error__id_value__size__compiled_value = ARRAY_SIZE(int_buffer_to_fd__error__id_value); 
+
+const char * int_buffer_to_fd__error__get_cstr(const int_buffer_to_fd__error_t error_id) { 
+  const char * error_id__cstr = NULL; 
+  switch (error_id) { 
+#define X(ident, value) case ident: error_id__cstr = #ident; break; 
+  BUFFER_TO_FD__ERROR__LIST
+#undef X 
+  }; 
+  return error_id__cstr; 
+}; 
+
+#endif /* BUFFER_TO_FD__H */
+
+
+
+
+
+#undef EXTERN 
+#undef EMPTY_ARRAY_DEFINITION 
+#undef VALUE_DEFINITION 

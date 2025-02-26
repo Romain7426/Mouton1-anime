@@ -1,0 +1,28 @@
+
+static void main_arg_print(const int argc, const char * argv[], const int stdlog_d) {
+  dputs(stdlog_d, "argc: "); dputn(stdlog_d, argc); dputs(stdlog_d, "\n"); 
+  for (int i = 0; i < argc; i++) {
+    dputs(stdlog_d, "argv["); dputn(stdlog_d, i); dputs(stdlog_d, "] = "); dputs(stdlog_d, argv[i]); dputs(stdlog_d, "\n"); 
+  }; 
+}; 
+
+static void main_time_print(const int stdlog_d) { 
+  enum { STRFTIME_BUFFER_SIZE = 64 }; 
+  char strftime_buffer[STRFTIME_BUFFER_SIZE]; 
+  const time_t clock = time(NULL); 
+  struct tm timeptr[1]; 
+  
+  bzero(timeptr, sizeof(timeptr));
+  gmtime_r(&clock, timeptr); 
+  strftime(strftime_buffer, sizeof(strftime_buffer), "TZ=%Z %Y_%m_%d-%Hh%Mm%Ss %A", timeptr); 
+  strftime_buffer[STRFTIME_BUFFER_SIZE-1] = '\0';
+  if (stdlog_d > 0) dprintf(stdlog_d, "%s" "\n", strftime_buffer); 
+ 
+  bzero(timeptr, sizeof(timeptr));
+  localtime_r(&clock, timeptr); 
+  strftime(strftime_buffer, sizeof(strftime_buffer), "TZ=%Z %Y_%m_%d-%Hh%Mm%Ss %A", timeptr); 
+  strftime_buffer[STRFTIME_BUFFER_SIZE-1] = '\0'; 
+  if (stdlog_d > 0) dprintf(stdlog_d, "%s" "\n", strftime_buffer); 
+}; 
+
+

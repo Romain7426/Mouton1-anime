@@ -1,0 +1,107 @@
+
+
+void anime__print_f(const anime_t * this, FILE * out_stream) { 
+  anime__print_d(this, fileno(out_stream)); 
+}; 
+
+void anime__print_d(const anime_t * this, const int fd) { 
+  dprintf(fd, "/* filename := '%s' */" "\n", anime__string_stack__get(this, this -> filename)); 
+  
+  dprintf(fd, " " "\n"); 
+
+  dprintf(fd, "physique { " "\n"); 
+  dprintf(fd, "  " "zone de choc := {" "\n"); 
+  dprintf(fd, "  " "  " "longueur := %10f;" "\n", this -> choc_longueur); 
+  dprintf(fd, "  " "  " "largeur  := %10f;" "\n", this -> choc_largeur); 
+  dprintf(fd, "  " "  " "hauteur  := %10f;" "\n", this -> choc_hauteur); 
+  dprintf(fd, "  " "};" "\n"); 
+  dprintf(fd, "  " "masse := %10f;" "\n", this -> masse); 
+  dprintf(fd, "} " "\n"); 
+
+  dprintf(fd, " " "\n"); 
+
+  dprintf(fd, "gameplay { " "\n"); 
+  dprintf(fd, "  " "points de vie := %5d;" "\n", this -> vie); 
+  dprintf(fd, "  " "invincible    :=  %s;" "\n", this -> invincible ? "vrai" : "faux"); 
+  dprintf(fd, "  " "hostile       :=  %s;" "\n", this -> hostile    ? "vrai" : "faux"); 
+
+  for (int i = 0; i < this -> actions_nb; i++) { 
+    dprintf(fd, "  " "action %15s { affichage := %10s; icone := %10s ; gestionnaire := { fichier := %10s ; proc := %10s ; } ; }" "\n", anime__string_stack__get(this, this -> actions_array_nom[i]), anime__string_stack__get(this, this -> actions_array_affichage[i]), anime__string_stack__get(this, this -> actions_array_icone[i]), anime__string_stack__get(this, this -> actions_array_gestionnaire_fichier[i]), anime__string_stack__get(this, this -> actions_array_gestionnaire_proc[i])); 
+  }; 
+
+
+  dprintf(fd, "} " "\n"); 
+
+  dprintf(fd, " " "\n"); 
+  
+
+
+  dprintf(fd, "graphique { " "\n"); 
+  dprintf(fd, "  " " " "\n"); 
+  dprintf(fd, "  " "/* membres[%d / %d]: */" "\n", this -> membres_nb, this -> membres_size); 
+  for (int i = 0; i < this -> membres_nb; i++) { 
+    dprintf(fd, "  " "membre %15s { fils := ; image := %30s ; largeur := %10f ; hauteur := %10f ; angle max y := %10f ; }" "\n", anime__string_stack__get(this, this -> membres_nom[i]), anime__string_stack__get(this, this -> membres_image[i]), this -> membres_largeur[i], this -> membres_hauteur[i], this -> membres_angle_max_y[i]); 
+  }; 
+  dprintf(fd, "  " "\n"); 
+  
+  dprintf(fd, "  " "membres racines /*[%d / %d]*/ := " "\n", this -> racines_nb, this -> racines_size); 
+  for (int i = 0; i < this -> racines_nb; i++) { 
+    dprintf(fd, "  " "  " "{ qui := %15s ; x := %10f ; y := %10f ; z := %10f ; angle y := %10f ;}," "\n", anime__string_stack__get(this, this -> racines_qui[i]), this -> racines_x[i], this -> racines_y[i], this -> racines_z[i], this -> racines_angle_y[i]); 
+  }; 
+  dprintf(fd, "  " "; " "\n"); 
+
+  dprintf(fd, "  " " " "\n"); 
+
+  dprintf(fd, "} " "\n"); 
+
+  dprintf(fd, " " "\n"); 
+
+}; 
+
+void anime__print_d001(const anime_t * this, const int fd) { 
+  dprintf(fd, "filename = '%s'" "\n", anime__string_stack__get(this, this -> filename)); 
+  
+  dprintf(fd, " " "\n"); 
+
+  dprintf(fd, "physique { " "\n"); 
+  dprintf(fd, "\t" "choc_longueur = %10f" "\n", this -> choc_longueur); 
+  dprintf(fd, "\t" "choc_largeur  = %10f" "\n", this -> choc_largeur); 
+  dprintf(fd, "\t" "choc_hauteur  = %10f" "\n", this -> choc_hauteur); 
+  dprintf(fd, "\t" "masse         = %10f" "\n", this -> masse); 
+  dprintf(fd, "}; " "\n"); 
+
+  dprintf(fd, " " "\n"); 
+
+  dprintf(fd, "gameplay { " "\n"); 
+  dprintf(fd, "\t" "vie        = %5d" "\n", this -> vie); 
+  dprintf(fd, "\t" "invincible = %s" "\n", this -> invincible ? "vrai" : "faux"); 
+  dprintf(fd, "\t" "hostile    = %s" "\n", this -> hostile    ? "vrai" : "faux"); 
+  dprintf(fd, "}; " "\n"); 
+
+  dprintf(fd, " " "\n"); 
+  
+
+
+  dprintf(fd, "graphique { " "\n"); 
+  dprintf(fd, "\t" " " "\n"); 
+  dprintf(fd, "\t" "membres[%d] =  " "\n", this -> membres_nb); 
+  for (int i = 0; i < this -> membres_nb; i++) { 
+    dprintf(fd, "\t" "\t" "{ nom = %15s ; image := %30s ; largeur := %10f ; hauteur := %10f ; angle y max := %10f ;}," "\n", anime__string_stack__get(this, this -> membres_nom[i]), anime__string_stack__get(this, this -> membres_image[i]), this -> membres_largeur[i], this -> membres_hauteur[i], this -> membres_angle_max_y[i]); 
+  }; 
+  dprintf(fd, "\t" "; " "\n"); 
+
+  dprintf(fd, "\t" "racines[%d] =  " "\n", this -> racines_nb); 
+  for (int i = 0; i < this -> racines_nb; i++) { 
+    dprintf(fd, "\t" "\t" "{ qui = %15s ; x := %10f ; y := %10f ; z := %10f ; angle y := %10f ;}," "\n", anime__string_stack__get(this, this -> racines_qui[i]), this -> racines_x[i], this -> racines_y[i], this -> racines_z[i], this -> racines_angle_y[i]); 
+  }; 
+  dprintf(fd, "\t" "; " "\n"); 
+
+  dprintf(fd, "\t" " " "\n"); 
+
+  dprintf(fd, "}; " "\n"); 
+
+  dprintf(fd, " " "\n"); 
+
+}; 
+
+

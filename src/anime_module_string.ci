@@ -1,0 +1,93 @@
+
+const char * anime__string_stack__get(const anime_t * this, const int_anime_string_t astr) { 
+  if (astr < 0) return NULL; 
+  if (astr >= this -> string_stack_nb) return NULL; 
+  return this -> string_stack + astr; 
+}; 
+
+
+int_anime_string_t anime__string_stack__push_nolookup(anime_t * this, const char * cstr) { 
+  if (NULL ==  cstr) { return -1; }; 
+  if ('\0' == *cstr) { return 0; }; 
+  const int len1 = 1 + strlen(cstr); 
+  if (this -> string_stack_nb + len1 > ANIME__STRING_STACK_SIZE) { 
+    this -> error_id = ANIME__STRING_STACK_TOO_SMALL; 
+    snprintf(this -> error_str, ANIME__ERROR_BUFFER_SIZE, "Not enough space in the anime buffer to copy the string (mem needed: %d ; mem left: %d ; str: '%s')", len1, ANIME__STRING_STACK_SIZE - this -> string_stack_nb, cstr); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Error: " "%s" "\n", __func__, this -> error_str); }; 
+    return -1; 
+  }; 
+  const int_anime_string_t new_id = this -> string_stack_nb; 
+  char * new_str = this -> string_stack + new_id; 
+  bcopy(cstr, new_str, len1); 
+  this -> string_stack_nb += len1; 
+  return new_id; 
+}; 
+
+
+int_anime_string_t anime__string_stack__lookup(const anime_t * this, const char * cstr) { 
+  if (NULL ==  cstr) { return -1; }; 
+  if ('\0' == *cstr) { return 0; }; 
+  const int cstr_len1 = 1 + strlen(cstr); 
+  const int_anime_string_t last_start_pos = this -> string_stack_nb - cstr_len1; 
+  if (last_start_pos < 0) return -1; 
+  int_anime_string_t pos; 
+  pos = 1; 
+  for (;;) { 
+    if (pos > last_start_pos) return -1; 
+    if ('\0' == this -> string_stack[pos + cstr_len1 - 1] && (0 == strcmp(this -> string_stack + pos, cstr))) { return pos; }; 
+    while ('\0' != this -> string_stack[pos]) pos++; 
+    pos++; 
+  }; 
+  assert(false); 
+}; 
+
+
+int_anime_string_t anime__string_stack__push_lookup(anime_t * this, const char * cstr) { 
+  if (NULL ==  cstr) { return -1; }; 
+  if ('\0' == *cstr) { return 0; }; 
+  const int_anime_string_t astr = anime__string_stack__lookup(this, cstr); 
+  if (astr >= 0) return astr; 
+  const int_anime_string_t new_astr = anime__string_stack__push_nolookup(this, cstr); 
+  //dprintf(stderr_d, "anime__string_stack__push_lookup: lookup = [%d] '%s' [%d]\n", astr, cstr, new_astr); 
+  return new_astr; 
+}; 
+
+
+
+
+
+
+
+
+
+ const char * anime__strcopy_nolookup(anime_t * this, const char * str) { 
+  if (NULL ==  str) { return NULL; }; 
+  if ('\0' == *str) { return this -> string_stack; }; 
+  const int len1 = 1 + strlen(str); 
+  if (this -> string_stack_nb + len1 > ANIME__STRING_STACK_SIZE) { 
+    this -> error_id = ANIME__STRCOPY; 
+    snprintf(this -> error_str, ANIME__ERROR_BUFFER_SIZE, "Not enough space in the anime buffer to copy the string (mem needed: %d ; mem left: %d ; str: '%s')", len1, ANIME__STRING_STACK_SIZE - this -> string_stack_nb, str); 
+    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Error: " "%s" "\n", __func__, this -> error_str); }; 
+    return NULL; 
+  }; 
+  char * new_str = this -> string_stack + this -> string_stack_nb; 
+  bcopy(str, new_str, len1); 
+  this -> string_stack_nb += len1; 
+  return new_str; 
+}; 
+
+const char * anime__string_lookup(const anime_t * this, const char * cstr) { 
+  const int_anime_string_t astr = anime__string_stack__lookup(this, cstr); 
+  if (astr < 0) return NULL; 
+  return this -> string_stack + astr; 
+}; 
+
+const char * anime__strcopy(anime_t * this, const char * str) { 
+  if (NULL ==  str) { return NULL; }; 
+  if ('\0' == *str) { return this -> string_stack; }; 
+  const char * str_lookedup = anime__string_lookup(this, str); 
+  if (NULL != str_lookedup) return str_lookedup; 
+  const char * new_str = anime__strcopy_nolookup(this, str); 
+  return new_str; 
+}; 
+
