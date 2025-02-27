@@ -10,7 +10,7 @@ physique {
   largeur := longueur;
   hauteur := 50.;
  };
- MaSSe := 240. + 1;
+ MaSSe := 240. * (+ 1);
 }
 
 gameplay {

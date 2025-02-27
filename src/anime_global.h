@@ -49,7 +49,7 @@
 #define MALLOC_BZERO(ctype_t,this) ctype_t * this = NULL; this = (ctype_t *) malloc(sizeof(*this)); bzero(this, sizeof(*this)); 
 
 
-
+typedef int8_t bool_t; 
 
 
 

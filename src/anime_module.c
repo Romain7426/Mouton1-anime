@@ -393,6 +393,19 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Reconstruction de la structure: réalisée" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Cohérence de la structure: vérifiée" "\n"); }; 
     if (this -> stdlog_d > 0) { anime__syntax__print(this, this -> stdlog_d); }; 
+
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[EXPRESSION -> SYNTAXE]" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Pour commencer, nous devons déterminer l'arité des symboles d'addition et de soustraction (unaire ou binaire?)." "\n"); }; 
+    error_id = anime__syntax_expr__arity__compute(this);
+    if (error_id != ANIME__OK) { return error_id; }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Arités calculées" "\n"); }; 
+    error_id = anime__syntax_expr__check_syntax(this); 
+    if (error_id != ANIME__OK) { return error_id; }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Chaque expression est correctement écrite." "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> // Pour le moment, cette fonction ne détecte pas:  MaSSe := 240. (* +) 1;" "\n"); }; 
+    if (true) { dputs(STDERR_FILENO, "---> // Pour le moment, cette fonction ne détecte pas:  MaSSe := 240. (* +) 1;" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> ." "\n"); }; 
     
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[NOMS DES CHAMPS]" "\n"); }; 
@@ -407,12 +420,6 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[VALEURS DES CHAMPS]" "\n"); }; 
-    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "IL NOUS MANQUE UN SYSTEME DE VERIFICATION DE LA SYNTAXE AVANT LE CALCUL" "\n"); }; 
-    if (stduser_d > 0) { dputs(stduser_d, "IL NOUS MANQUE UN SYSTEME DE VERIFICATION DE LA SYNTAXE AVANT LE CALCUL" "\n"); }; 
-    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Pour commencer, nous devons déterminer l'arité des symboles d'addition et de soustraction (unaire ou binaire?)." "\n"); }; 
-    error_id = anime__generation__arity__compute(this);
-    if (error_id != ANIME__OK) { return error_id; }; 
-    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Arités: calculées" "\n"); }; 
     error_id = anime__generation__field_values__compute(this); 
     if (error_id != ANIME__OK) { return error_id; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Valeurs des champs: calculées" "\n"); }; 
@@ -445,6 +452,21 @@ void anime__check_and_assert(const int8_t debug_print_huh, const int stddebug_d)
 
   anime__lexer__check_and_assert(); 
 }; 
+
+
+
+
+int_expr_t anime_expr_push(anime_t * this, const int_lexeme_t expr_lexeme_start_i, const int8_t expr_lexemes_nb) { 
+  if (ANIME_EXPR_SIZE <= this -> expr_nb) { assert(false); return -1; }; 
+  
+  const int_expr_t expr_id = this -> expr_nb;
+  
+  this -> expr_nb++;
+  this -> expr_lexeme_start_i[expr_id] = expr_lexeme_start_i; 
+  this -> expr_lexemes_nb    [expr_id] = expr_lexemes_nb; 
+  
+  return expr_id; 
+};
 
 
 #define ANIME__ERROR__C

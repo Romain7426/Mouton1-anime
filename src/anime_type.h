@@ -23,6 +23,8 @@ enum { ANIME__LEXEME_VALUE_STACK_SIZE = (1 << 12) };
 typedef int16_t int_anime_string_t; 
 typedef int16_t int_lexeme_value_t; 
 typedef int16_t int_lexeme_t; 
+typedef  int8_t int_expr_t; 
+typedef uint8_t int_anime_token_type_t; 
 
 enum { ANIME__ENDIANNESS_UNSPECIFIED = 0 }; 
 enum { ANIME__ENDIANNESS_LITTLE      = 1 }; 
@@ -52,7 +54,7 @@ struct anime_t {
   // 3: yes and checked, but has breaking unconsistencies; 
   // 4: yes and checked, but has non-breaking unconsistencies; 
   
-  int_anime_error_t error_id; // 0: none; …<0: error; …>0: warning 
+  int_anime_error_t  error_id; // 0: none; …<0: error; …>0: warning 
   char               error_str[ANIME__ERROR_BUFFER_SIZE]; 
   uint16_t           error_size; 
   
@@ -66,14 +68,14 @@ struct anime_t {
   int_lexeme_value_t lexeme_value_stack__size; 
   int_lexeme_value_t lexeme_value_stack__nb; 
   
-  int8_t             lexeme_stack__type   [ANIME__LEXEME_STACK_SIZE]; 
-  int16_t            lexeme_stack__line1  [ANIME__LEXEME_STACK_SIZE]; 
-  int8_t             lexeme_stack__col0   [ANIME__LEXEME_STACK_SIZE]; 
-  int16_t            lexeme_stack__offset0[ANIME__LEXEME_STACK_SIZE]; 
-  int8_t             lexeme_stack__len    [ANIME__LEXEME_STACK_SIZE]; 
-  int_lexeme_value_t lexeme_stack__value  [ANIME__LEXEME_STACK_SIZE]; 
-  int_lexeme_t       lexeme_stack__size; 
-  int_lexeme_t       lexeme_stack__nb; 
+  int_anime_token_type_t lexeme_stack__type   [ANIME__LEXEME_STACK_SIZE]; 
+  int16_t                lexeme_stack__line1  [ANIME__LEXEME_STACK_SIZE]; 
+  int8_t                 lexeme_stack__col0   [ANIME__LEXEME_STACK_SIZE]; 
+  int16_t                lexeme_stack__offset0[ANIME__LEXEME_STACK_SIZE]; 
+  int8_t                 lexeme_stack__len    [ANIME__LEXEME_STACK_SIZE]; 
+  int_lexeme_value_t     lexeme_stack__value  [ANIME__LEXEME_STACK_SIZE]; 
+  int_lexeme_t           lexeme_stack__size; 
+  int_lexeme_t           lexeme_stack__nb; 
 
 
   
@@ -120,15 +122,48 @@ struct anime_t {
   int8_t             racines_size; 
   int8_t             racines_nb; 
 
-  // FRA: Pas encore utilisé, mais à utiliser à l'avenir à la place du truc complexe ci-dessous (trop complexe). 
-  int_lexeme_t       expr_lexeme_i   [ANIME_EXPR_SIZE];
-  int8_t             expr_lexemes_nb [ANIME_EXPR_SIZE];
-  float              expr_value_float[ANIME_EXPR_SIZE];
-  int16_t            expr_value_int16[ANIME_EXPR_SIZE];
-  int8_t             expr_value_bool [ANIME_EXPR_SIZE];
-  int8_t             expr_nb; 
+  // FRA: A terme, il devra remplacer les trucs ci-dessous qui sont trop compliqués. 
+  int_lexeme_t       expr_lexeme_start_i[ANIME_EXPR_SIZE];
+  int8_t             expr_lexemes_nb    [ANIME_EXPR_SIZE];
+#if 0
+  float              expr_value_float   [ANIME_EXPR_SIZE];
+  int16_t            expr_value_int16   [ANIME_EXPR_SIZE];
+  int8_t             expr_value_bool    [ANIME_EXPR_SIZE];
+#endif 
+  int_expr_t         expr_nb; 
   
-  
+
+  // EXPR 
+#define DECLARE_EXPR_1(ident1) int_expr_t glue2(ident1,__expr);
+#define DECLARE_EXPR_3(ident1,ident2,ident3) DECLARE_EXPR_1(ident1); DECLARE_EXPR_1(ident2); DECLARE_EXPR_1(ident3);
+#define DECLARE_EXPR_4(ident1,ident2,ident3,ident4) DECLARE_EXPR_1(ident1); DECLARE_EXPR_1(ident2); DECLARE_EXPR_1(ident3); DECLARE_EXPR_1(ident4);
+
+#define DECLARE_EXPR_ARRAY_1(__array_prefix__,ident1,__array_size__) int_expr_t glue3(__array_prefix__,ident1,__expr)[__array_size__]; 
+#define DECLARE_EXPR_ARRAY_5(__array_prefix__,ident1,ident2,ident3,ident4,ident5,__array_size__) \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident1,__array_size__); \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident2,__array_size__); \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident3,__array_size__); \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident4,__array_size__); \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident5,__array_size__); \
+  /* END OF MACRO */
+#define DECLARE_EXPR_ARRAY_6(__array_prefix__,ident1,ident2,ident3,ident4,ident5,ident6,__array_size__) \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident1,__array_size__); \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident2,__array_size__); \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident3,__array_size__); \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident4,__array_size__); \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident5,__array_size__); \
+  DECLARE_EXPR_ARRAY_1(__array_prefix__,ident6,__array_size__); \
+  /* END OF MACRO */
+
+  DECLARE_EXPR_4(choc_longueur,choc_largeur,choc_hauteur,masse); 
+  DECLARE_EXPR_3(vie,invincible,hostile); 
+  DECLARE_EXPR_ARRAY_5(actions_array_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
+  DECLARE_EXPR_ARRAY_6(events_array_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
+  DECLARE_EXPR_ARRAY_5(membres_,nom,image,largeur,hauteur,angle_max_y,ANIME_MEMBRES_SIZE); 
+  DECLARE_EXPR_ARRAY_5(racines_,qui,x,y,z,angle_y,ANIME_RACINES_SIZE); 
+
+
+
   // LEXEME_I 
 #define DECLARE_LEXEME_I_3(ident1,ident2,ident3) int_lexeme_t glue2(ident1,__lexeme_i); int_lexeme_t glue2(ident2,__lexeme_i); int_lexeme_t glue2(ident3,__lexeme_i);
 #define DECLARE_LEXEME_I_4(ident1,ident2,ident3,ident4) int_lexeme_t glue2(ident1,__lexeme_i); int_lexeme_t glue2(ident2,__lexeme_i); int_lexeme_t glue2(ident3,__lexeme_i); int_lexeme_t glue2(ident4,__lexeme_i);
@@ -185,12 +220,16 @@ extern int8_t anime__events_push (anime_t * this, const char * nom, const int8_t
 extern int8_t anime__membres_push(anime_t * this, const char * nom, const char * image, const float largeur, const float hauteur, const float angle_max_y); 
 extern int8_t anime__racines_push(anime_t * this, const char * qui, const float x, const float y, const float z, const float angle_y); 
 
-extern int8_t  anime__membres_lookup(const anime_t * this, const char * nom); 
+extern int8_t anime__membres_lookup(const anime_t * this, const char * nom); 
 
 
 
 extern int_lexeme_t anime__lexeme_stack__push(anime_t * this, const int8_t type, const char * rstr, const int8_t len, const int16_t line1, const int8_t col0, const int16_t offset0); 
-extern void   anime__lexeme__print_all(const anime_t * this, const int stdout_d); 
-extern void   anime__lexeme__print_stats(const anime_t * this, const int8_t new_line_huh, const int filedes); 
+extern void         anime__lexeme__print_all(const anime_t * this, const int stdout_d); 
+extern void         anime__lexeme__print_stats(const anime_t * this, const int8_t new_line_huh, const int filedes); 
+
+
+extern int_expr_t anime_expr_push(anime_t * this, const int_lexeme_t expr_lexeme_start_i, const int8_t expr_lexemes_nb); 
+
 
 #endif /* ANIME_TYPE_H */
