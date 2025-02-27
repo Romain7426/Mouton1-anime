@@ -1,4 +1,5 @@
 tcc
+clang
 egcc
 pcc
-clang 
+

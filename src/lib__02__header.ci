@@ -86,7 +86,8 @@ typedef uint24_unpacked_t uint24_t;
 #endif 
 
 #define ASSERT_COMPILE__LOCAL(a) { int tab[((a) ? 1 : (-1))]; }; 
-#define ASSERT_COMPILE__TOPLEVEL(cond) static void glue(check_and_assert_at_compile_time__,__LINE__)(void) { enum { tab_size = ((cond) ? 1 : (-1)) }; int tab[tab_size]; };  
+#define ASSERT_COMPILE__TOPLEVEL(cond) static void glue3(check_and_assert_at_compile_time__,__LINE__,__INCLUDE_LEVEL__)(void) { enum { tab_size = ((cond) ? 1 : (-1)) }; int tab[tab_size]; };  
+#define ASSERT_COMPILE__TOPLEVEL2(__prefix__,cond) static void glue4(__prefix__,check_and_assert_at_compile_time__,__LINE__,__INCLUDE_LEVEL__)(void) { enum { tab_size = ((cond) ? 1 : (-1)) }; int tab[tab_size]; };  
 #define ASSERT_DEBUG_ABORT_IF_TRUE(e) assert(!(e)); if (true) 
 
 

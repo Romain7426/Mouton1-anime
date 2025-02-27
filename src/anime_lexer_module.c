@@ -4,7 +4,7 @@
 #include "anime_lexer_module.h"
 
 
-#include "anime_lexer_module_token_type.ci"
+//#include "anime_lexer_module_token_type.ci"
 #include "anime_lexer_module_automata.ci"
 #include "anime_lexer_module_print.ci"
 
@@ -313,5 +313,29 @@ int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd)
     }; 
   };
 }; 
+
+
+#define ANIME__TOKEN_TYPE__C
+//#define ANIME__TOKEN_TYPE__TYPE_T uint8_t 
+#define EXTERN extern
+#include "anime_lexer_module_token_type.ci"
+#undef  EXTERN
+//#undef  ANIME__TOKEN_TYPE__TYPE_T
+#undef  ANIME__TOKEN_TYPE__C
+
+#define ANIME__AUTOMATA_TYPE__C
+//#define ANIME__AUTOMATA_TYPE__TYPE_T int8_t 
+#define EXTERN extern
+#include "anime_lexer_module_automata_type.ci"
+#undef  EXTERN
+//#undef  ANIME__AUTOMATA_TYPE__TYPE_T
+#undef  ANIME__AUTOMATA_TYPE__C
+
+
+
+
+void anime__lexer__check_and_assert(void) {
+  int_anime_token_type__check_and_assert(); 
+};
 
 

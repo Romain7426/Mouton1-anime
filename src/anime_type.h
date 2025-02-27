@@ -5,6 +5,7 @@ enum { ANIME_ACTIONS_SIZE = 15 };
 enum { ANIME_EVENTS_SIZE  = 15 }; 
 enum { ANIME_MEMBRES_SIZE = 15 }; 
 enum { ANIME_RACINES_SIZE = ANIME_MEMBRES_SIZE }; 
+enum { ANIME_EXPR_SIZE    = INT8_MAX }; 
 enum { ANIME_EVENTS_TOUS, ANIME_EVENTS_AUCUN, ANIME_EVENTS_CODE }; 
 
 enum { ANIME__EXPRESSION_NESTEDNESS_MAX = 16 }; 
@@ -52,11 +53,11 @@ struct anime_t {
   // 4: yes and checked, but has non-breaking unconsistencies; 
   
   int_anime_error_t error_id; // 0: none; …<0: error; …>0: warning 
-  char              error_str[ANIME__ERROR_BUFFER_SIZE]; 
-  uint16_t          error_size; 
+  char               error_str[ANIME__ERROR_BUFFER_SIZE]; 
+  uint16_t           error_size; 
   
-  char     string_stack[ANIME__STRING_STACK_SIZE]; 
-  uint16_t string_stack_nb; 
+  char               string_stack[ANIME__STRING_STACK_SIZE]; 
+  uint16_t           string_stack_nb; 
   
   int_anime_string_t copyright;   
   int_anime_string_t filename; 
@@ -118,33 +119,41 @@ struct anime_t {
   float              racines_angle_y[ANIME_RACINES_SIZE]; 
   int8_t             racines_size; 
   int8_t             racines_nb; 
-  
 
+  // FRA: Pas encore utilisé, mais à utiliser à l'avenir à la place du truc complexe ci-dessous (trop complexe). 
+  int_lexeme_t       expr_lexeme_i   [ANIME_EXPR_SIZE];
+  int8_t             expr_lexemes_nb [ANIME_EXPR_SIZE];
+  float              expr_value_float[ANIME_EXPR_SIZE];
+  int16_t            expr_value_int16[ANIME_EXPR_SIZE];
+  int8_t             expr_value_bool [ANIME_EXPR_SIZE];
+  int8_t             expr_nb; 
+  
+  
   // LEXEME_I 
 #define DECLARE_LEXEME_I_3(ident1,ident2,ident3) int_lexeme_t glue2(ident1,__lexeme_i); int_lexeme_t glue2(ident2,__lexeme_i); int_lexeme_t glue2(ident3,__lexeme_i);
 #define DECLARE_LEXEME_I_4(ident1,ident2,ident3,ident4) int_lexeme_t glue2(ident1,__lexeme_i); int_lexeme_t glue2(ident2,__lexeme_i); int_lexeme_t glue2(ident3,__lexeme_i); int_lexeme_t glue2(ident4,__lexeme_i);
 #define DECLARE_LEXEME_I_5_ARRAY(__array_prefix__,ident1,ident2,ident3,ident4,ident5,__array_size__) int_lexeme_t glue3(__array_prefix__,ident1,__lexeme_i)[__array_size__]; int_lexeme_t glue3(__array_prefix__,ident2,__lexeme_i)[__array_size__]; int_lexeme_t glue3(__array_prefix__,ident3,__lexeme_i)[__array_size__]; int_lexeme_t glue3(__array_prefix__,ident4,__lexeme_i)[__array_size__]; int_lexeme_t glue3(__array_prefix__,ident5,__lexeme_i)[__array_size__];
 #define DECLARE_LEXEME_I_6_ARRAY(__array_prefix__,ident1,ident2,ident3,ident4,ident5,ident6,__array_size__) int_lexeme_t glue3(__array_prefix__,ident1,__lexeme_i)[__array_size__]; int_lexeme_t glue3(__array_prefix__,ident2,__lexeme_i)[__array_size__]; int_lexeme_t glue3(__array_prefix__,ident3,__lexeme_i)[__array_size__]; int_lexeme_t glue3(__array_prefix__,ident4,__lexeme_i)[__array_size__]; int_lexeme_t glue3(__array_prefix__,ident5,__lexeme_i)[__array_size__]; int_lexeme_t glue3(__array_prefix__,ident6,__lexeme_i)[__array_size__];
   
-  DECLARE_LEXEME_I_4(choc_longueur,choc_largeur,choc_hauteur,masse);
-  DECLARE_LEXEME_I_3(vie,invincible,hostile);   
+  DECLARE_LEXEME_I_4(choc_longueur,choc_largeur,choc_hauteur,masse); 
+  DECLARE_LEXEME_I_3(vie,invincible,hostile); 
   DECLARE_LEXEME_I_5_ARRAY(actions_array_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
   DECLARE_LEXEME_I_6_ARRAY(events_array_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
   DECLARE_LEXEME_I_5_ARRAY(membres_,nom,image,largeur,hauteur,angle_max_y,ANIME_MEMBRES_SIZE); 
   DECLARE_LEXEME_I_5_ARRAY(racines_,qui,x,y,z,angle_y,ANIME_RACINES_SIZE); 
-
-  // LEXEME_LEN 
-#define DECLARE_LEXEME_LEN_3(ident1,ident2,ident3) int8_t glue2(ident1,__lexeme_len); int8_t glue2(ident2,__lexeme_len); int8_t glue2(ident3,__lexeme_len);
-#define DECLARE_LEXEME_LEN_4(ident1,ident2,ident3,ident4) int8_t glue2(ident1,__lexeme_len); int8_t glue2(ident2,__lexeme_len); int8_t glue2(ident3,__lexeme_len); int8_t glue2(ident4,__lexeme_len);
-#define DECLARE_LEXEME_LEN_5_ARRAY(__array_prefix__,ident1,ident2,ident3,ident4,ident5,__array_size__) int8_t glue3(__array_prefix__,ident1,__lexeme_len)[__array_size__]; int8_t glue3(__array_prefix__,ident2,__lexeme_len)[__array_size__]; int8_t glue3(__array_prefix__,ident3,__lexeme_len)[__array_size__]; int8_t glue3(__array_prefix__,ident4,__lexeme_len)[__array_size__]; int8_t glue3(__array_prefix__,ident5,__lexeme_len)[__array_size__];
-#define DECLARE_LEXEME_LEN_6_ARRAY(__array_prefix__,ident1,ident2,ident3,ident4,ident5,ident6,__array_size__) int8_t glue3(__array_prefix__,ident1,__lexeme_len)[__array_size__]; int8_t glue3(__array_prefix__,ident2,__lexeme_len)[__array_size__]; int8_t glue3(__array_prefix__,ident3,__lexeme_len)[__array_size__]; int8_t glue3(__array_prefix__,ident4,__lexeme_len)[__array_size__]; int8_t glue3(__array_prefix__,ident5,__lexeme_len)[__array_size__]; int8_t glue3(__array_prefix__,ident6,__lexeme_len)[__array_size__];
   
-  DECLARE_LEXEME_LEN_4(choc_longueur,choc_largeur,choc_hauteur,masse);
-  DECLARE_LEXEME_LEN_3(vie,invincible,hostile);   
-  DECLARE_LEXEME_LEN_5_ARRAY(actions_array_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
-  DECLARE_LEXEME_LEN_6_ARRAY(events_array_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
-  DECLARE_LEXEME_LEN_5_ARRAY(membres_,nom,image,largeur,hauteur,angle_max_y,ANIME_MEMBRES_SIZE); 
-  DECLARE_LEXEME_LEN_5_ARRAY(racines_,qui,x,y,z,angle_y,ANIME_RACINES_SIZE); 
+  // LEXEMES_NB 
+#define DECLARE_LEXEMES_NB_3(ident1,ident2,ident3) int8_t glue2(ident1,__lexemes_nb); int8_t glue2(ident2,__lexemes_nb); int8_t glue2(ident3,__lexemes_nb);
+#define DECLARE_LEXEMES_NB_4(ident1,ident2,ident3,ident4) int8_t glue2(ident1,__lexemes_nb); int8_t glue2(ident2,__lexemes_nb); int8_t glue2(ident3,__lexemes_nb); int8_t glue2(ident4,__lexemes_nb);
+#define DECLARE_LEXEMES_NB_5_ARRAY(__array_prefix__,ident1,ident2,ident3,ident4,ident5,__array_size__) int8_t glue3(__array_prefix__,ident1,__lexemes_nb)[__array_size__]; int8_t glue3(__array_prefix__,ident2,__lexemes_nb)[__array_size__]; int8_t glue3(__array_prefix__,ident3,__lexemes_nb)[__array_size__]; int8_t glue3(__array_prefix__,ident4,__lexemes_nb)[__array_size__]; int8_t glue3(__array_prefix__,ident5,__lexemes_nb)[__array_size__];
+#define DECLARE_LEXEMES_NB_6_ARRAY(__array_prefix__,ident1,ident2,ident3,ident4,ident5,ident6,__array_size__) int8_t glue3(__array_prefix__,ident1,__lexemes_nb)[__array_size__]; int8_t glue3(__array_prefix__,ident2,__lexemes_nb)[__array_size__]; int8_t glue3(__array_prefix__,ident3,__lexemes_nb)[__array_size__]; int8_t glue3(__array_prefix__,ident4,__lexemes_nb)[__array_size__]; int8_t glue3(__array_prefix__,ident5,__lexemes_nb)[__array_size__]; int8_t glue3(__array_prefix__,ident6,__lexemes_nb)[__array_size__];
+  
+  DECLARE_LEXEMES_NB_4(choc_longueur,choc_largeur,choc_hauteur,masse);
+  DECLARE_LEXEMES_NB_3(vie,invincible,hostile);   
+  DECLARE_LEXEMES_NB_5_ARRAY(actions_array_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
+  DECLARE_LEXEMES_NB_6_ARRAY(events_array_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
+  DECLARE_LEXEMES_NB_5_ARRAY(membres_,nom,image,largeur,hauteur,angle_max_y,ANIME_MEMBRES_SIZE); 
+  DECLARE_LEXEMES_NB_5_ARRAY(racines_,qui,x,y,z,angle_y,ANIME_RACINES_SIZE); 
   
 
   

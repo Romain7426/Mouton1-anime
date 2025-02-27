@@ -12,12 +12,13 @@
 // ********************************************
 // FIELD NAMES 
 
-#define DO_ARRAY(field_name,__item_i__) {				\
-    const int_lexeme_t lexeme_i = this -> glue2(field_name,__lexeme_i)[__item_i__]; \
-    const int8_t lexeme_len = this -> glue2(field_name,__lexeme_len)[__item_i__]; \
-    if (0 > lexeme_i) continue;						\
-    if (0 == lexeme_len) goto label__error__need_at_least_one_token;	\
-    if (1  < lexeme_len) goto label__error__need_at_most_one_token;	\
+#define DO_ARRAY_ITEM(field_name,__item_i__) {				\
+    const int_lexeme_t lexeme_i   = this -> glue2(field_name,__lexeme_i)  [__item_i__]; \
+    const int8_t       lexemes_nb = this -> glue2(field_name,__lexemes_nb)[__item_i__]; \
+    if (0                        >  lexeme_i) goto label__error__token_id_is_negative; \
+    if (this -> lexeme_stack__nb <= lexeme_i) goto label__error__token_id_is_out_of_bound; \
+    if (0 == lexemes_nb) goto label__error__at_least_one_token_is_required;		\
+    if (1  < lexemes_nb) goto label__error__need_at_most_one_token;	\
     const int_anime_token_type_t lexeme_type = this -> lexeme_stack__type[lexeme_i]; \
     if (ANIME_TOKEN_IDENT == lexeme_type) {				\
       const char * lexeme_value = this -> lexeme_value_stack + this -> lexeme_stack__value[lexeme_i]; \
@@ -36,77 +37,275 @@
 /* END OF MACRO */
 
 
-int_anime_error_t anime__generation__field_names(anime_t * this) { 
+int_anime_error_t anime__generation__field_names__compute(anime_t * this) { 
   goto label__body; 
-
- label__body: {   
-    for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) DO_ARRAY(actions_array_nom,action_i);
-    for (int8_t  event_i = 0;  event_i < this ->  events_nb;  event_i++) DO_ARRAY( events_array_nom,event_i);
-    for (int8_t membre_i = 0; membre_i < this -> membres_nb; membre_i++) DO_ARRAY(membres_nom,membre_i);
-    for (int8_t racine_i = 0; racine_i < this -> racines_nb; racine_i++) DO_ARRAY(racines_qui,racine_i);  
-    return ANIME__OK; 
-  };
   
  label__error__expecting_ident: { 
-    return ANIME__ERROR_GENERIC; 
+    return ANIME__FIELD_NAME__IDENT_EXPECTED; 
   }; 
   
- label__error__need_at_least_one_token: { 
-    return ANIME__ERROR_GENERIC; 
+ label__error__token_id_is_negative: {
+    return ANIME__FIELD_NAME__TOKEN_ID_NEG; 
   }; 
 
- label__error__need_at_most_one_token: { 
-    return ANIME__ERROR_GENERIC; 
+ label__error__token_id_is_out_of_bound: {
+    return ANIME__FIELD_NAME__TOKEN_ID_OUT_OF_BOUND; 
+  };
+
+ label__error__at_least_one_token_is_required: { 
+    return ANIME__FIELD_NAME__AT_LEAST_ONE_TOKEN; 
   }; 
+  
+ label__error__need_at_most_one_token: { 
+    return ANIME__FIELD_NAME__AT_MOST_ONE_TOKEN; 
+  }; 
+
+ label__body: {   
+    for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) DO_ARRAY_ITEM(actions_array_nom,action_i);
+    for (int8_t  event_i = 0;  event_i < this ->  events_nb;  event_i++) DO_ARRAY_ITEM( events_array_nom,event_i);
+    for (int8_t membre_i = 0; membre_i < this -> membres_nb; membre_i++) DO_ARRAY_ITEM(membres_nom,membre_i);
+    for (int8_t racine_i = 0; racine_i < this -> racines_nb; racine_i++) DO_ARRAY_ITEM(racines_qui,racine_i);  
+    return ANIME__OK; 
+  };
   
 }; 
 
 
-#undef DO_ARRAY
+#undef DO_ARRAY_ITEM
 
 
 
 
 // ********************************************
-// FIELD VALUES 
+// FIELD VALUES - EXPR - ARITY COMPUTATION 
+
+#define ARITY_COMPUTE_ONE(__field_name__) {				\
+      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
+      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
+      error_id = anime__generation__arity__compute__aux(this, lexeme_i, lexemes_nb); \
+      if (ANIME__OK != error_id) goto label__error__sub;		\
+    };									\
+    /* LAST_LINE*/
+
+#define ARITY_COMPUTE_3(__field1__,__field2__,__field3__) {		\
+      ARITY_COMPUTE_ONE(__field1__);					\
+      ARITY_COMPUTE_ONE(__field2__);					\
+      ARITY_COMPUTE_ONE(__field3__);					\
+    };									\
+    /* LAST_LINE*/
+
+#define ARITY_COMPUTE_4(__field1__,__field2__,__field3__,__field4__) {	\
+      ARITY_COMPUTE_ONE(__field1__);					\
+      ARITY_COMPUTE_ONE(__field2__);					\
+      ARITY_COMPUTE_ONE(__field3__);					\
+      ARITY_COMPUTE_ONE(__field4__);					\
+    };									\
+    /* LAST_LINE*/
+
+#define ARITY_COMPUTE_ARRAY_ONE(__array_prefix__,__field_name__,__item_i__) {		\
+    const int_lexeme_t lexeme_i   = this -> glue3(__array_prefix__,__field_name__,__lexeme_i)  [__item_i__]; \
+    const int8_t       lexemes_nb = this -> glue3(__array_prefix__,__field_name__,__lexemes_nb)[__item_i__]; \
+    error_id = anime__generation__arity__compute__aux(this, lexeme_i, lexemes_nb); \
+    if (ANIME__OK != error_id) goto label__error__sub;			\
+  };									\
+    /* LAST_LINE*/
+
+#define ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field_name__) {	\
+    for (int8_t item_i = 0; item_i < array_size; item_i++) {		\
+      ARITY_COMPUTE_ARRAY_ONE(__array_prefix__,__field_name__,item_i);	\
+    };									\
+  };									\
+  /* LAST_LINE*/
+
+
+#define ARITY_COMPUTE_ARRAY_5(__array_prefix__,__field1__,__field2__,__field3__,__field4__,__field5__,__array_size__) {		\
+    const int8_t array_size = (__array_size__);				\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field1__);		\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field2__);		\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field3__);		\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field4__);		\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field5__);		\
+  };									\
+    /* LAST_LINE*/
+
+#define ARITY_COMPUTE_ARRAY_6(__array_prefix__,__field1__,__field2__,__field3__,__field4__,__field5__,__field6__,__array_size__) {	\
+    const int8_t array_size = (__array_size__);				\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field1__);		\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field2__);		\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field3__);		\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field4__);		\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field5__);		\
+    ARITY_COMPUTE_ARRAY_LOOP(__array_prefix__,__field6__);		\
+  };									\
+    /* LAST_LINE*/
+
+
+static int_anime_error_t anime__generation__arity__compute__aux(anime_t * this, const int_lexeme_t lexeme_i_start, const int8_t lexemes_nb) { 
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  int_anime_error_t error_id; 
+  goto label__body; 
+  
+ label__error__sub: {
+    enum { ERROR_STR_BYTESIZE = 2048 }; 
+    char error_str[ERROR_STR_BYTESIZE]; 
+    snprintf(error_str, ERROR_STR_BYTESIZE, "<%s>: " "%s[%d]: " "%s: %s" "\n", anime__filename_get(this), error_id > 0 ? LANG("Attention","Warning") : LANG("Erreur","Error"), error_id, int_anime_error__get_cstr(error_id), anime__error_cstr_get(this)); 
+    if (this -> stdlog_d > 0) {  dputs9(this -> stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", error_str, "\n"); }; 
+    return error_id; 
+  }; 
+  
+  
+ label__body: { 
+    // FRA: Le principe est simple - l'opérateur est unaire si: 
+    // FRA:  - si il est au début d'une expression (ou d'une sous-expression) 
+    // FRA:  - si, dans une liste d'opérateurs consécutifs, il n'est pas le premier 
+    // FRA:  - si il est précédé par une parenthèse 
+    // FRA: Et c'est tout. 
+    
+    for (int_lexeme_t shift_i = 0; shift_i < lexemes_nb; shift_i++) { 
+      const int_lexeme_t token_i = lexeme_i_start + shift_i; 
+      const int_anime_token_type_t token_type = this -> lexeme_stack__type[token_i]; 
+
+      const int8_t constant_value_huh = CONSTANT_VALUE_HUH(token_type); 
+      if (constant_value_huh) continue; 
+      
+      const int8_t infix_binary_operator_huh = BINARY_OPERATOR_HUH(token_type);
+      if (infix_binary_operator_huh) continue; 
+
+      const int8_t unary_or_binary_operator_huh = UNARY_AND_BINARY_OPERATOR_HUH(token_type); 
+      if (not(unary_or_binary_operator_huh)) continue; 
+
+      const int_anime_token_type_t unary_token_type  = CONVERT_TO_UNARY_TYPE(token_type); 
+      const int_anime_token_type_t binary_token_type = CONVERT_TO_BINARY_TYPE(token_type); 
+      { 
+	if (lexeme_i_start == token_i) { this -> lexeme_stack__type[token_i] = unary_token_type; continue; }
+	
+	const int_anime_token_type_t token_prec_type = this -> lexeme_stack__type[token_i-1]; 
+	
+	const int8_t openpar_huh = (int_member_huh((token_prec_type), ANIME_TOKEN_OPENPAR, ANIME_TOKEN_OPENBRACKET,ANIME_TOKEN_OPENBRACE)); 
+	if (openpar_huh) { this -> lexeme_stack__type[token_i] = unary_token_type; continue; };
+	
+	const int8_t infix_binary_operator_huh = BINARY_OPERATOR_HUH(token_prec_type);
+	if (infix_binary_operator_huh) { this -> lexeme_stack__type[token_i] = unary_token_type; continue; };
+	
+	const int8_t prefix_unary_operator_huh = UNARY_PREFIX_OPERATOR_HUH(token_prec_type);
+	if (prefix_unary_operator_huh) { this -> lexeme_stack__type[token_i] = unary_token_type; continue; };
+	
+	const int8_t unary_or_binary_operator_huh = UNARY_AND_BINARY_OPERATOR_HUH(token_prec_type); 
+	if (unary_or_binary_operator_huh) { this -> lexeme_stack__type[token_i] = unary_token_type; continue; };
+	
+	this -> lexeme_stack__type[token_i] = binary_token_type; 
+	continue; 
+      }; 
+      
+      
+    };
+    
+    return ANIME__OK; 
+  }; 
+};
+
+
+int_anime_error_t anime__generation__arity__compute(anime_t * this) { 
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  int_anime_error_t error_id; 
+  goto label__body; 
+  
+ label__error__sub: {
+    enum { ERROR_STR_BYTESIZE = 2048 }; 
+    char error_str[ERROR_STR_BYTESIZE]; 
+    snprintf(error_str, ERROR_STR_BYTESIZE, "<%s>: " "%s[%d]: " "%s: %s" "\n", anime__filename_get(this), error_id > 0 ? LANG("Attention","Warning") : LANG("Erreur","Error"), error_id, int_anime_error__get_cstr(error_id), anime__error_cstr_get(this)); 
+    if (this -> stdlog_d > 0) {  dputs9(this -> stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", error_str, "\n"); }; 
+    return error_id; 
+  }; 
+  
+  
+ label__body: { 
+    // RLE: Nous devons parcourir toutes les expressions 
+    
+    ARITY_COMPUTE_4(choc_longueur,choc_largeur,choc_hauteur,masse); 
+    ARITY_COMPUTE_3(vie,invincible,hostile); 
+    
+    ARITY_COMPUTE_ARRAY_5(actions_array_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,this -> actions_nb); 
+    ARITY_COMPUTE_ARRAY_6(events_array_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,this -> events_nb); 
+    ARITY_COMPUTE_ARRAY_5(membres_,nom,image,largeur,hauteur,angle_max_y,this -> membres_nb); 
+    ARITY_COMPUTE_ARRAY_5(racines_,qui,x,y,z,angle_y,this -> racines_nb); 
+    
+    return ANIME__OK; 
+  }; 
+}; 
+
+
+
+// ******************************************** 
+// FIELD VALUES - EXPR - VALUE COMPUTATION 
 
 static int_anime_error_t anime__generation__convert_infix_to_postfix(const anime_t * this, const int_lexeme_t lexeme_i, const int8_t lexeme_len, int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_itemsize, int8_t * postfix_buffer_nb_r); 
 static int_anime_error_t anime__generation__eval_postfix_float(anime_t * this, const int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_nb, float * floatval_r, const int stduser_d, const int stdlog_d); 
+static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, const int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_nb, float * floatval_r, int16_t * int16val_r, int8_t * boolval_r, const int stduser_d, const int stdlog_d); 
 
+#define INFIX_BUFFER_PRINT(infix_buffer,infix_buffer_nb) {		\
+    dputs3(STDERR_FILENO, "infix_buffer[", int_string(infix_buffer_nb),"] = {" "\n"); \
+    for (int i = 0; i < infix_buffer_nb; i++) {				\
+      dputs_array(STDERR_FILENO, "\t" "[", int_string(i), "] = ", int_string(infix_buffer[i]), "\n"); \
+    };									\
+    dputs(STDERR_FILENO, "};" "\n");					\
+  };									\
+  /* END OF MACRO */
 
+#define POSTFIX_BUFFER_PRINT(postfix_buffer,postfix_buffer_nb) {	\
+    dputs3(STDERR_FILENO, "postfix_buffer[", int_string(postfix_buffer_nb),"] = {" "\n"); \
+    for (int i = 0; i < postfix_buffer_nb; i++) {			\
+      dputs_array(STDERR_FILENO, "\t" "[", int_string(i), "] = ", int_string(postfix_buffer[i]), "\n"); \
+    };									\
+    dputs(STDERR_FILENO, "};" "\n");					\
+  };									\
+  /* END OF MACRO */
 
-#define READ_LALR_FLOAT(lexeme_i, lexeme_len) {						\
+#define CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__)		\
   int_lexeme_t postfix_buffer[ANIME__LONGEST_INFIX_EXPRESSION];		\
-  int8_t postfix_buffer_nb;						\
-  error_id = anime__generation__convert_infix_to_postfix(this, lexeme_i, lexeme_len, postfix_buffer, ANIME__LONGEST_INFIX_EXPRESSION, &postfix_buffer_nb); \
+  int8_t       postfix_buffer_nb;					\
+  error_id = anime__generation__convert_infix_to_postfix(this, __lexeme_i__, __lexemes_nb__, postfix_buffer, ANIME__LONGEST_INFIX_EXPRESSION, &postfix_buffer_nb); \
   if (ANIME__OK != error_id) goto label__error__infix_to_postfix_failed; \
-  error_id = anime__generation__eval_postfix_float(this, postfix_buffer, postfix_buffer_nb, &floatval, /*stduser_d*/-1, this -> stdlog_d); \
-  if (ANIME__OK != error_id) goto label__error__error_in_postfix_computation; \
+  /* END OF MACRO */
+
+#define READ_LALR_FLOAT(__lexeme_i__, __lexemes_nb__) {			\
+    CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
+    error_id = anime__generation__eval_postfix_float(this, postfix_buffer, postfix_buffer_nb, &floatval, /*stduser_d*/-1, this -> stdlog_d); \
+    if (ANIME__OK != error_id) goto label__error__error_in_postfix_computation; \
+  };									\
+  /* END OF MACRO */
+
+#define READ_LALR_INT(__lexeme_i__, __lexemes_nb__) {			\
+    CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
+    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/NULL, /*int16val_r*/&intval, /*boolval_r*/NULL, /*stduser_d*/-1, this -> stdlog_d); \
+    if (ANIME__OK != error_id) goto label__error__error_in_postfix_computation; \
+  };									\
+  /* END OF MACRO */
+
+#define READ_LALR_BOOL(__lexeme_i__, __lexemes_nb__) {			\
+    CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
+    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/NULL, /*int16val_r*/NULL, /*boolval_r*/&boolval, /*stduser_d*/-1, this -> stdlog_d); \
+    if (ANIME__OK != error_id) goto label__error__error_in_postfix_computation; \
+  };									\
+  /* END OF MACRO */
+
+#define READ_LALR_VALUE(__lexeme_i__, __lexemes_nb__) {			\
+    CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
+    /* POSTFIX_BUFFER_PRINT(postfix_buffer,postfix_buffer_nb);	*/	\
+    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/&floatval, /*int16val_r*/&intval, /*boolval_r*/&boolval, /*stduser_d*/-1, this -> stdlog_d); \
+    if (ANIME__OK != error_id) goto label__error__error_in_postfix_computation; \
   };									\
   /* END OF MACRO */
 
 
 
-int_anime_error_t anime__generation__field_values(anime_t * this) { 
-  float floatval; 
+int_anime_error_t anime__generation__field_values__compute(anime_t * this) { 
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  float   floatval; 
+  int16_t   intval; 
+  int8_t   boolval; 
   int_anime_error_t error_id; 
-  goto label__body;
-
- label__body: {   
-    const int_lexeme_t lexeme_i = this -> masse__lexeme_i; 
-    const int8_t lexeme_len = this -> masse__lexeme_len;
-    if (0 > lexeme_i) assert(false); 
-    READ_LALR_FLOAT(lexeme_i, lexeme_len); 
-    this -> masse = floatval; 
-    
-
-
-
-
-
-
-    return ANIME__OK; 
-  };
+  goto label__body; 
 
  label__error__infix_to_postfix_failed: {
     return error_id; 
@@ -115,6 +314,108 @@ int_anime_error_t anime__generation__field_values(anime_t * this) {
  label__error__error_in_postfix_computation: { 
     return this -> error_id; 
   }; 
+
+ label__error__token_id_is_negative: {
+    //dputs(2, "ANIME__FIELD_VALUE__TOKEN_ID_NEG ="); dputn(2, ANIME__FIELD_VALUE__TOKEN_ID_NEG); dput_eol(2); 
+    return ANIME__FIELD_VALUE__TOKEN_ID_NEG; 
+  }; 
+
+ label__error__token_id_is_out_of_bound: { 
+    //dputs(2, "ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND ="); dputn(2, ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); dput_eol(2); 
+    return ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND; 
+  }; 
+
+ label__body: { 
+    const int_lexeme_t lexeme_stack__nb = this -> lexeme_stack__nb; 
+#if 0 
+    const int_lexeme_t lexeme_i   = this -> masse__lexeme_i; 
+    const int8_t       lexemes_nb = this -> masse__lexemes_nb;
+    if (0 > lexeme_i) goto label__error__token_id_is_negative; 
+    READ_LALR_FLOAT(lexeme_i, lexemes_nb); 
+    this -> masse = floatval; 
+#endif 
+    
+#define COMPUTE_FLOAT(__field_name__) {					\
+      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
+      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
+      if (0                >  lexeme_i             ) goto label__error__token_id_is_negative; \
+      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) goto label__error__token_id_is_out_of_bound; \
+      READ_LALR_FLOAT(lexeme_i, lexemes_nb);				\
+      this -> __field_name__ = floatval;				\
+    }; 
+    
+#define COMPUTE_INT(__field_name__) {					\
+      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
+      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
+      if (0                >  lexeme_i             ) goto label__error__token_id_is_negative; \
+      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) goto label__error__token_id_is_out_of_bound; \
+      READ_LALR_INT(lexeme_i, lexemes_nb);				\
+      this -> __field_name__ = intval;					\
+    }; 
+    
+#define COMPUTE_BOOL(__field_name__) {					\
+      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
+      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
+      if (0                >  lexeme_i             ) goto label__error__token_id_is_negative; \
+      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) goto label__error__token_id_is_out_of_bound; \
+      READ_LALR_BOOL(lexeme_i, lexemes_nb);				\
+      this -> __field_name__ = boolval;					\
+    }; 
+
+#define COMPUTE_ARRAY_ITEM(__field_name__,__item_i__,__type_val__) {	\
+      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i  )[__item_i__]; \
+      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb)[__item_i__]; \
+      if (0                >  lexeme_i             ) goto label__error__token_id_is_negative; \
+      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) goto label__error__token_id_is_out_of_bound; \
+      READ_LALR_VALUE(lexeme_i, lexemes_nb);				\
+      this -> __field_name__[__item_i__] = __type_val__;		\
+  };									\
+  /* END OF MACRO */
+    
+    COMPUTE_FLOAT(choc_longueur);
+    COMPUTE_FLOAT(choc_largeur);
+    COMPUTE_FLOAT(choc_hauteur);
+    COMPUTE_FLOAT(masse); 
+    COMPUTE_INT(vie); 
+    COMPUTE_BOOL(invincible); 
+    COMPUTE_BOOL(hostile); 
+
+#if 0
+  float              membres_largeur    [ANIME_MEMBRES_SIZE]; 
+  float              membres_hauteur    [ANIME_MEMBRES_SIZE]; 
+  float              membres_angle_max_y[ANIME_MEMBRES_SIZE]; 
+
+    for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) DO_ARRAY_ITEM(actions_array_nom,action_i);
+    for (int8_t  event_i = 0;  event_i < this ->  events_nb;  event_i++) DO_ARRAY_ITEM( events_array_nom,event_i);
+    for (int8_t membre_i = 0; membre_i < this -> membres_nb; membre_i++) DO_ARRAY_ITEM(membres_nom,membre_i);
+    for (int8_t racine_i = 0; racine_i < this -> racines_nb; racine_i++) DO_ARRAY_ITEM(racines_qui,racine_i);  
+#endif 
+
+    //anime__syntax__print(this, STDERR_FILENO);  
+
+#if 1
+    for (int8_t membre_i = 0; membre_i < this -> membres_nb; membre_i++) { 
+      COMPUTE_ARRAY_ITEM(membres_largeur,membre_i,floatval);
+      COMPUTE_ARRAY_ITEM(membres_hauteur,membre_i,floatval);
+      //dputs(STDERR_FILENO, "membre_i: "); dputn(STDERR_FILENO, membre_i); dput_eol(STDERR_FILENO); 
+      COMPUTE_ARRAY_ITEM(membres_angle_max_y,membre_i,floatval);
+    };
+#endif
+
+    for (int8_t racine_i = 0; racine_i < this -> racines_nb; racine_i++) { 
+      COMPUTE_ARRAY_ITEM(racines_x,racine_i,floatval);
+      COMPUTE_ARRAY_ITEM(racines_y,racine_i,floatval);
+      COMPUTE_ARRAY_ITEM(racines_z,racine_i,floatval);
+      COMPUTE_ARRAY_ITEM(racines_angle_y,racine_i,floatval);
+    };
+    
+#undef COMPUTE_ARRAY_ITEM
+#undef COMPUTE_BOOL
+#undef COMPUTE_INT
+#undef COMPUTE_FLOAT
+    
+    return ANIME__OK; 
+  };
 }; 
 
 
@@ -162,6 +463,8 @@ int_anime_error_t anime__generation__field_values(anime_t * this) {
 
 
 
+// ********************************************
+// EVAL POSTFIX EXPR 
 
  
 enum { EXPR_STACK_SIZE = ANIME__EXPRESSION_NESTEDNESS_MAX }; 
@@ -214,10 +517,11 @@ enum { EXPR_STACK_SIZE = ANIME__EXPRESSION_NESTEDNESS_MAX };
 
 
 static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, const int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_nb, float * floatval_r, int16_t * int16val_r, int8_t * boolval_r, const int stduser_d, const int stdlog_d) { 
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
   int_anime_error_t * error_id_r = &this -> error_id; const uint16_t error_size = this -> error_size; char * error_str = this -> error_str; 
-  if (NULL == error_id_r) { return ANIME__DATA_GENERATION__NULL_ERROR_ID_R; }; 
+  if (NULL == error_id_r) { return        ANIME__DATA_GENERATION__NULL_ERROR_ID_R; }; 
   if (1     > error_size) { *error_id_r = ANIME__DATA_GENERATION__ERROR_SIZE_LOWER_THAN_1; return *error_id_r; }; 
-  if (NULL ==       this) { *error_id_r = ANIME__DATA_GENERATION__NULL_SYNTAX_FILTERING; snprintf(error_str, error_size, "syntax_filtering argument is null."); return *error_id_r; }; 
+  //if (NULL ==       this) { *error_id_r = ANIME__DATA_GENERATION__NULL_SYNTAX_FILTERING; snprintf(error_str, error_size, "syntax_filtering argument is null."); return *error_id_r; }; 
   //if (NULL ==  token_env) { *error_id_r = ANIME__DATA_GENERATION__NULL_TOKEN_ENV       ; snprintf(error_str, error_size, "token_env argument is null."); return *error_id_r; }; 
   //if (NULL == floatval_r) { *error_id_r = ANIME__DATA_GENERATION__NULL_FLOATVAL_R      ; snprintf(error_str, error_size, "floatval_r argument is null."); return *error_id_r; }; 
   
@@ -233,7 +537,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
   int_lexeme_t token_i; 
   int_anime_token_type_t token_type; 
     
-
+  
   
   float   stack__float[EXPR_STACK_SIZE]; 
   int16_t stack__int16[EXPR_STACK_SIZE]; 
@@ -243,7 +547,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
   int     stack__bool_nb; 
   stack__float_nb = 0; 
   stack__int16_nb = 0; 
-  stack__bool_nb = 0; 
+  stack__bool_nb  = 0; 
   
   int8_t postfix_buffer_i; 
   goto label__body; 
@@ -255,56 +559,100 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
   for (;;) { 
     postfix_buffer_i++; 
     if (postfix_buffer_nb <= postfix_buffer_i) goto label__eof_reached; 
-    token_i = postfix_buffer[postfix_buffer_i]; 
+    token_i    = postfix_buffer[postfix_buffer_i]; 
     token_type = this -> lexeme_stack__type[token_i]; 
-
+    
     switch (token_type) { 
     case ANIME_TOKEN_TRUE: { 
+      label__token_true: 
       PUSH_FLOAT_STACK(1.0f / 0.0f); 
       PUSH_INT16_STACK(INT16_MAX); 
       PUSH_BOOL_STACK(true); 
       continue; 
     };
-
+      
     case ANIME_TOKEN_FALSE: { 
+      label__token_false:
       PUSH_FLOAT_STACK(0); 
       PUSH_INT16_STACK(0); 
       PUSH_BOOL_STACK(false); 
       continue; 
+    }; 
+      
+    case ANIME_TOKEN_IDENT: { 
+      const char * lexeme_value = this -> lexeme_value_stack + this -> lexeme_stack__value[token_i]; 
+      if (0 == strcasecmp("vrai" , lexeme_value)) goto label__token_true; 
+      if (0 == strcasecmp("oui"  , lexeme_value)) goto label__token_true; 
+      if (0 == strcasecmp("true" , lexeme_value)) goto label__token_true; 
+      if (0 == strcasecmp("yes"  , lexeme_value)) goto label__token_true; 
+      if (0 == strcasecmp("faux" , lexeme_value)) goto label__token_false; 
+      if (0 == strcasecmp("non"  , lexeme_value)) goto label__token_false; 
+      if (0 == strcasecmp("false", lexeme_value)) goto label__token_false; 
+      if (0 == strcasecmp("no"   , lexeme_value)) goto label__token_false; 
+      if (0 == strcasecmp("longueur", lexeme_value)) { 
+	PUSH_FLOAT_STACK(this -> choc_longueur); 
+	PUSH_INT16_STACK(this -> choc_longueur); 
+	PUSH_BOOL_STACK(0 != this -> choc_longueur); 
+	continue; 
+      }; 
+      goto error_label__unexpected_token; 
+      continue; 
+    }; 
+
+    case ANIME_TOKEN_STRING_C: {			
+      const char * lexeme_value = this -> lexeme_value_stack + this -> lexeme_stack__value[token_i]; 
+      char filtered_str[ANIME_LINE_LEN_MAX];				
+      convert_quoted_encoded_string_to_regular_string(lexeme_value, filtered_str, sizeof(filtered_str)); 
+      if (0 == strcasecmp("vrai" , filtered_str)) goto label__token_true; 
+      if (0 == strcasecmp("oui"  , filtered_str)) goto label__token_true; 
+      if (0 == strcasecmp("true" , filtered_str)) goto label__token_true; 
+      if (0 == strcasecmp("yes"  , filtered_str)) goto label__token_true; 
+      if (0 == strcasecmp("faux" , filtered_str)) goto label__token_false; 
+      if (0 == strcasecmp("non"  , filtered_str)) goto label__token_false; 
+      if (0 == strcasecmp("false", filtered_str)) goto label__token_false; 
+      if (0 == strcasecmp("no"   , filtered_str)) goto label__token_false; 
+      goto error_label__unexpected_token; 
+      continue; 
     };
 
+      
     case ANIME_TOKEN_ENTIER: 
     case ANIME_TOKEN_REEL__VIRG: 
     case ANIME_TOKEN_REEL__DOT: 
     case ANIME_TOKEN_REEL__E: { 
+      //dputs3(STDERR_FILENO, "AVANT - stack__float_nb: ", int_string(stack__float_nb), "\n"); 
       const char * token_value = this -> lexeme_value_stack + this -> lexeme_stack__value[token_i]; 
       PUSH_FLOAT_STACK(atof(token_value)); 
       PUSH_INT16_STACK(atoi(token_value)); 
       PUSH_BOOL_STACK(0 == atoi(token_value) ? false : true); 
+      //dputs3(STDERR_FILENO, "APRES - stack__float_nb: ", int_string(stack__float_nb), "\n"); 
       continue; 
     }; 
       
     case ANIME_TOKEN_IPLUS_UNAIRE: 
-    case ANIME_TOKEN_RPLUS_UNAIRE: continue; 
-
+    case ANIME_TOKEN_RPLUS_UNAIRE: 
+      continue; 
+      
     case ANIME_TOKEN_IMOINS_UNAIRE: 
     case ANIME_TOKEN_RMOINS_UNAIRE: { 
+      //dputs3(STDERR_FILENO, "RMOINS - AVANT - stack__float_nb: ", int_string(stack__float_nb), "\n"); 
       UNARY_OPERATOR_FLOAT_STACK(-stack_top);
       UNARY_OPERATOR_INT16_STACK(-stack_top);
       UNARY_OPERATOR_BOOL_STACK(stack_top);
+      //dputs3(STDERR_FILENO, "RMOINS - APRES - stack__float_nb: ", int_string(stack__float_nb), "\n"); 
       continue; 
     }; 
       
-    case ANIME_TOKEN_IPLUS: 
-    case ANIME_TOKEN_RPLUS: { 
+    case ANIME_TOKEN_IPLUS_BINAIRE: 
+    case ANIME_TOKEN_RPLUS_BINAIRE: { 
       BINARY_OPERATOR_FLOAT_STACK(op_left + op_right); 
       BINARY_OPERATOR_INT16_STACK(op_left + op_right); 
       BINARY_OPERATOR_BOOL_STACK(op_left || op_right); 
       continue; 
     }; 
       
-    case ANIME_TOKEN_IMOINS: 
-    case ANIME_TOKEN_RMOINS: { 
+    case ANIME_TOKEN_IMOINS_BINAIRE: 
+    case ANIME_TOKEN_RMOINS_BINAIRE: { 
       BINARY_OPERATOR_FLOAT_STACK(op_left - op_right); 
       BINARY_OPERATOR_INT16_STACK(op_left - op_right); 
       BINARY_OPERATOR_BOOL_STACK(op_left || op_right); 
@@ -330,7 +678,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
     }; 
     /* NOT REACHED */ assert(false); 
   };
-    /* NOT REACHED */ assert(false); 
+  /* NOT REACHED */ assert(false); 
   };
 
 
@@ -382,8 +730,8 @@ label__eof_reached: {
  
  error_label__unexpected_token: { 
     *error_id_r = ANIME__DATA_GENERATION__STACK_UNEXPECTED_TOKEN; 
-    strlcpy(error__msg, "[Float stack]: Stack underflow", sizeof(error__msg)); 
-    snprintf(error__msg, sizeof(error__msg), "[Float stack]: Unexpected token %s", anime_token__type_get_cstr(token_type)); 
+    const char * token_value = this -> lexeme_value_stack + this -> lexeme_stack__value[token_i]; 
+    snprintf(error__msg, sizeof(error__msg), "[Float stack]: Unexpected token %s [%s]", anime_token__type_get_cstr(token_type), token_value); 
     ERROR_MESSAGE_PRINT(); 
     return *error_id_r; 
   }; 

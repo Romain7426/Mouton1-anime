@@ -1,3 +1,7 @@
+
+FRANCAIS: [README.fra.md](README.fra.md)
+GLOBISH: [README.eng.md](README.eng.md)
+
 # Mouton1-anime
  
 *Mouton1-anime* is a sub-project of [*Mouton1*](https://github.com/Romain7426/Mouton1). 
@@ -13,8 +17,9 @@
 ## Compiling & Installing 
 
 <pre>
-$ echo "clang" > ./CC        # Or your favorite compiler. 
-$ sh ./configure.sh          # First generate tools, and then the Makefile. 
+$ echo "tcc" > ./CC          # Or your favorite compiler (tcc is our development compiler). 
+$ echo "gmake" > ./GMAKE     # GNU-Make is required. 
+$ sh ./configure.sh          # First it generate tools, and then it generates the Makefile. 
 $ make 
 $ make install 
 </pre>

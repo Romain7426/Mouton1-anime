@@ -20,6 +20,8 @@ enum {
   PROGRAM_OPTIONS_INDEX__DUMP, 
   PROGRAM_OPTIONS_INDEX__RESTORE, 
   PROGRAM_OPTIONS_INDEX__LIMITS, 
+  PROGRAM_OPTIONS_INDEX__LANG, 
+  PROGRAM_OPTIONS_INDEX__HELP_SRC, 
   PROGRAM_OPTIONS_INDEX__COUNT, 
 }; 
  
@@ -32,6 +34,7 @@ static       int     program_options__plain__nb = 0;
 //static const char *  program_options__value[PROGRAM_OPTIONS__ARGC_MAX] = {}; 
 static const char *  program_options__stdlog_new_output = NULL; 
 static const char *  program_options__stduser_new_output = NULL; 
+static const char *  program_options__lang = NULL; 
 
 static void program_options__unknown__push(const int argc) { 
   assert(program_options__unknown__nb < PROGRAM_OPTIONS__ARGC_MAX); 
@@ -101,6 +104,7 @@ static int program_options__parse(const int argc, const char * argv[]) {
     s++;
     if (0 == strcasecmp(s, "help"                   )) { program_options[PROGRAM_OPTIONS_INDEX__HELP                   ]++; continue; }; 
     if (0 == strcasecmp(s, "usage"                  )) { program_options[PROGRAM_OPTIONS_INDEX__HELP                   ]++; continue; }; 
+    if (0 == strcasecmp(s, "help-src"               )) { program_options[PROGRAM_OPTIONS_INDEX__HELP_SRC               ]++; continue; }; 
     if (0 == strcasecmp(s, "copyright"              )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT              ]++; continue; }; 
     if (0 == strcasecmp(s, "copyright-cstr"         )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CSTR         ]++; continue; }; 
     if (0 == strcasecmp(s, "copyright-c-str"        )) { program_options[PROGRAM_OPTIONS_INDEX__COPYRIGHT_CSTR         ]++; continue; }; 
@@ -127,7 +131,7 @@ static int program_options__parse(const int argc, const char * argv[]) {
       if (*p == NULL) return false; 
 #if 1 
       program_options__stdlog_new_output = *p; 
- #else 
+#else 
       program_options__value__set(i, *p); 
 #endif 
       i++; 
@@ -137,6 +141,13 @@ static int program_options__parse(const int argc, const char * argv[]) {
       p++; 
       if (*p == NULL) return false; 
       program_options__stduser_new_output = *p; 
+      i++; 
+      continue; 
+    };
+    if (0 == strcasecmp(s, "lang"                )) { program_options[PROGRAM_OPTIONS_INDEX__LANG                      ]++; 
+      p++; 
+      if (*p == NULL) return false; 
+      program_options__lang = *p; 
       i++; 
       continue; 
     };
@@ -176,7 +187,15 @@ static void main__usage(const int argc, const char * argv[], const int stduser_d
   dputs(stduser_d, "  " "--dump                             " "  \t  " "Dump the datacode" "\n"); 
   dputs(stduser_d, "  " "--restore                          " "  \t  " "Input file is datacode" "\n"); 
   dputs(stduser_d, "  " "--limits,--limites                 " "  \t  " "Print program limitations" "\n"); 
+  dputs(stduser_d, "  " "--lang <lang>                      " "  \t  " "Change la langue du programme" "\n"); 
+  dputs(stduser_d, "  " "--help-src                         " "  \t  " "Décrit la structure et l'architecture du programme source" "\n"); 
 }; 
+
+static void main__help_src(const int argc, const char * argv[], const int stduser_d) { 
+  dputs_array(stduser_d, "[ ", argv[0], "] -- ", "LIB ANIME" "\n"); 
+  dputs_array(stduser_d, "Le code source du programme est ainsi structuré: " "\n"); 
+  dputs_array(stduser_d, "AGENDA TOTO XXX FIXME" "\n"); 
+};
 
 static int program_options__run(const int argc, const char * argv[], const int stdprint_d, const int stduser_d, const int stdlog_d) { 
   if (0 != program_options__unknown__nb) { 
@@ -190,6 +209,11 @@ static int program_options__run(const int argc, const char * argv[], const int s
     }; 
     return ANIME__MAIN__OPTIONS__UNKNOWN; 
   }; 
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__HELP_SRC]) { 
+    main__help_src(argc, argv, stduser_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  };
   
   if (0 != program_options[PROGRAM_OPTIONS_INDEX__HELP]) { 
     main__usage(argc, argv, stduser_d); 

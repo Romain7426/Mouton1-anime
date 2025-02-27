@@ -38,7 +38,7 @@ static int_anime_error_t anime__post_syntax__consistency_check_aux(const anime_t
     if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: Warning: " "%s" "\n", __func__, error_str); }; 
   };
 
-  int breaking_inconsistencies = 0; 
+  int     breaking_inconsistencies = 0; 
   int non_breaking_inconsistencies = 0; 
   
   for (int i = 0; i < this -> membres_nb; i++) { 

@@ -15,18 +15,6 @@
 	operator_stack_nb++;						\
       };								\
       /* END OF MACRO */ 
-      
-#define CONSTANT_VALUE_HUH(token_type) (int_member_huh((token_type), ANIME_TOKEN_TRUE, ANIME_TOKEN_FALSE, ANIME_TOKEN_ENTIER, ANIME_TOKEN_REEL__VIRG, ANIME_TOKEN_REEL__DOT, ANIME_TOKEN_REEL__E, ANIME_TOKEN_CHAINE_C, ANIME_TOKEN_CHAINE_P, ANIME_TOKEN_NIL, ANIME_TOKEN_NULL_PTR, ANIME_TOKEN_IDENT))
-
-#define UNARY_PREFIX_OPERATOR_HUH(token_type) (int_member_huh((token_type), ANIME_TOKEN_LOGICAL_NOT, ANIME_TOKEN_IPLUS, ANIME_TOKEN_IMOINS, ANIME_TOKEN_RPLUS, ANIME_TOKEN_RMOINS))
-
-#define UNARY_POSTFIX_OPERATOR_HUH(token_type) (int_member_huh((token_type), ANIME_TOKEN_INC, ANIME_TOKEN_DEC))
-
-#define UNARY_OUTFIX_OPERATOR_HUH__OPEN(token_type) (int_member_huh((token_type), ANIME_TOKEN_OPENPAR, ANIME_TOKEN_OPENBRACKET))
-
-#define UNARY_OUTFIX_OPERATOR_HUH__CLOSE(token_type) (int_member_huh((token_type), ANIME_TOKEN_CLOSEPAR, ANIME_TOKEN_CLOSEBRACKET))
-
-#define BINARY_OPERATOR_HUH(token_type) (int_member_huh((token_type), ANIME_TOKEN_AFFECTATION, ANIME_TOKEN_AFFECTATION_SIMPLE, ANIME_TOKEN_AFFECTATION_IADD, ANIME_TOKEN_AFFECTATION_RADD, ANIME_TOKEN_AFFECTATION_ISUB, ANIME_TOKEN_AFFECTATION_RSUB, ANIME_TOKEN_AFFECTATION_IMULT, ANIME_TOKEN_AFFECTATION_RMULT, ANIME_TOKEN_AFFECTATION_IDIV, ANIME_TOKEN_AFFECTATION_RDIV, ANIME_TOKEN_AFFECTATION_IMOD, ANIME_TOKEN_AFFECTATION_L_AND, ANIME_TOKEN_AFFECTATION_L_OR, ANIME_TOKEN_AFFECTATION_L_XOR, ANIME_TOKEN_AFFECTATION_B_AND, ANIME_TOKEN_AFFECTATION_B_OR, ANIME_TOKEN_AFFECTATION_B_XOR, ANIME_TOKEN_AFFECTATION_B_RSHIFT, ANIME_TOKEN_AFFECTATION_B_LSHIFT, ANIME_TOKEN_LOGICAL_OR, ANIME_TOKEN_LOGICAL_AND, ANIME_TOKEN_LOGICAL_XOR, ANIME_TOKEN_BITWISE_OR, ANIME_TOKEN_BITWISE_AND, ANIME_TOKEN_BITWISE_XOR, ANIME_TOKEN_BITWISE_SHIFT_LEFT, ANIME_TOKEN_BITWISE_SHIFT_RIGHT, ANIME_TOKEN_EQUAL, ANIME_TOKEN_DIFF, ANIME_TOKEN_INF, ANIME_TOKEN_SUP, ANIME_TOKEN_INFEQ, ANIME_TOKEN_SUPEQ, ANIME_TOKEN_IPLUS, ANIME_TOKEN_RPLUS, ANIME_TOKEN_IMINUS, ANIME_TOKEN_RMINUS, ANIME_TOKEN_IMULT, ANIME_TOKEN_RMULT, ANIME_TOKEN_IDIV, ANIME_TOKEN_RDIV, ANIME_TOKEN_IMOD, ANIME_TOKEN_POINT, ANIME_TOKEN_FLECHE))
 
 
 // RL: Cette fonction ne vérifie pas si la syntaxe de l’expression infixe est correcte. 
@@ -53,18 +41,18 @@
 // RL: Notons que pour la reconnaissance de la syntaxe, il serait possible de s’arrêter en amont si chaque règle soit distincte au bout de 'k' caractères. 
 
 enum { ANIME__SYNTAX__LONGEST = 3 }; 
-#define ANIME__SYNTAX_TYPE__LIST				\
-  X(ANIME__SYNTAX_TYPE__NULL, = 0)				\
-    X(ANIME__SYNTAX_TYPE__ZEROARY_CONST,)			\
-    X(ANIME__SYNTAX_TYPE__UNARY_PREFIX,)			\
-    X(ANIME__SYNTAX_TYPE__UNARY_POSTFIX,)			\
-    X(ANIME__SYNTAX_TYPE__UNARY_OUTFIX,)			\
-    X(ANIME__SYNTAX_TYPE__BINARY_INFIX,)			\
-    X(ANIME__SYNTAX_TYPE__ERROR__GENERIC, = INT8_MIN)		\
-    X(ANIME__SYNTAX_TYPE__ERROR__LEXEMES_NULL,)			\
-    X(ANIME__SYNTAX_TYPE__ERROR__LEXEMES_EMPTY,)		\
-    X(ANIME__SYNTAX_TYPE__ERROR__NOT_ENOUGH_LEXEMES,)		\
-    X(ANIME__SYNTAX_TYPE__ERROR__DOES_NOT_MATCH_ANYTHING,)		\
+#define ANIME__SYNTAX_TYPE__LIST					\
+  X(ANIME__SYNTAX_TYPE__NULL, = 0)					\
+    X(ANIME__SYNTAX_TYPE__ZEROARY_CONST,)				\
+    X(ANIME__SYNTAX_TYPE__UNARY_PREFIX,)				\
+    X(ANIME__SYNTAX_TYPE__UNARY_POSTFIX,)				\
+    X(ANIME__SYNTAX_TYPE__UNARY_OUTFIX,)				\
+    X(ANIME__SYNTAX_TYPE__BINARY_INFIX,)				\
+    X(ANIME__SYNTAX_TYPE__ERROR__GENERIC, = INT8_MIN)			\
+    X(ANIME__SYNTAX_TYPE__ERROR__LEXEMES_NULL,)				\
+    X(ANIME__SYNTAX_TYPE__ERROR__LEXEMES_EMPTY,)			\
+    X(ANIME__SYNTAX_TYPE__ERROR__NOT_ENOUGH_LEXEMES,)			\
+  X(ANIME__SYNTAX_TYPE__ERROR__DOES_NOT_MATCH_ANYTHING,)		\
   /* LAST_LINE*/
 
 #define ANIME__SYNTAX_TYPE__H
@@ -142,13 +130,15 @@ static int_anime_syntax_type_t anime__generation__syntax_match(const anime_t * t
 
 
 
-// RL: La logique de cette fonction est aisée — elle réduit dès que elle peut:  
+// RL: La logique de cette fonction est aisée — celle-ci réduit dès que elle peut:  
 //      -- Elle réduit les constantes. 
 //      -- Elle réduit les expressions postfixes. 
-//      -- Ensuite, elle ne réduit pas, mais elle met en attente; 
+//      -- Ensuite, elle ne réduit pas, mais elle met en attente. 
 //         Elle attend quoi? De trouver un opérateur dont la priorité soit plus faible (voire égale) que la priorité de l’opérateur précédent, 
 //         et alors elle réduit l’opérateur précédent. 
 static int_anime_error_t anime__generation__convert_infix_to_postfix(const anime_t * this, const int_lexeme_t lexeme_i_start, const int8_t lexeme_len, int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_itemsize, int8_t * postfix_buffer_nb_r) { 
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  int_anime_error_t error_id; 
   assert(NULL != postfix_buffer_nb_r); 
   assert(0 <= lexeme_i_start); 
   assert(0 <= lexeme_len); 
@@ -175,6 +165,26 @@ static int_anime_error_t anime__generation__convert_infix_to_postfix(const anime
     //infix_buffer_nb = 0; 
     lexeme_i = 0;
     
+#if 0
+#define INFIX_BUFFER_PRINT(infix_buffer,infix_buffer_nb) {		\
+    dputs3(STDERR_FILENO, "infix_buffer[", int_string(infix_buffer_nb),"] = {" "\n"); \
+    for (int i = 0; i < infix_buffer_nb; i++) {				\
+      dputs_array(STDERR_FILENO, "\t" "[", int_string(i), "] = ", int_string(infix_buffer[i]), "\n"); \
+    };									\
+    dputs(STDERR_FILENO, "};" "\n");					\
+  };									\
+  /* END OF MACRO */
+#endif 
+
+#if 0
+    {
+      for (int i = 0; i < lexeme_len; i++) { 
+	const int_lexeme_t token_i = i + lexeme_i_start; 
+	const int_anime_token_type_t token_type = this -> lexeme_stack__type[token_i]; 
+	dputs_array(STDERR_FILENO, "\t" "[", int_string(i), "] = ", int_string(lexeme_i_start + i), " - type = ", int_anime_token_type__get_cstr(token_type), "\n"); 
+      };
+    };
+#endif 
     
     for (;;) { 
       //if (infix_buffer_itemsize <= infix_buffer_nb) goto label__eof_reached; 
@@ -185,30 +195,52 @@ static int_anime_error_t anime__generation__convert_infix_to_postfix(const anime
       const int8_t constant_value_huh = CONSTANT_VALUE_HUH(token_type); 
       if (constant_value_huh) { PUSH_POSTFIX(token_i); lexeme_i++; continue; }; 
       
-      const int infix_binary_operator_huh = BINARY_OPERATOR_HUH(token_type);
-      if (not(infix_binary_operator_huh)) goto label__error__not_an_operator; 
+      const int8_t infix_binary_operator_huh = BINARY_OPERATOR_HUH(token_type);
+      if (infix_binary_operator_huh) { 
+	// RL: Y a-t-il un opérateur précédent? 
+	if (0 == operator_stack_nb) { PUSH_OPERATOR(token_i,token_type); lexeme_i++; continue; }; 
+	
+	const int_anime_token_type_t top_type = operator_stack_type[operator_stack_nb-1]; 
+	
+	if (top_type >= token_type) { 
+	  operator_stack_nb--; 
+	  PUSH_POSTFIX(operator_stack_id[operator_stack_nb]); 
+	  //PUSH_OPERATOR(token_i,token_type); 
+	  //lexeme_i++; 
+	  continue; 
+	};
       
-      // RL: Y a-t-il un opérateur précédent? 
-      if (0 == operator_stack_nb) { PUSH_OPERATOR(token_i,token_type); lexeme_i++; continue; }; 
-      
-      const int_anime_token_type_t top_type = operator_stack_type[operator_stack_nb-1]; 
 
-      if (top_type >= token_type) { 
-	operator_stack_nb--; 
-	PUSH_POSTFIX(operator_stack_id[operator_stack_nb]); 
-	//PUSH_OPERATOR(token_i,token_type); 
-	//lexeme_i++; 
+	if (top_type < token_type) { PUSH_OPERATOR(token_i,token_type); lexeme_i++; continue; }; 
+	
+	/* NOT REACHED */ assert(false); 
+      };
+      
+      
+      const int8_t prefix_unary_operator_huh = UNARY_PREFIX_OPERATOR_HUH(token_type);
+      if (prefix_unary_operator_huh) { 
+	PUSH_OPERATOR(token_i,token_type); 
+	lexeme_i++; 
 	continue; 
       };
       
-      if (top_type < token_type) { PUSH_OPERATOR(token_i,token_type); lexeme_i++; continue; }; 
+      
+      const int8_t openpar_huh = UNARY_OUTFIX_OPERATOR_HUH__OPEN(token_type); 
+      if (openpar_huh) { assert(false); };
+      
+      
+      const int8_t unary_or_binary_operator_huh = UNARY_AND_BINARY_OPERATOR_HUH(token_type); 
+      if (unary_or_binary_operator_huh) { assert(false); }; 
+      
+      
 
+      goto label__error__not_an_operator; 
       /* NOT REACHED */ assert(false); 
     }; 
     /* NOT REACHED */ assert(false); 
   };
 
-label__eof_reached: { 
+ label__eof_reached: { 
     for (;;) { 
       if (0 == operator_stack_nb) break; 
       operator_stack_nb--; 
@@ -226,8 +258,14 @@ label__eof_reached: {
     return ANIME__ERROR_GENERIC; 
   };
 
-  label__error__not_an_operator: { 
-    return ANIME__ERROR_GENERIC; 
+ label__error__not_an_operator: { 
+    error_id = ANIME__ERROR_GENERIC; 
+    const char error_msg[] = "NOT AN OPERATOR";
+    enum { ERROR_STR_BYTESIZE = 2048 }; 
+    char error_str_loc[ERROR_STR_BYTESIZE]; 
+    snprintf(error_str_loc, ERROR_STR_BYTESIZE, "<%s>: " "%s[%d]: " "%s: %s", anime__filename_get(this), error_id > 0 ? LANG("Attention","Warning") : LANG("Erreur","Error"), error_id, int_anime_error__get_cstr(error_id), anime__error_cstr_get(this)); 
+    if (this -> stdlog_d > 0) {  dputs_array(this -> stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", error_str_loc, ": ", error_msg, "\n"); }; 
+    return error_id; 
   };
   
   assert(false);

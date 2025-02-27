@@ -6,7 +6,7 @@
 
 #include "anime_module_string.ci" 
 #include "anime_module_subr.ci" 
-#include "anime_module_error.ci" 
+//#include "anime_module_error.ci" 
 #include "anime_module_print.ci" 
 #include "anime_module_print_field.ci" 
 #include "anime_module_consistency.ci" 
@@ -367,12 +367,14 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
   int_anime_error_t error_id; 
   goto label__body; 
 
-label__error__input_error: { 
+#if 0
+ label__error__input_error: { 
     this -> error_id = ANIME__TOKEN__INPUT__ERROR; 
     snprintf(this -> error_str, this -> error_size, "Error while initializing input buffer for tokenizing"); 
     if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, this -> error_str); }; 
     return this -> error_id; 
   }; 
+#endif
   
   
  label__body: { 
@@ -391,22 +393,27 @@ label__error__input_error: {
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Reconstruction de la structure: réalisée" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Cohérence de la structure: vérifiée" "\n"); }; 
     if (this -> stdlog_d > 0) { anime__syntax__print(this, this -> stdlog_d); }; 
-
+    
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[NOMS DES CHAMPS]" "\n"); }; 
-    error_id = anime__generation__field_names(this); 
+    error_id = anime__generation__field_names__compute(this); 
     if (error_id != ANIME__OK) { return error_id; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Noms des champs: calculés" "\n"); }; 
-
-    // RL: D’abord, il faut calculer les noms. 
+    
     this -> filled_huh = 2; // RL: À supprimer. 
     error_id = anime__post_syntax__consistency_check(this, stduser_d); 
     if (error_id != ANIME__OK) { return error_id; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Absence d’incohérence entre les noms des champs: vérifiée" "\n"); }; 
-
+    
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[VALEURS DES CHAMPS]" "\n"); }; 
-    error_id = anime__generation__field_values(this); 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "IL NOUS MANQUE UN SYSTEME DE VERIFICATION DE LA SYNTAXE AVANT LE CALCUL" "\n"); }; 
+    if (stduser_d > 0) { dputs(stduser_d, "IL NOUS MANQUE UN SYSTEME DE VERIFICATION DE LA SYNTAXE AVANT LE CALCUL" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Pour commencer, nous devons déterminer l'arité des symboles d'addition et de soustraction (unaire ou binaire?)." "\n"); }; 
+    error_id = anime__generation__arity__compute(this);
+    if (error_id != ANIME__OK) { return error_id; }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Arités: calculées" "\n"); }; 
+    error_id = anime__generation__field_values__compute(this); 
     if (error_id != ANIME__OK) { return error_id; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Valeurs des champs: calculées" "\n"); }; 
     
@@ -420,4 +427,28 @@ label__error__input_error: {
 }; 
 
 
+void anime__check_and_assert(const int8_t debug_print_huh, const int stddebug_d) { 
+  if (ANIME_BYTESIZE < anime_bytesize_actual) { 
+    if (debug_print_huh) { 
+      dprintf(stddebug_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s>()>}: anime_bytesize: %d" "\n",  __func__, (int) ANIME_BYTESIZE); 
+      dprintf(stddebug_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s>()>}: anime_bytesize_actual: %d" "\n",  __func__, (int) anime_bytesize_actual); 
+    }; 
+    assert(false); 
+  }; 
 
+  assert(ANIME_LINE_LEN_MAX == ANIME_LINE_LEN_MAX__compiled_value); 
+
+  assert(ANIME_VERSION_MAJOR == ANIME_VERSION_MAJOR__compiled_value); 
+  assert(ANIME_VERSION_MINOR <= ANIME_VERSION_MINOR__compiled_value); 
+  //assert(ANIME_VERSION_REVISION <= ANIME_VERSION_REVISION__compiled_value); 
+
+
+  anime__lexer__check_and_assert(); 
+}; 
+
+
+#define ANIME__ERROR__C
+#define EXTERN extern
+#include "anime_module_error.ci"
+#undef  EXTERN
+#undef  ANIME__ERROR__C

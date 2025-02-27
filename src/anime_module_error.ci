@@ -1,88 +1,138 @@
 
+#ifdef ANIME__ERROR__H 
+#  ifdef ANIME__ERROR__C 
+#    error Exclusivement soit ANIME__ERROR__H soit ANIME__ERROR__C 
+#  endif 
+#else
+#  ifndef ANIME__ERROR__C 
+#    define ANIME__ERROR__H 
+#  endif 
+#endif 
 
-#define UUU(ident) case glue(ANIME__,ident): error_cstr = STRINGIFY(ident); break; 
+#ifdef ANIME__ERROR__H 
+#  define ANIME__ERROR__H__ALREADY_INCLUDED 
+#endif 
 
-const char * int_anime_error__get_cstr(const int_anime_error_t error_id) { 
-  const char * error_cstr = NULL; 
-  switch (error_id) { 
-  UUU(OK); 
-  // Unspecified 
-  UUU(ERROR_GENERIC); 
-  // Errors 
-  UUU(STRCOPY); 
-  UUU(FD_NEG); 
-  UUU(FDOPEN); 
-  UUU(NULL_FIELD_NAME); 
-  UUU(UNKNOWN_FIELD); 
-  UUU(INDEX_OF_OUT_BOUNDS);
-  UUU(NULL_ERROR_ID_R); 
-  UUU(ERROR_SIZE_LOWER_THAN_1); 
-  UUU(NULL_INPUT_ENV); 
-  UUU(NULL_TOKEN_ENV); 
-  UUU(TOKEN_PARSER__ERROR_WHILE_READING_THE_INPUT_STREAM); 
-  UUU(TOKEN_PARSER__TOKEN_MATCHES_NO_PATTERN); 
-  UUU(TOKEN_PARSER__ERROR_TOKEN); 
-  UUU(TOKEN_PARSER__STACK_OVERFLOW); 
-  UUU(DATA_GENERATION__NULL_SYNTAX_FILTERING); 
-  UUU(DATA_GENERATION__NULL_TOKEN_ENV); 
-  UUU(DATA_GENERATION__NULL_ANIME_DATA); 
-  UUU(DATA_GENERATION__NULL_FLOATVAL_R); 
-  UUU(DATA_GENERATION__NULL_INTVAL_R); 
-  UUU(DATA_GENERATION__NULL_ERROR_ID_R); 
-  UUU(DATA_GENERATION__ERROR_SIZE_LOWER_THAN_1); 
-  UUU(DATA_GENERATION__NOT_ENOUGH_TOKENS); 
-  UUU(DATA_GENERATION__TOO_MANY_TOKENS); 
-  UUU(DATA_GENERATION__NON_MATCHING_TOKEN_TYPE); 
-  UUU(DATA_GENERATION__NON_MATCHING_TOKEN_VALUE); 
-  UUU(DATA_GENERATION__NULL_TREE_ENV); 
-  UUU(DATA_GENERATION__TREE_ENV__EMPTY);
-  UUU(DATA_GENERATION__TREE_ENV__BEING_FILLED);
-  UUU(DATA_GENERATION__TREE_ENV__NOT_FILLED);
-  UUU(DATA_GENERATION__NOT_ENOUGH_TREES); 
-  UUU(DATA_GENERATION__TREE__WRONG_TREE_TYPE);
-  UUU(DATA_GENERATION__MISSING_PHYSIQUE_SECTION); 
-  UUU(DATA_GENERATION__MISSING_GAMEPLAY_SECTION); 
-  UUU(DATA_GENERATION__MISSING_GRAPHIQUE_SECTION); 
-  UUU(DATA_GENERATION__STACK_OVERFLOW); 
-  UUU(DATA_GENERATION__STACK_UNDERFLOW); 
-  UUU(DATA_GENERATION__STACK_UNEXPECTED_TOKEN); 
-  UUU(DATA_GENERATION__STACK_TOO_MANY_ITEMS); 
-  UUU(DATA_GENERATION__STACK_NOT_ENOUGH_ITEMS); 
-  UUU(DATA_GENERATION__MEMBRES_OVERFLOW); 
-  UUU(DATA_GENERATION__RACINES_OVERFLOW); 
-  UUU(TREE__NO_SPACE_LEFT); 
-  UUU(TREE__WRONG_ADDRESS); 
-  UUU(SYNTAX_FILTERING__NULL_THIS); 
-  UUU(SYNTAX_FILTERING__NULL_TOKEN_ENV); 
-  UUU(SYNTAX_FILTERING__NULL_TOKEN_I); 
-  UUU(SYNTAX_FILTERING__OUTPUT_POSTFIX_BUFFER_TOO_SMALL); 
-  UUU(SYNTAX_FILTERING__PARENTHESIS_STACK_TOO_SMALL); 
-  UUU(SYNTAX_FILTERING__MISSING_CLOSING_PARENTHESIS); 
-  UUU(SYNTAX_FILTERING__MISSING_OPENING_PARENTHESIS); 
-  UUU(SYNTAX_FILTERING__MISMATCHING_PARENTHESIS); 
-  UUU(SYNTAX_FILTERING__NOT_AN_OPENING_PARENTHESIS); 
-  UUU(SYNTAX_FILTERING__NOT_AN_CLOSING_PARENTHESIS); 
-  UUU(SYNTAX_FILTERING__CANNOT_SKIP_TO_CLOSING_PARENTHESIS_IN_LALR_MODE); 
-  UUU(SYNTAX_FILTERING__CURRENT_TOKEN_OUT_OF_BOUND); 
-  UUU(SYNTAX_FILTERING__CURRENT_TOKEN_IS_INVALID); 
-  UUU(SYNTAX_FILTERING__CURRENT_TOKEN_IS_EOF); 
-  UUU(SYNTAX_FILTERING__LAST_TOKEN_SHOULD_BE_EOF); 
-  UUU(SYNTAX_FILTERING__LALR_MODE_ALREADY_SET); 
-  UUU(MAIN__OPTIONS__PARSING_ERROR); 
-  UUU(MAIN__OPTIONS__UNKNOWN); 
-  UUU(MAIN__OPTIONS__EXIT_QUICK); 
-  UUU(MAIN__CANNOT_OPEN_INPUT_FILE); 
-  UUU(TOKEN__PARSER__ERROR); 
-  UUU(TOKEN__INPUT__ERROR); 
-  // Warnings 
-  UUU(NULL_STRUCT); 
-  UUU(EMPTY_STRUCTURE); 
-  UUU(FILLING_NOT_COMPLETED); 
-  UUU(HAS_BREAKING_UNCONSISTENCIES); 
-  UUU(HAS_NON_BREAKING_UNCONSISTENCIES); 
-  UUU(SYNTAX_FILTERING__TOKEN_ENV_HAS_ZERO_TOKEN); 
-  };
-  return error_cstr; 
+#ifdef ANIME__ERROR__C 
+#  define ANIME__ERROR__C__ALREADY_INCLUDED 
+#endif 
+
+#ifdef ANIME__ERROR__H 
+#  define EMPTY_ARRAY_DEFINITION 
+#  define VALUE_DEFINITION(value)
+#else 
+#  define EMPTY_ARRAY_DEFINITION = { } 
+#  define VALUE_DEFINITION(value) = value
+#endif 
+
+#ifndef EXTERN 
+#  define EXTERN extern
+#endif
+
+#define extern 1
+#define static 2
+// RL: Lors d’une définition ‘extern’, le mot-clef ‘extern’ doit ne pas être énoncé. 
+//     Lors d’une définition ‘static’, le mot-clef ‘static’ doit être répété. 
+//     D’où la macro ‘EXTERN_DEFINITION’. 
+#if   (EXTERN == extern) 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#elif (EXTERN == static) 
+#  define EXTERN_DECLARATION static
+#  define EXTERN_DEFINITION  static
+#else 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#endif 
+#undef extern 
+#undef static 
+
+
+
+
+#ifndef ANIME__ERROR__LIST 
+#  error Il faut définir ‘ANIME__ERROR__LIST’ 
+#endif 
+
+
+// ___________________________________ 
+// **** ANIME__ERROR **** 
+
+#ifdef ANIME__ERROR__H 
+
+#define X(ident, value) ident value, 
+enum { 
+  ANIME__ERROR__LIST
+}; 
+#undef X 
+
+#define X(ident, value) ident##___ID, 
+enum { 
+  ANIME__ERROR__LIST
+  ANIME__ERROR__COUNT
+}; 
+#undef X 
+
+typedef                  int8_t                  int_anime_error_t; 
+EXTERN_DECLARATION const char *                  int_anime_error__get_cstr(const int_anime_error_t error); 
+EXTERN_DECLARATION const int_anime_error_t int_anime_error__id_value[ANIME__ERROR__COUNT]; 
+enum {                                           int_anime_error__id_value__size = ARRAY_SIZE(int_anime_error__id_value) }; 
+EXTERN_DECLARATION const uint8_t                 int_anime_error__id_value__size__compiled_value; 
+EXTERN_DECLARATION const char *                  int_anime_error__id_cstr [ANIME__ERROR__COUNT + 1]; 
+enum {                                           int_anime_error__id_cstr__size = ARRAY_SIZE(int_anime_error__id_cstr) }; 
+EXTERN_DECLARATION const uint8_t                 int_anime_error__id_cstr__size__compiled_value; 
+
+#define X(ident, value) EXTERN_DECLARATION const int_anime_error_t ident##__compiled_value; 
+ANIME__ERROR__LIST 
+#undef X 
+
+static void int_anime_error__check_and_assert(void) { 
+  assert(ANIME__ERROR__COUNT <= UINT8_MAX); 
+#define X(ident, value) assert(ident == ident##__compiled_value); 
+ANIME__ERROR__LIST 
+#undef X 
+  assert(int_anime_error__id_cstr__size  == int_anime_error__id_cstr__size__compiled_value ); 
+  assert(int_anime_error__id_value__size == int_anime_error__id_value__size__compiled_value); 
 }; 
 
+#else /* ANIME__ERROR__C */
+
+#define X(ident, value) EXTERN_DEFINITION const int_anime_error_t ident##__compiled_value = ident; 
+ANIME__ERROR__LIST 
+#undef X 
+
+#define X(ident, value) #ident, 
+EXTERN_DEFINITION const char * int_anime_error__id_cstr[ANIME__ERROR__COUNT + 1] = { 
+ANIME__ERROR__LIST 
+  NULL
+}; 
+#undef X 
+ 
+EXTERN_DEFINITION const uint8_t int_anime_error__id_cstr__size__compiled_value = ARRAY_SIZE(int_anime_error__id_cstr); 
+
+#define X(ident, value) ident, 
+EXTERN_DEFINITION const int_anime_error_t int_anime_error__id_value[ANIME__ERROR__COUNT] = { 
+ANIME__ERROR__LIST 
+}; 
+#undef X 
+
+EXTERN_DEFINITION const uint8_t int_anime_error__id_value__size__compiled_value = ARRAY_SIZE(int_anime_error__id_value); 
+
+const char * int_anime_error__get_cstr(const int_anime_error_t error) { 
+  const char * error__cstr = NULL; 
+  switch (error) { 
+#define X(ident, value) case ident: error__cstr = #ident; break; 
+  ANIME__ERROR__LIST
+#undef X 
+  }; 
+  return error__cstr; 
+}; 
+
+#endif /* ANIME__ERROR__H */
+
+#undef EXTERN_DECLARATION
+#undef EXTERN_DEFINITION
+#undef EXTERN 
+#undef EMPTY_ARRAY_DEFINITION
+#undef VALUE_DEFINITION
 

@@ -10,75 +10,107 @@
 // =================================================================================================== 
 // WRITE_STRING 
 
-static int write_eol(const int file_des) { 
+static int16_t write_eol(const int file_des) { 
   write(file_des, "\n", 1); 
   return 1; 
 }; 
 
-static int /*nb_bytes_written*/ write_string(const int file_des, const char * cstr) { 
+static int16_t /*nb_bytes_written*/ write_string(const int file_des, const char * cstr) { 
   if (NULL == cstr) { 
     static const char s[] = "NULL"; 
+    enum { s_len = sizeof(s) - 1 }; 
+#if 1
+    return write(file_des, s, s_len); 
+#else
     write(file_des, s, sizeof(s) - 1); 
     return sizeof(s) - 1; 
+#endif 
   }; 
   
   const char * p = cstr; 
   for (;;) { if (*p == '\0') break; p++; }; 
-  const int len = p - cstr; 
-  write(file_des, cstr, len); 
-  return len; 
+  const int16_t len = p - cstr; 
+  return write(file_des, cstr, len); 
 }; 
 
-static int write_string2(const int file_des, const char * cstr1, const char * cstr2) { 
+static int16_t write_string2(const int file_des, const char * cstr1, const char * cstr2) { 
   if (NULL == cstr1) return write_string(file_des, cstr2); 
   if (NULL == cstr2) return write_string(file_des, cstr1); 
-  const int len1 = write_string(file_des, cstr1); 
-  const int len2 = write_string(file_des, cstr2); 
+  const int16_t len1 = write_string(file_des, cstr1); 
+  const int16_t len2 = write_string(file_des, cstr2); 
   return len1 + len2; 
 }; 
 
-static int write_string3(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3) { 
+static int16_t write_string3(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3) { 
   if (NULL == cstr3) return write_string2(file_des, cstr1, cstr2); 
-  const int len1 = write_string2(file_des, cstr1, cstr2); 
-  const int len2 = write_string(file_des, cstr3); 
+  const int16_t len1 = write_string2(file_des, cstr1, cstr2); 
+  const int16_t len2 = write_string(file_des, cstr3); 
   return len1 + len2; 
 }; 
 
-static int write_string4(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4) { 
+static int16_t write_string4(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4) { 
   if (NULL == cstr4) return write_string3(file_des, cstr1, cstr2, cstr3); 
-  const int len1 = write_string3(file_des, cstr1, cstr2, cstr3); 
-  const int len2 = write_string(file_des, cstr4); 
+  const int16_t len1 = write_string3(file_des, cstr1, cstr2, cstr3); 
+  const int16_t len2 = write_string(file_des, cstr4); 
   return len1 + len2; 
 }; 
 
-static int write_string5(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4, const char * cstr5) { 
+static int16_t write_string5(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4, const char * cstr5) { 
   if (NULL == cstr5) return write_string4(file_des, cstr1, cstr2, cstr3, cstr4); 
-  const int len1 = write_string4(file_des, cstr1, cstr2, cstr3, cstr4); 
-  const int len2 = write_string(file_des, cstr5); 
+  const int16_t len1 = write_string4(file_des, cstr1, cstr2, cstr3, cstr4); 
+  const int16_t len2 = write_string(file_des, cstr5); 
   return len1 + len2; 
 }; 
 
-static int write_string_ln(const int file_des, const char * cstr) { 
-  const int len1 = write_string(file_des, cstr); 
-  const int len2 = write_eol(file_des); 
+static int16_t write_string6(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4, const char * cstr5, const char * cstr6) { 
+  const int16_t len1 = write_string5(file_des, cstr1, cstr2, cstr3, cstr4, cstr5); 
+  if (NULL == cstr6) return len1; 
+  const int16_t len2 = write_string(file_des, cstr6); 
   return len1 + len2; 
 }; 
 
-static int write_string2_ln(const int file_des, const char * cstr1, const char * cstr2) { 
-  const int len1 = write_string2(file_des, cstr1, cstr2); 
-  const int len2 = write_eol(file_des); 
+static int16_t write_string7(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4, const char * cstr5, const char * cstr6, const char * cstr7) { 
+  const int16_t len1 = write_string6(file_des, cstr1, cstr2, cstr3, cstr4, cstr5, cstr6); 
+  if (NULL == cstr7) return len1; 
+  const int16_t len2 = write_string(file_des, cstr7); 
   return len1 + len2; 
 }; 
 
-static int write_string3_ln(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3) { 
-  const int len1 = write_string3(file_des, cstr1, cstr2, cstr3); 
-  const int len2 = write_eol(file_des); 
+static int16_t write_string8(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4, const char * cstr5, const char * cstr6, const char * cstr7, const char * cstr8) { 
+  const int16_t len1 = write_string7(file_des, cstr1, cstr2, cstr3, cstr4, cstr5, cstr6, cstr7); 
+  if (NULL == cstr8) return len1; 
+  const int16_t len2 = write_string(file_des, cstr8); 
   return len1 + len2; 
 }; 
 
-static int write_string4_ln(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4) { 
-  const int len1 = write_string4(file_des, cstr1, cstr2, cstr3, cstr4); 
-  const int len2 = write_eol(file_des); 
+static int16_t write_string9(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4, const char * cstr5, const char * cstr6, const char * cstr7, const char * cstr8, const char * cstr9) { 
+  const int16_t len1 = write_string8(file_des, cstr1, cstr2, cstr3, cstr4, cstr5, cstr6, cstr7, cstr8); 
+  if (NULL == cstr9) return len1; 
+  const int16_t len2 = write_string(file_des, cstr9); 
+  return len1 + len2; 
+}; 
+
+static int16_t write_string_ln(const int file_des, const char * cstr) { 
+  const int16_t len1 = write_string(file_des, cstr); 
+  const int16_t len2 = write_eol(file_des); 
+  return len1 + len2; 
+}; 
+
+static int16_t write_string2_ln(const int file_des, const char * cstr1, const char * cstr2) { 
+  const int16_t len1 = write_string2(file_des, cstr1, cstr2); 
+  const int16_t len2 = write_eol(file_des); 
+  return len1 + len2; 
+}; 
+
+static int16_t write_string3_ln(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3) { 
+  const int16_t len1 = write_string3(file_des, cstr1, cstr2, cstr3); 
+  const int16_t len2 = write_eol(file_des); 
+  return len1 + len2; 
+}; 
+
+static int16_t write_string4_ln(const int file_des, const char * cstr1, const char * cstr2, const char * cstr3, const char * cstr4) { 
+  const int16_t len1 = write_string4(file_des, cstr1, cstr2, cstr3, cstr4); 
+  const int16_t len2 = write_eol(file_des); 
   return len1 + len2; 
 }; 
 
@@ -209,6 +241,10 @@ static int dputc(const int fd, const char c) {
 #define dputs3   write_string3
 #define dputs4   write_string4
 #define dputs5   write_string5
+#define dputs6   write_string6
+#define dputs7   write_string7
+#define dputs8   write_string8
+#define dputs9   write_string9
 
 static int dputc_rep(const int fd, const int8_t rep_n, const char c) {
   if (rep_n <= 0) return 0; 
@@ -237,19 +273,19 @@ static int dput_spaces(const int fd, const int nb_spaces) {
   return dputc_rep(fd, nb_spaces, ' '); 
 }; 
 
-static int dputs_array__(const int out_stream, const int nb, const char * cstr_array[]) { 
+static int dputs_array__(const int out_stream_d, const int nb, const char * cstr_array[]) { 
   int written = 0; 
   for (int i = 0; i < nb; i++) { 
     const char * cstr = cstr_array[i]; 
-    if (NULL !=  cstr) continue; 
-    if ('\0' != *cstr) continue; 
-    written += write(out_stream, cstr, strlen(cstr)); 
+    if (NULL ==  cstr) continue; 
+    if ('\0' == *cstr) continue; 
+    written += write(out_stream_d, cstr, strlen(cstr)); 
   }; 
   return written; 
 }; 
  
 #if 1 
-#define dputs_array(out_stream,...) (dputs_array__((out_stream),ARRAY_SIZE(((const char * []) { __VA_ARGS__ } )), ((const char * []) { __VA_ARGS__ } )))
+#define dputs_array(out_stream_d,...) (dputs_array__((out_stream_d),ARRAY_SIZE(((const char * []) { __VA_ARGS__ } )), ((const char * []) { __VA_ARGS__ } )))
 #endif 
 
 

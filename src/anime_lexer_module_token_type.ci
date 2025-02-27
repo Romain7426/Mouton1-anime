@@ -1,12 +1,159 @@
 
+#ifdef ANIME__TOKEN_TYPE__H 
+#  ifdef ANIME__TOKEN_TYPE__C 
+#    error Exclusivement soit ANIME__TOKEN_TYPE__H soit ANIME__TOKEN_TYPE__C 
+#  endif 
+#else
+#  ifndef ANIME__TOKEN_TYPE__C 
+#    define ANIME__TOKEN_TYPE__H 
+#  endif 
+#endif 
+
+#ifdef ANIME__TOKEN_TYPE__H 
+#  define ANIME__TOKEN_TYPE__H__ALREADY_INCLUDED 
+#endif 
+
+#ifdef ANIME__TOKEN_TYPE__C 
+#  define ANIME__TOKEN_TYPE__C__ALREADY_INCLUDED 
+#endif 
+
+#ifdef ANIME__TOKEN_TYPE__H 
+#  define EMPTY_ARRAY_DEFINITION 
+#  define VALUE_DEFINITION(value)
+#else 
+#  define EMPTY_ARRAY_DEFINITION = { } 
+#  define VALUE_DEFINITION(value) = value
+#endif 
+
+#ifndef EXTERN 
+#  define EXTERN extern
+#endif
+
+#define extern 1
+#define static 2
+// RL: Lors d’une définition ‘extern’, le mot-clef ‘extern’ doit ne pas être énoncé. 
+//     Lors d’une définition ‘static’, le mot-clef ‘static’ doit être répété. 
+//     D’où la macro ‘EXTERN_DEFINITION’. 
+#if   (EXTERN == extern) 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#elif (EXTERN == static) 
+#  define EXTERN_DECLARATION static
+#  define EXTERN_DEFINITION  static
+#else 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#endif 
+#undef extern 
+#undef static 
+
+#ifndef ANIME__TOKEN_TYPE__TYPE_T
+#  define ANIME__TOKEN_TYPE__TYPE_T int8_t 
+#endif 
+
+
+
+#ifndef ANIME__TOKEN_TYPE__LIST 
+#  error Il faut définir ‘ANIME__TOKEN_TYPE__LIST’ 
+#endif 
+
+
+// ___________________________________ 
+// **** ANIME__TOKEN_TYPE **** 
+
+#ifdef ANIME__TOKEN_TYPE__H 
+
+#define X(ident, value) ident value, 
+enum { 
+  ANIME__TOKEN_TYPE__LIST
+}; 
+#undef X 
+
+#define X(ident, value) ident##___ID, 
+enum { 
+  ANIME__TOKEN_TYPE__LIST
+  ANIME__TOKEN_TYPE__COUNT
+}; 
+#undef X 
+
+typedef                  ANIME__TOKEN_TYPE__TYPE_T  int_anime_token_type_t; 
+EXTERN_DECLARATION const char *                     int_anime_token_type__get_cstr(const int_anime_token_type_t token_type); 
+EXTERN_DECLARATION const int_anime_token_type_t     int_anime_token_type__id_value[ANIME__TOKEN_TYPE__COUNT]; 
+enum {                                              int_anime_token_type__id_value__size = ARRAY_SIZE(int_anime_token_type__id_value) }; 
+EXTERN_DECLARATION const uint8_t                    int_anime_token_type__id_value__size__compiled_value; 
+EXTERN_DECLARATION const char *                     int_anime_token_type__id_cstr [ANIME__TOKEN_TYPE__COUNT + 1]; 
+enum {                                              int_anime_token_type__id_cstr__size = ARRAY_SIZE(int_anime_token_type__id_cstr) }; 
+EXTERN_DECLARATION const uint8_t                    int_anime_token_type__id_cstr__size__compiled_value; 
+
+#define X(ident, value) EXTERN_DECLARATION const int_anime_token_type_t ident##__compiled_value; 
+ANIME__TOKEN_TYPE__LIST 
+#undef X 
+
+static void int_anime_token_type__check_and_assert(void) { 
+  assert(ANIME__TOKEN_TYPE__COUNT <= UINT8_MAX); 
+#define X(ident, value) assert(ident == ident##__compiled_value); 
+ANIME__TOKEN_TYPE__LIST 
+#undef X 
+  assert(int_anime_token_type__id_cstr__size  == int_anime_token_type__id_cstr__size__compiled_value ); 
+  assert(int_anime_token_type__id_value__size == int_anime_token_type__id_value__size__compiled_value); 
+}; 
+
+#else /* ANIME__TOKEN_TYPE__C */
+
+#define X(ident, value) EXTERN_DEFINITION const int_anime_token_type_t ident##__compiled_value = ident; 
+ANIME__TOKEN_TYPE__LIST 
+#undef X 
+
+#define X(ident, value) #ident, 
+EXTERN_DEFINITION const char * int_anime_token_type__id_cstr[ANIME__TOKEN_TYPE__COUNT + 1] = { 
+ANIME__TOKEN_TYPE__LIST 
+  NULL
+}; 
+#undef X 
+ 
+EXTERN_DEFINITION const uint8_t int_anime_token_type__id_cstr__size__compiled_value = ARRAY_SIZE(int_anime_token_type__id_cstr); 
+
+#define X(ident, value) ident, 
+EXTERN_DEFINITION const int_anime_token_type_t int_anime_token_type__id_value[ANIME__TOKEN_TYPE__COUNT] = { 
+ANIME__TOKEN_TYPE__LIST 
+}; 
+#undef X 
+
+EXTERN_DEFINITION const uint8_t int_anime_token_type__id_value__size__compiled_value = ARRAY_SIZE(int_anime_token_type__id_value); 
+
+const char * int_anime_token_type__get_cstr(const int_anime_token_type_t token_type) { 
+  const char * token_type__cstr = NULL; 
+  switch (token_type) { 
+#define X(ident, value) case ident: token_type__cstr = #ident; break; 
+  ANIME__TOKEN_TYPE__LIST
+#undef X 
+  }; 
+  return token_type__cstr; 
+}; 
+
+
 enum { INT_ANIME_TOKEN_TYPE_MAX = sizeof(int_anime_token_type_t) == 1 ? UINT8_MAX : sizeof(int_anime_token_type_t) == 2 ? UINT16_MAX : sizeof(int_anime_token_type_t) == 4 ? UINT32_MAX : sizeof(int_anime_token_type_t) == 8 ? UINT64_MAX : 0 }; 
 
 const int_anime_token_type_t int_anime_token_type_max = INT_ANIME_TOKEN_TYPE_MAX; 
 ASSERT_COMPILE__TOPLEVEL(ANIME_TOKEN_TYPE_COUNT <= INT_ANIME_TOKEN_TYPE_MAX); 
 const int_anime_token_type_t anime_token_type_count = ANIME_TOKEN_TYPE_COUNT; 
 
+#endif /* ANIME__TOKEN_TYPE__H */
 
-static const char * anime_token__type_cstr_array[] = {
+#undef EXTERN_DECLARATION
+#undef EXTERN_DEFINITION
+#undef EXTERN 
+#undef EMPTY_ARRAY_DEFINITION
+#undef VALUE_DEFINITION
+
+
+
+
+
+
+#if 0
+
+
   "NULL", 
   "EOF", 
   // RL: Syntatic sugar 
@@ -80,6 +227,10 @@ static const char * anime_token__type_cstr_array[] = {
   "RPLUS_UNAIRE", 
   "IMOINS_UNAIRE", 
   "RMOINS_UNAIRE", 
+  "IPLUS_BINAIRE", 
+  "RPLUS_BINAIRE", 
+  "IMOINS_BINAIRE", 
+  "RMOINS_BINAIRE", 
   "INC", 
   "DEC", 
   // RL: Constant values", which have the upmost priorities. 
@@ -205,4 +356,8 @@ const char * anime_token__type_get_cstr(const int_anime_token_type_t token_type)
   if (token_type < ANIME_TOKEN__SYNTAX_KEYWORD__TOP) { return anime_token__type_keyword__cstr_array[token_type]; }; 
   return NULL; //"UNKNOWN_TOKEN_TYPE"; 
 }; 
+
+
+#endif 
+
 

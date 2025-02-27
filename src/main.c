@@ -12,7 +12,7 @@
 
 
 // RL: OBJECTIFS: 
-//  -- ldd ne retourne aucune dépendance. (On compilerait donc avec libc; et avec crt0; --static) /usr/lib/libc.a /usr/lib/crt0.o  [ À titre d’exemple, lire les commandes issues par «pcc -v». ] 
+//  -- Que ldd ne retourne aucune dépendance. (On compilerait donc avec libc; et avec crt0; --static) /usr/lib/libc.a /usr/lib/crt0.o  [ À titre d’exemple, lire les commandes issues par «pcc -v». ] 
 //  -- KISS: keep it short and simple 
 //  -- no malloc 
 //   
@@ -27,8 +27,8 @@
 // -- PIPE = stdpipe_in_d + stdpipe_out_d 
 // -- LOG  = stdlog_d 
 // 
-// -- USER = stduser_out_d + stduser_in_d 
-// -- DATA = stddata_out_d + stddata_in_d 
+// -- USER = stduser_in_d + stduser_out_d 
+// -- DATA = stddata_in_d + stddata_out_d 
 // -- LOG  = stdlog_d 
 // 
 
@@ -44,16 +44,16 @@ int main(const int argc, const char * argv[]) {
   int stddata_in_d  = -1; 
   int stddata_out_d = -1; 
   int_anime_error_t error_id; 
-  enum { MAIN__ERROR_BUFFER_SIZE = 2048 }; 
-  char error_str[MAIN__ERROR_BUFFER_SIZE]; 
+  enum { ERROR_STR_BYTESIZE = 2048 }; 
+  char error_str[ERROR_STR_BYTESIZE]; 
   const char * input_file_name = NULL; 
   anime_t * a_anime = NULL; 
   goto label__body; 
 
 
  label__exit: { 
-    if (NULL != a_anime) anime__delete_b(a_anime); 
-    if (stdlog_d > 0) { dprintf(stdlog_d, "Exit value = [ %d ] %s " "\n", error_id, int_anime_error__get_cstr(error_id)); }; 
+    if (NULL != a_anime) { anime__delete_b(a_anime); a_anime = NULL; }; 
+    if (stdlog_d > 0) { dprintf(stdlog_d, "%s = [ %d ] %s " "\n", LANG("Valeur de sortie","Exit value"), error_id, int_anime_error__get_cstr(error_id)); }; 
     if (stdlog_d > 0) { main__stdlog_close(stdlog_d, /*flush_huh*/true); }; 
     return error_id; 
   }; 
@@ -63,65 +63,87 @@ int main(const int argc, const char * argv[]) {
   }; 
   
  label__error__options_parsing_failed: { 
-    const char err_str[] = "Error while parsing options" "\n"; 
-    enum { err_str_len = ARRAY_LEN(err_str) - 1 }; 
-    if (stderr_d > 0) { write(stderr_d, err_str, err_str_len); }; 
-    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s", __func__, err_str); }; 
     error_id = ANIME__MAIN__OPTIONS__PARSING_ERROR; 
+    const char * err_str = LANG("Erreur lors de l'analyse des options","Error while parsing options"); 
+    if (stduser_out_d > 0) { dputs2(stduser_out_d, err_str, "\n"); }; 
+    if (stdlog_d      > 0) { dputs9(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", err_str, "\n"); }; 
     goto label__exit; 
   }; 
   
  label__error__options_running_failed: { 
+    if (error_id = ANIME__MAIN__OPTIONS__EXIT_QUICK) { error_id = ANIME__OK; goto label__exit; }; 
+    //error_id = ANIME__MAIN__OPTIONS__RUNNING_ERROR; 
+    const char * err_str = LANG("Erreur lors de l'interprétation des options","Error while running options"); 
+    if (stduser_out_d > 0) { dputs2(stduser_out_d, err_str, "\n"); }; 
+    if (stdlog_d      > 0) { dputs9(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", err_str, "\n"); }; 
     goto label__exit; 
   }; 
   
  label__error__first_arg_is_null: { 
-    error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
-    snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "First arg is null"); 
-    if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    error_id = ANIME__MAIN__FILENAME_NULL; 
+    const char * err_str = LANG("Le nom du fichier est un pointeur null (?)", "Filename is null"); 
+    if (stduser_out_d > 0) { dputs2(stduser_out_d, err_str, "\n"); }; 
+    if (stdlog_d      > 0) { dputs9(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", err_str, "\n"); }; 
     goto label__exit; 
   }; 
   
  label__error__first_arg_is_empty: { 
-    error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
-    snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "First arg is empty"); 
-    if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    error_id = ANIME__MAIN__FILENAME_EMPTY; 
+    const char * err_str = LANG("Le nom du fichier est vide", "Filename is empty"); 
+    if (stduser_out_d > 0) { dputs2(stduser_out_d, err_str, "\n"); }; 
+    if (stdlog_d      > 0) { dputs9(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", err_str, "\n"); }; 
     goto label__exit; 
   }; 
 
  label__error__stdin_is_tty: { 
-    error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
-    snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "stdin is tty - I refuse to read data from a tty."); 
-    if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    error_id = ANIME__MAIN__STDIN_IS_TTY; 
+    const char * err_str = LANG("stdin est un tty - je refuse de lire des donnees depuis un tty", "stdin is tty - I refuse to read data from a tty."); 
+    if (stduser_out_d > 0) { dputs2(stduser_out_d, err_str, "\n"); }; 
+    if (stdlog_d      > 0) { dputs9(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", err_str, "\n"); }; 
     goto label__exit; 
   }; 
   
  label__error__cannot_open_input_file: { 
     error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
-    snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "Cannot open input file: %s", input_file_name); 
-    if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    const char * err_str = LANG("Je ne peux pas ouvrir le fichier d'entrée", "Cannot open input file");
+    if (stduser_out_d > 0) { dputs4(stduser_out_d, err_str, ": ", input_file_name, "\n"); }; 
+    if (stdlog_d      > 0) { dputs_array(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", err_str, ": ", input_file_name, "\n"); }; 
     goto label__exit; 
   }; 
 
-label__error__anime_buffer_is_too_small: { 
-    error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
-    strlcpy(error_str, "anime_buffer is too small", MAIN__ERROR_BUFFER_SIZE); 
-    if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+ label__error__anime_buffer_is_too_small: { 
+    error_id = ANIME__MAIN__ANIME_BUFFER_IS_TOO_SMALL; 
+    const char * err_str = LANG("La taille de anime_buffer est trop petite", "anime_buffer is too small"); 
+    if (stduser_out_d > 0) { dputs2(stduser_out_d, err_str, "\n"); }; 
+    if (stdlog_d      > 0) { dputs9(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", err_str, "\n"); }; 
     goto label__exit; 
   }; 
 
  label__error__cannot_parse_input_file: { 
-    error_id = ANIME__MAIN__CANNOT_OPEN_INPUT_FILE; 
-    snprintf(error_str, MAIN__ERROR_BUFFER_SIZE, "<%s>: " "%s[%d]: " "%s: %s" "\n", anime__filename_get(a_anime), error_id > 0 ? "Warning" : "Error", error_id, int_anime_error__get_cstr(error_id), anime__error_cstr_get(a_anime)); 
-    if (stderr_d > 0) { dprintf(stderr_d, "%s" "\n", error_str); }; 
-    if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    //error_id = ANIME__MAIN__CANNOT_PARSE_INPUT_FILE; 
+    snprintf(error_str, ERROR_STR_BYTESIZE, "<%s>: " "%s[%d]: " "%s: %s" "\n", anime__filename_get(a_anime), error_id > 0 ? LANG("Attention","Warning") : LANG("Erreur","Error"), error_id, int_anime_error__get_cstr(error_id), anime__error_cstr_get(a_anime)); 
+    //if (stduser_out_d > 0) { dprintf(stduser_out_d, "%s" "\n", error_str); }; 
+    //if (stdlog_d      > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, error_str); }; 
+    if (stduser_out_d > 0) { dputs2(stduser_out_d, error_str, "\n"); }; 
+    if (stdlog_d      > 0) { dputs9(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", error_str, "\n"); }; 
     goto label__exit; 
   }; 
+
+ label__error__restore_failed: { 
+    error_id = ANIME__MAIN__RESTORE_FAILED; 
+    const char * err_str = LANG("La lecture du datacode échoua", "Restoring from datacode failed"); 
+    if (stduser_out_d > 0) { dputs2(stduser_out_d, err_str, "\n"); }; 
+    if (stdlog_d      > 0) { dputs9(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", err_str, "\n"); }; 
+    goto label__exit; 
+  };
+
+ label__error__dump_failed: { 
+    error_id = ANIME__MAIN__DUMP_FAILED; 
+    const char * err_str = LANG("La production du datacode échoua", "Dump to datacode failed"); 
+    if (stduser_out_d > 0) { dputs2(stduser_out_d, err_str, "\n"); }; 
+    if (stdlog_d      > 0) { dputs9(stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", err_str, "\n"); }; 
+    goto label__exit; 
+  };
   
  label__body: { 
     srandomdev(); 
@@ -135,11 +157,12 @@ label__error__anime_buffer_is_too_small: {
     enum { main__stdlog__buffer_bytesize = INT16_MAX }; 
     char main__stdlog__buffer[main__stdlog__buffer_bytesize]; 
     { 
+      // Pour stdlog_d, ouvre le fd numéro par défaut, et lui associe une mémoire tampon. 
       stdlog_d = main__stdlog_init(main__stdlog__buffer, main__stdlog__buffer_bytesize); 
       
       stduser_in_d  = stdtty_in_d  = isatty(STDIN_FILENO)  ? STDIN_FILENO  : open("/dev/tty", O_RDONLY); 
       stduser_out_d = stdtty_out_d = isatty(STDOUT_FILENO) ? STDOUT_FILENO : open("/dev/tty", O_WRONLY); 
-    
+      
       stddata_in_d  = stdpipe_in_d  = isatty(STDIN_FILENO)  ? -1 : STDIN_FILENO; 
       stddata_out_d = stdpipe_out_d = isatty(STDOUT_FILENO) ? -1 : STDOUT_FILENO; 
     }; 
@@ -147,7 +170,8 @@ label__error__anime_buffer_is_too_small: {
     main_arg_print(argc, argv, stdlog_d); 
     main_time_print(stdlog_d); 
     
-    // PARSING ARGUMENT OPTIONS/FLAGS 
+    // FRA: Analyse des options 
+    // ENG: PARSING ARGUMENT OPTIONS/FLAGS 
     { 
       if (!program_options__parse(argc, argv)) { goto label__error__options_parsing_failed; }; 
       
@@ -163,15 +187,19 @@ label__error__anime_buffer_is_too_small: {
       if (program_options__stduser_new_output != NULL) { main__stduser_open(&stduser_out_d, program_options__stduser_new_output); }; 
     }; 
     
-    assert(program_options__plain__nb > 0); // RLE: This should have been caught beforehand. 
+    // FRA: Ce cas aurait dû être attrapé en amount. 
+    // ENG: This should have been caught beforehand. 
+    assert(program_options__plain__nb > 0); 
     
-    // PLAIN ARGUMENTS - FIRST PLAIN ARG IS INPUT FILE 
-    // (Other arguments are considered as fields to be printed.) 
+    // FRA: Analyse des arguments. 
+    // FRA: Le premier argument est le nom du fichier à lire, les suivants sont les champs à afficher. 
+    // ENG: PLAIN ARGUMENTS - FIRST PLAIN ARG IS INPUT FILE 
+    // ENG: (Other arguments are considered as fields to be printed.) 
     input_file_name = NULL; 
     stddata_in_d = -1; 
     { 
       const int arg_i = program_options__plain[0]; 
-      const char * s = argv[arg_i];
+      const char * s = argv[arg_i]; 
       if (stdlog_d > 0) { dprintf(stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "input_file_name = %s" "\n", __func__, s); }; 
       for (;;) { 
 	if (NULL ==  s) { goto label__error__first_arg_is_null; }; 
@@ -199,7 +227,7 @@ label__error__anime_buffer_is_too_small: {
     dprintf(stderr_d, "ANIME__MAIN__CANNOT_OPEN_INPUT_FILE = %d [ %s ]" "\n", ANIME__MAIN__CANNOT_OPEN_INPUT_FILE, int_anime_error__get_cstr(ANIME__MAIN__CANNOT_OPEN_INPUT_FILE));
     dprintf(stderr_d, "ANIME__OK = %d [ %s ]" "\n", ANIME__OK, int_anime_error__get_cstr(ANIME__OK));
 #endif 
-
+    
     // ALLOCATING MEMORY 
     char a_anime_buffer[ANIME_BYTESIZE]; 
     a_anime = anime__make_b(a_anime_buffer, (sizeof(a_anime_buffer)), /*anime_buffer_bytesize_used_r*/NULL, stdlog_d); 
@@ -208,8 +236,8 @@ label__error__anime_buffer_is_too_small: {
     // PARSING INPUT FILE 
     if (program_options[PROGRAM_OPTIONS_INDEX__RESTORE] > 0) { 
       error_id = anime__restore_from_fd(a_anime, stddata_in_d); 
-      if (0 > error_id) goto label__error__generic; 
-    }
+      if (0 > error_id) goto label__error__restore_failed; 
+    } 
     else { 
       error_id = anime__fill_from_fd(a_anime, input_file_name, stddata_in_d, stduser_out_d); 
       if (error_id != ANIME__OK) { goto label__error__cannot_parse_input_file; }; 
@@ -218,18 +246,25 @@ label__error__anime_buffer_is_too_small: {
       if (stduser_out_d > 0) dprintf(stduser_out_d, "<%s>: " "OK" "\n", anime__filename_get(a_anime)); 
     }; 
     
+    
+    
+    // FRA: <RL>: Maintenant que nous avons lu le fichier, qu'en faisons-nous?
+    // ENG: <RL>: Now that input description was parsed, what do we do with it? 
+    
+    
     // PRINT? 
     if (program_options[PROGRAM_OPTIONS_INDEX__PRINT] > 0) { 
       if (stduser_out_d > 0) anime__print_d(a_anime, stduser_out_d); 
     }; 
     
     
-    // FOLLOWING ARGUMENTS ARE FIELDS TO BE PRINTED 
+    // FRA: Les arguments suivants sont des champs à afficher. 
+    // ENG: FOLLOWING ARGUMENTS ARE FIELDS TO BE PRINTED 
     { 
       for (int i = 1; i < program_options__plain__nb; i++) { 
 	const int arg_i = program_options__plain[i]; 
 	const char * field = argv[arg_i]; 
-	error_id = anime__print_field_value_by_name(a_anime, field, /*stdprint_d*/stderr_d, /*stduser_out_d*/stduser_out_d, &error_id, MAIN__ERROR_BUFFER_SIZE, error_str); 
+	error_id = anime__print_field_value_by_name(a_anime, field, /*stdprint_d*/stduser_out_d, /*stduser_out_d*/stduser_out_d, &error_id, ERROR_STR_BYTESIZE, error_str); 
 	if (error_id == ANIME__OK) { continue; }; 
 	if (stduser_out_d > 0) { dprintf(stduser_out_d, "<%s>: " "%s[%d]: " "%s" "\n", anime__filename_get(a_anime), error_id > 0 ? "Warning" : "Error", error_id, error_str); }; 
 	continue; 
@@ -239,7 +274,7 @@ label__error__anime_buffer_is_too_small: {
     // DUMP?
     if (program_options[PROGRAM_OPTIONS_INDEX__DUMP] > 0) { 
       error_id = anime__dump_to_fd(a_anime, stddata_out_d); 
-      if (0 > error_id) goto label__error__generic; 
+      if (0 > error_id) goto label__error__dump_failed; 
     }; 
     
     // BYE 
@@ -247,6 +282,8 @@ label__error__anime_buffer_is_too_small: {
   }; 
 
 }; 
+
+
 
 
 

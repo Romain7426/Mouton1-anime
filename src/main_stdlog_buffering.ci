@@ -14,6 +14,8 @@ static void main__stduser_open(int * stduser_d_r, const char * filename) {
 
 static int main__stdlog_init(char * buffer, const int16_t buffer_bytesize) { 
   int stdlog_d = -1; 
+  // Par défaut, on associe stdlog_d à la sortie numéro 3;
+  // Question: Est-elle ouverte? 
   if (-1 != fcntl(3, F_GETFL)) { 
     stdlog_d = buffered_outstream__open(/*write_fd*/3, buffer, buffer_bytesize); 
   }; 

@@ -1,15 +1,33 @@
 #ifndef ANIME_TOKEN_AUTOMATA_H
 #define ANIME_TOKEN_AUTOMATA_H
 
+#define ANIME__AUTOMATA_TYPE__LIST			\
+  X(ANIME_TOKEN_AUTOMATA__TYPE__NULL,)			\
+    X(ANIME_TOKEN_AUTOMATA__TYPE__STRING,)		\
+    X(ANIME_TOKEN_AUTOMATA__TYPE__FUNCTION,)		\
+    X(ANIME_TOKEN_AUTOMATA__TYPE__MASTER,)		\
+    X(ANIME_TOKEN_AUTOMATA__TYPE__SYNTAX_KEYWORD,)	\
+  /* LAST_LINE*/
 
-enum { ANIME_TOKEN_AUTOMATA__TYPE__NULL, ANIME_TOKEN_AUTOMATA__TYPE__STRING, ANIME_TOKEN_AUTOMATA__TYPE__FUNCTION, ANIME_TOKEN_AUTOMATA__TYPE__MASTER, ANIME_TOKEN_AUTOMATA__TYPE__SYNTAX_KEYWORD }; 
+
+#define ANIME__AUTOMATA_TYPE__H
+#define ANIME__AUTOMATA_TYPE__TYPE_T int8_t 
+#define EXTERN extern
+#include "anime_lexer_module_automata_type.ci"
+#undef  EXTERN
+#undef  ANIME__AUTOMATA_TYPE__TYPE_T
+#undef  ANIME__AUTOMATA_TYPE__H
+
+
+
+
 
 #ifndef ANIME_TOKEN_AUTOMATA_T 
 #define ANIME_TOKEN_AUTOMATA_T 
 struct anime_token_automata_t; 
 typedef struct anime_token_automata_t anime_token_automata_t; 
 #endif  
-struct anime_token_automata_t { uint8_t token_type; int8_t automata_type; int8_t value1; const char * value_ptr1; const void * automata; }; 
+struct anime_token_automata_t { int_anime_token_type_t token_type; int_anime_automata_type_t automata_type; int8_t value1; const char * value_ptr1; const void * automata; }; 
 extern anime_token_automata_t anime_token_automata[]; 
 extern const uint8_t anime_token_automata__size; 
  
