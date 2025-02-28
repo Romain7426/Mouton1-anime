@@ -4,6 +4,7 @@
 #include "anime_type.h"
 #include "anime_lexer_module.h"
 #include "anime_syntax_module.h"
+#include "anime_generation_module.h"
 
 #include "anime_module_type.hi"
 
@@ -16,117 +17,7 @@
 #include "anime_module_consistency.ci" 
 #include "anime_module_dump_and_restore.ci"
 #include "anime_module_lexeme.ci"
-#include "anime_generation_module.h"
-
-const uint8_t ANIME_VERSION_MAJOR__compiled_value    = (uint8_t) ANIME_VERSION_MAJOR; 
-const uint8_t ANIME_VERSION_MINOR__compiled_value    = (uint8_t) ANIME_VERSION_MINOR; 
-const uint8_t ANIME_VERSION_REVISION__compiled_value = (uint8_t) ANIME_VERSION_REVISION; 
-
-const uint8_t ANIME__EXPRESSION_NESTEDNESS_MAX__compiled_value = (uint8_t) ANIME__EXPRESSION_NESTEDNESS_MAX; 
-const uint8_t ANIME__LONGEST_INFIX_EXPRESSION__compiled_value  = (uint8_t) ANIME__LONGEST_INFIX_EXPRESSION; 
-
-#define PROGRAM_NAME "Anime (lib part of ‘Mouton1’ — whose purpose is to read anime data description files into C data structures)" 
-#undef  PROGRAM_NAME
-#define PROGRAM_NAME "Mouton1_-_Anime" 
-static const char program_name[] = PROGRAM_NAME; 
-enum { program_name__cstrlen = ARRAY_SIZE(program_name) - 1 }; 
-#define PROGRAM_COPYRIGHT_YEAR1 "2003"
-#define PROGRAM_COPYRIGHT_YEAR2 "2024"
-#define PROGRAM_URL "https://github.com/Romain7426/Mouton1-anime" 
-
-#if 1
-const char anime_copyright[] = 
-"_Software_       : " PROGRAM_NAME "                                    " "\n"
-"_License_        : ISC-like license                                   " "\n"
-"                   https://en.wikipedia.org/wiki/ISC_license          " "\n"
-"_URL_            : " PROGRAM_URL "        " "\n"
-"_Copyright years_: " PROGRAM_COPYRIGHT_YEAR1 " - " PROGRAM_COPYRIGHT_YEAR2 " " "\n"
-"_Description_    : Lib of ‘Mouton1’, whose purpose is to read anime files into structured arrays of bytes. " "\n"
-"                                                                        " "\n"
-"Mouton1 — Anime " "\n"
-"Copyright (c) " PROGRAM_COPYRIGHT_YEAR1 " - " PROGRAM_COPYRIGHT_YEAR2 " " "\n"
-"                                                                        " "\n"
-"Permission to use, copy, modify, and distribute this software for any   " "\n"
-"purpose with or without fee is hereby granted without any restrictions. " "\n"
-"                                                                        " "\n"
-"THE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES" "\n"
-"WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF        " "\n"
-"MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR " "\n"
-"ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES  " "\n"
-"WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN   " "\n"
-"ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF " "\n"
-"OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.          " "\n"
-"                                                                        " "\n"
-"NB: We do not care of what you do with this code as long as             " "\n"
-"    you do not prevent us nor others from using it.                     " "\n"
-;
-#else 
-const char anime_copyright[] = 
-"_Software_: " PROGRAM_NAME "\n"
-"_License_: " "ISC License" "\n"
-"_URL_: " PROGRAM_URL "\n"
-"_Copyright years_: " PROGRAM_COPYRIGHT_YEAR1 " - " PROGRAM_COPYRIGHT_YEAR2 "\n"
-"" "\n"
-PROGRAM_NAME "\n"
-"Copyright (c) " PROGRAM_COPYRIGHT_YEAR1 " - " PROGRAM_COPYRIGHT_YEAR2 " " "\n"
-"All rights reserved." "\n"
-"" "\n"
-"Redistribution and use in source and binary forms, with or without" "\n"
-"modification, are permitted provided that the following conditions" "\n"
-"are met:" "\n"
-"1. Redistributions of source code must retain the above copyright" "\n"
-"   notice, this list of conditions and the following disclaimer." "\n"
-"2. Redistributions in binary form must reproduce the above copyright" "\n"
-"   notice, this list of conditions and the following disclaimer in the" "\n"
-"   documentation and/or other materials provided with the distribution." "\n"
-"" "\n"
-"THIS SOFTWARE IS PROVIDED BY THE _AUTHORS_ ``AS IS'' AND ANY EXPRESS" "\n"
-"OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED" "\n"
-"WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE" "\n"
-"DISCLAIMED. IN NO EVENT SHALL THE _AUTHORS_ BE LIABLE FOR ANY DIRECT," "\n"
-"INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES" "\n"
-"(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR" "\n"
-"SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)" "\n"
-"HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT," "\n"
-"STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING" "\n"
-"IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE" "\n"
-"POSSIBILITY OF SUCH DAMAGE." "\n" 
-"" "\n" 
-"NB: We do not care of what you do with this code as long as " "\n" 
-"    you do not prevent us nor others from using it." "\n" 
-;
-#endif
-enum {           anime_copyright__strlen__const_value = ARRAY_SIZE(anime_copyright) - 1 }; // environ 1570 
-const uint16_t   anime_copyright__strlen = (uint16_t) anime_copyright__strlen__const_value; 
-const char     * anime_copyright__get(void) { return anime_copyright; }; 
-void             anime_copyright__print(const int stduser_d) { if (stduser_d > 0) { write(stduser_d, anime_copyright, anime_copyright__strlen__const_value); if ('\n' != *(anime_copyright + anime_copyright__strlen__const_value - 1)) write(stduser_d, "\n", 1); }; }; 
-
-const char       anime_url[] = PROGRAM_URL; 
-enum {           anime_url__strlen__const_value = ARRAY_SIZE(anime_url) - 1 }; 
-const uint16_t   anime_url__strlen = anime_url__strlen__const_value; 
-const char     * anime_url__get(void) { return anime_url; }; 
-void             anime_url__print(const int stduser_d) { if (stduser_d > 0) { write(stduser_d, anime_url, anime_url__strlen__const_value); write(stduser_d, "\n", 1); }; }; 
-
-const char       anime_version[] = { DIGIT_TO_CHAR(ANIME_VERSION_MAJOR), '.', DIGIT_TO_CHAR(ANIME_VERSION_MINOR), '.', DIGIT_TO_CHAR(ANIME_VERSION_REVISION), '\0' }; 
-enum {           anime_version__strlen__const_value = ARRAY_SIZE(anime_version) - 1 }; 
-const uint16_t   anime_version__strlen = anime_version__strlen__const_value; 
-const char     * anime_version__get(void) { return anime_version; }; 
-void             anime_version__print(const int stduser_d) { if (stduser_d > 0) { write(stduser_d, anime_version, anime_version__strlen__const_value); write(stduser_d, "\n", 1); }; };
-
-
-const char       anime_example[] = 
-#include "chaman.anime.ci"
-; 
-enum {           anime_example__strlen__const_value = ARRAY_SIZE(anime_example) - 1 }; 
-const uint16_t   anime_example__strlen = anime_example__strlen__const_value; 
-const char     * anime_example__get(void) { return anime_example; }; 
-void             anime_example__print(const int stduser_d) { if (stduser_d > 0) { write(stduser_d, anime_example, anime_example__strlen__const_value); write(stduser_d, "\n", 1); }; }; 
-
-
-const int8_t ANIME_LINE_LEN_MAX__compiled_value = ANIME_LINE_LEN_MAX; 
-
-
-
+#include "anime_module_divers.ci"
 
 
 
