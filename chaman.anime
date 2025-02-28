@@ -10,6 +10,10 @@ physique {
   largeur := longueur;
   hauteur := 50.;
  };
+ //MaSSe := 240. (* +) 1;
+  //MaSSe := 1 * 2 + 3;
+  //MaSSe := 1 + 2 * 3;
+  //MaSSe := (1 + 2) * 3;
  MaSSe := 240. * (+ 1);
 }
 

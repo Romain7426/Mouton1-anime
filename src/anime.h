@@ -113,6 +113,8 @@ extern void anime__check_and_assert(const int8_t debug_print_huh, const int stdd
     X(ANIME__DATA_GENERATION__STACK_TOO_MANY_ITEMS,)			\
     X(ANIME__DATA_GENERATION__STACK_NOT_ENOUGH_ITEMS,)			\
     X(ANIME__DATA_GENERATION__MEMBRES_OVERFLOW,)			\
+    X(ANIME__DATA_GENERATION__UNEXPECTED_TOKEN,)			\
+    X(ANIME__DATA_GENERATION__MISSING_OPENPAR,)			\
   X(ANIME__DATA_GENERATION__RACINES_OVERFLOW,)				\
   X(ANIME__TREE__NO_SPACE_LEFT,)					\
   X(ANIME__TREE__WRONG_ADDRESS,)					\
@@ -174,6 +176,10 @@ extern void anime__check_and_assert(const int8_t debug_print_huh, const int stdd
     X(ANIME__SYNTAX__EXPR_NEIGHBORING_BINARY_OP,)			\
     X(ANIME__SYNTAX__EXPR_TOO_MANY_CONSTANTS,)				\
     X(ANIME__SYNTAX__EXPR_TOO_MANY_BINARY_OP,)				\
+    X(ANIME__SYNTAX__EXPR_ETAT_INCONNU,)				\
+    X(ANIME__SYNTAX__EXPR_UNEXPECTED_BINOP,)				\
+    X(ANIME__SYNTAX__EXPR_OPENPAR_NOT_FOUND,)				\
+    X(ANIME__SYNTAX__EXPR_UNEXPECTED_TOKEN,)				\
     /* Warnings */							\
     X(ANIME__NULL_STRUCT, = 1)						\
   X(ANIME__EMPTY_STRUCTURE,)						\

@@ -68,9 +68,10 @@
 //  - Après la compilation, il est lié à la bibliothèque anime.a. 
 // 
 // Aussi, il y a le fichier "anime_global.h". 
-// Celui-ci est juste un fichier de convenance, pour éviter les répétitions.
-// (Il pourrait être renommé "global.h"? Ou "common_headers.h"?) 
-// Il ne devrait pas y avoir de "anime_gloabl.c".
+// Celui-ci contient des définitions communes internes à la bibliothèque. 
+// Il devrait pas etre inclu par main. 
+// (Il pourrait être renommé "anime_common_def.h"? Ou "anime_common_headers.h"?) 
+// Il ne devrait pas y avoir de "anime_global.c".
 //
 // Enfin, il y a les bibliothèques communes: lib*.ci.
 #endif 
@@ -133,7 +134,7 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     return error_id; 
   }; 
   
-  
+ 
  label__body: { 
     this -> filename = anime__string_stack__push_lookup(this, input_name); 
     
@@ -152,7 +153,7 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     if (this -> stdlog_d > 0) { anime__syntax__print(this, this -> stdlog_d); }; 
 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
-    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[EXPRESSION -> SYNTAXE]" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[EXPRESSIONS -> SYNTAXE]" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Pour commencer, nous devons déterminer l'arité des symboles d'addition et de soustraction (unaire ou binaire?)." "\n"); }; 
     error_id = anime__syntax_expr__arity__compute(this);
     if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
@@ -160,12 +161,10 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     error_id = anime__syntax_expr__check_syntax(this); 
     if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Chaque expression est correctement écrite." "\n"); }; 
-    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> // Pour le moment, cette fonction ne détecte pas:  MaSSe := 240. (* +) 1;" "\n"); }; 
-    if (true) { dputs(STDERR_FILENO, "---> // Pour le moment, cette fonction ne détecte pas:  MaSSe := 240. (* +) 1;" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> ." "\n"); }; 
     
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
-    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[NOMS DES CHAMPS]" "\n"); }; 
+    if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[NOM DES CHAMPS]" "\n"); }; 
     error_id = anime__generation__field_names__compute(this); 
     if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Noms des champs: calculés" "\n"); }; 
@@ -187,7 +186,7 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     
     return ANIME__OK; 
   };   
-    
+  
 }; 
 
 

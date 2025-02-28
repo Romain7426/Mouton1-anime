@@ -281,7 +281,7 @@ static bool_t anime__syntax_expr__neighboring_binop_huh(const anime_t * this, co
       if (not(binop_huh)) { prev_was_binop = false; continue; }; 
       if (prev_was_binop) return true;
       prev_was_binop = true;
-      continue;
+      continue; 
     }; 
     
     return false; 
@@ -289,60 +289,255 @@ static bool_t anime__syntax_expr__neighboring_binop_huh(const anime_t * this, co
 }; 
 
 
+static int_anime_error_t anime__syntax_expr__sous_expression_huh(const anime_t * this, const int_lexeme_t expr_lexeme_start_i, const int8_t expr_lexemes_nb) { 
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  int_anime_error_t      error_id; 
+  int_lexeme_t            open__lexeme[ANIME__EXPRESSION_NESTEDNESS_MAX]; 
+  int_lexeme_t           close__lexeme[ANIME__EXPRESSION_NESTEDNESS_MAX]; 
+  int8_t                 syntax_ok_huh[ANIME__EXPRESSION_NESTEDNESS_MAX]; 
+  uint8_t                open_nb; 
+  goto label__body; 
+
+  int16_t error_sub__line; 
+  
+ label__fill_sous_expr: {
+    for (int_lexeme_t shift_i = 0; shift_i < expr_lexemes_nb; shift_i++) { 
+      const int_lexeme_t token_i = expr_lexeme_start_i + shift_i; 
+      const int_anime_token_type_t token_type = this -> lexeme_stack__type[token_i]; 
+      if (ANIME_TOKEN_OPENPAR  == token_type) goto label__open; 
+      if (ANIME_TOKEN_CLOSEPAR == token_type) goto label__close; 
+      if (ANIME_TOKEN_OPENBRACKET  == token_type) goto label__open; 
+      if (ANIME_TOKEN_CLOSEBRACKET == token_type) goto label__close; 
+      continue; 
+
+    label__error__nestedness_too_deep: {
+	error_id = ANIME__SYNTAX__EXPR_TOO_DEEP; 
+	//this -> error_id = error_id; *this -> error_str = '\0'; 
+	DISPLAY_TRACE(this -> stdlog_d, error_id); 
+	return error_id; 
+      };
+      
+    label__error__missing_open: { 
+	error_id =  (ANIME_TOKEN_CLOSEPAR == token_type) ? ANIME__SYNTAX__EXPR_MISSING_OPENPAR : ANIME__SYNTAX__EXPR_MISSING_OPENBRACKET; 
+	//this -> error_id = error_id; *this -> error_str = '\0'; 
+	DISPLAY_TRACE(this -> stdlog_d, error_id); 
+	return error_id; 
+      };
+
+    label__open: { 
+	if (ANIME__EXPRESSION_NESTEDNESS_MAX <= open_nb) { error_sub__line = __LINE__; goto label__error__nestedness_too_deep; }; 
+	open__lexeme[open_nb] = token_i; 
+	close__lexeme[open_nb] = -1; 
+	open_nb++; 
+	continue; 
+      };
+      
+    label__close: { 
+	if (0 >= open_nb) { error_sub__line = __LINE__; goto label__error__missing_open; }; 
+	int8_t j = open_nb; 
+	for (;;) {
+	  j--;
+	  if (0 > j) { error_sub__line = __LINE__; goto label__error__missing_open; }; 
+	  if (-1 != close__lexeme[j]) continue;
+	  close__lexeme[j] = token_i; 
+	  break; 
+	};
+	continue; 
+      }; 
+
+    };
+
+      
+    for (;;) { 
+      int8_t j = open_nb; 
+      for (;;) {
+	j--;
+	if (0 > j) break; 
+	if (-1 != close__lexeme[j]) continue;
+	{ error_sub__line = __LINE__; goto label__error__missing_close; }; 
+      };
+      break;
+
+    label__error__missing_close: { 
+	const int_anime_token_type_t token_type = this -> lexeme_stack__type[j]; 
+  	error_id = (ANIME_TOKEN_OPENPAR == token_type) ? ANIME__SYNTAX__EXPR_MISSING_CLOSEPAR : ANIME__SYNTAX__EXPR_MISSING_CLOSEBRACKET; 
+	//this -> error_id = error_id; *this -> error_str = '\0'; 
+	DISPLAY_TRACE(this -> stdlog_d, error_id); 
+	return error_id; 
+      };
+
+    };
+    
+    goto label__fill_done;
+  };
+  
+  
+  int_lexeme_t token_start_i;
+  int_lexeme_t token_end_i;
+  bool_t sous_expr_check_huh; 
+  int_lexeme_t unexpected_token; 
+  enum { STATE_1_DEBUT, STATE_2_APRES_BINOP, STATE_3_APRES_CONST }; 
+ label__sous_expr_check: {
+    sous_expr_check_huh = false; 
+    unexpected_token = -1; 
+    int8_t current_state = STATE_1_DEBUT; 
+    for (int_lexeme_t j = token_start_i + 1; j < token_end_i; j++) { 
+      const int_anime_token_type_t token_type = this -> lexeme_stack__type[j]; 
+      if (STATE_1_DEBUT       == current_state) goto label__state1;
+      if (STATE_2_APRES_BINOP == current_state) goto label__state2;
+      if (STATE_3_APRES_CONST == current_state) goto label__state3;
+      goto label__error__etat_inconnu; 
+      
+    label__state1: { 
+	assert(STATE_1_DEBUT == current_state); 
+	// Ici, on est au début d'une expression. 
+	if (UNARY_PREFIX_OPERATOR_HUH(token_type)) continue; 
+	if (BINARY_OPERATOR_HUH(token_type)) { unexpected_token = j; goto label__error__unexpected_binop; }; 
+	if (CONSTANT_VALUE_HUH(token_type)) { current_state = STATE_3_APRES_CONST; continue; }; 
+	if (UNARY_OUTFIX_OPERATOR_HUH__OPEN(token_type)) {
+	  for (int8_t q = 0; q < open_nb; q++) { 
+	    if (j == open__lexeme[q]) { j = close__lexeme[q]; current_state = STATE_3_APRES_CONST; continue; };
+	  };
+	  { unexpected_token = j; goto label__error__openpar_not_found; }; 
+	};
+	{ unexpected_token = j; goto label__error__unexpected_token; }; 
+      };
+
+    label__state2: { 
+	assert(STATE_2_APRES_BINOP == current_state); 
+	assert(false); 
+      };
+
+    label__state3: { 
+	assert(STATE_3_APRES_CONST == current_state); 
+	// Ici, on vient de lire une constante. 
+	// Et donc, deux possibilités: soit (i) un opérateur binaire, soit (ii) la fin de l'expression. 
+	if (j + 1 == token_end_i) { sous_expr_check_huh = true; break; }; 
+	if (BINARY_OPERATOR_HUH(token_type)) { current_state = STATE_1_DEBUT; continue; }; 
+	{ unexpected_token = j; goto label__error__unexpected_token; }; 
+      };
+
+    label__error__etat_inconnu: {
+	error_id = ANIME__SYNTAX__EXPR_ETAT_INCONNU; 
+	//this -> error_id = error_id; *this -> error_str = '\0'; 
+	DISPLAY_TRACE(this -> stdlog_d, error_id); 
+	return error_id; 
+      };
+
+    label__error__unexpected_token: {
+	error_id = ANIME__SYNTAX__EXPR_UNEXPECTED_TOKEN; 
+	//this -> error_id = error_id; *this -> error_str = '\0'; 
+	DISPLAY_TRACE(this -> stdlog_d, error_id); 
+	return error_id; 
+      };
+      
+    label__error__unexpected_binop: {
+	error_id = ANIME__SYNTAX__EXPR_UNEXPECTED_BINOP; 
+	//this -> error_id = error_id; *this -> error_str = '\0'; 
+	DISPLAY_TRACE(this -> stdlog_d, error_id); 
+	return error_id; 
+      };
+
+    label__error__openpar_not_found: {
+	error_id = ANIME__SYNTAX__EXPR_OPENPAR_NOT_FOUND; 
+	//this -> error_id = error_id; *this -> error_str = '\0'; 
+	DISPLAY_TRACE(this -> stdlog_d, error_id); 
+	return error_id; 
+      };
+
+      assert(false);
+    };
+
+    goto label__sous_expr_check__done; 
+  };
+  
+  
+ label__body: {
+    goto label__fill_sous_expr; label__fill_done: {}; 
+    if (0 == open_nb) return ANIME__OK; 
+    
+    { 
+      int8_t t = open_nb;
+      for (;;) { 
+	t--; 
+	if (0 > t) break;
+	token_start_i = open__lexeme [t]; 
+	token_end_i   = close__lexeme[t]; 
+	goto label__sous_expr_check; label__sous_expr_check__done: {}; 
+      };
+    };
+
+    return ANIME__OK;;
+  };
+};
+
+
 static int_anime_error_t anime__syntax_expr__check_syntax__one(const anime_t * this, const int_expr_t expr_id) { 
   LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
-  int_anime_error_t error_id = ANIME__OK; 
-  
-  const int_lexeme_t expr_lexeme_start_i = this -> expr_lexeme_start_i[expr_id]; 
-  const int8_t       expr_lexemes_nb     = this -> expr_lexemes_nb    [expr_id]; 
+  int_anime_error_t error_id; 
+  goto label__body; 
+
+  int16_t error_sub__line = -1;
+ label__error__sub: { 
+    DISPLAY_TRACE(this -> stdlog_d, error_id); 
+    return error_id; 
+  }; 
+
+ label__body: {  
+    const int_lexeme_t expr_lexeme_start_i = this -> expr_lexeme_start_i[expr_id]; 
+    const int8_t       expr_lexemes_nb     = this -> expr_lexemes_nb    [expr_id]; 
 
 #if 0
-  if (23 == expr_lexeme_start_i) {
-    dputs3(STDERR_FILENO, "expr_id: ", int_string(expr_id), "\n"); 
-    dputs3(STDERR_FILENO, "expr_lexemes_nb:    ", int_string(expr_lexemes_nb), "\n"); 
-    assert(false); 
-  };
+    if (23 == expr_lexeme_start_i) {
+      dputs3(STDERR_FILENO, "expr_id: ", int_string(expr_id), "\n"); 
+      dputs3(STDERR_FILENO, "expr_lexemes_nb:    ", int_string(expr_lexemes_nb), "\n"); 
+      assert(false); 
+    };
 #endif 
   
-  const bool_t has_openbrace_huh = anime__syntax_expr__has_token_huh(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_OPENBRACE); 
-  if (has_openbrace_huh) { return ANIME__SYNTAX__EXPR_HAS_OPENBRACE; }; 
+    const bool_t has_openbrace_huh = anime__syntax_expr__has_token_huh(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_OPENBRACE); 
+    if (has_openbrace_huh) { return ANIME__SYNTAX__EXPR_HAS_OPENBRACE; }; 
 
-  const bool_t has_closebrace_huh = anime__syntax_expr__has_token_huh(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_CLOSEBRACE); 
-  if (has_closebrace_huh) { return ANIME__SYNTAX__EXPR_HAS_CLOSEBRACE; }; 
+    const bool_t has_closebrace_huh = anime__syntax_expr__has_token_huh(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_CLOSEBRACE); 
+    if (has_closebrace_huh) { return ANIME__SYNTAX__EXPR_HAS_CLOSEBRACE; }; 
 
-  const int8_t  openbracket_count = anime__syntax_expr__count_token(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_OPENBRACKET); 
-  const int8_t closebracket_count = anime__syntax_expr__count_token(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_CLOSEBRACKET); 
-  if (openbracket_count > closebracket_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_OPENBRACKETS; }; 
-  if (openbracket_count < closebracket_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_CLOSEBRACKETS; }; 
+    const int8_t  openbracket_count = anime__syntax_expr__count_token(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_OPENBRACKET); 
+    const int8_t closebracket_count = anime__syntax_expr__count_token(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_CLOSEBRACKET); 
+    if (openbracket_count > closebracket_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_OPENBRACKETS; }; 
+    if (openbracket_count < closebracket_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_CLOSEBRACKETS; }; 
 
-  const int8_t  openpar_count = anime__syntax_expr__count_token(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_OPENPAR); 
-  const int8_t closepar_count = anime__syntax_expr__count_token(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_CLOSEPAR); 
-  if (openpar_count > closepar_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_OPENPARS; }; 
-  if (openpar_count < closepar_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_CLOSEPARS; }; 
+    const int8_t  openpar_count = anime__syntax_expr__count_token(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_OPENPAR); 
+    const int8_t closepar_count = anime__syntax_expr__count_token(this, expr_lexeme_start_i, expr_lexemes_nb, ANIME_TOKEN_CLOSEPAR); 
+    if (openpar_count > closepar_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_OPENPARS; }; 
+    if (openpar_count < closepar_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_CLOSEPARS; }; 
   
-  error_id = anime__syntax_expr__balanced_huh(this, expr_lexeme_start_i, expr_lexemes_nb);  
-  if (ANIME__OK != error_id) return error_id;
+    error_id = anime__syntax_expr__balanced_huh(this, expr_lexeme_start_i, expr_lexemes_nb);  
+    if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
 
-  const bool_t neighboring_constants_huh = anime__syntax_expr__neighboring_constants_huh(this, expr_lexeme_start_i, expr_lexemes_nb); 
-  if (neighboring_constants_huh) { return ANIME__SYNTAX__EXPR_NEIGHBORING_CONSTANTS; }; 
+    const bool_t neighboring_constants_huh = anime__syntax_expr__neighboring_constants_huh(this, expr_lexeme_start_i, expr_lexemes_nb); 
+    if (neighboring_constants_huh) { return ANIME__SYNTAX__EXPR_NEIGHBORING_CONSTANTS; }; 
   
-  const bool_t neighboring_binop_huh = anime__syntax_expr__neighboring_binop_huh(this, expr_lexeme_start_i, expr_lexemes_nb); 
-  if (neighboring_binop_huh) { return ANIME__SYNTAX__EXPR_NEIGHBORING_BINARY_OP; }; 
+    const bool_t neighboring_binop_huh = anime__syntax_expr__neighboring_binop_huh(this, expr_lexeme_start_i, expr_lexemes_nb); 
+    if (neighboring_binop_huh) { return ANIME__SYNTAX__EXPR_NEIGHBORING_BINARY_OP; }; 
   
-  const int8_t constants_count = anime__syntax_expr__count_constants(this, expr_lexeme_start_i, expr_lexemes_nb); 
-  const int8_t binary_count    = anime__syntax_expr__count_binary   (this, expr_lexeme_start_i, expr_lexemes_nb); 
-  if (constants_count > 1 + binary_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_CONSTANTS; }; 
-  if (constants_count < 1 + binary_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_BINARY_OP; }; 
-
+    const int8_t constants_count = anime__syntax_expr__count_constants(this, expr_lexeme_start_i, expr_lexemes_nb); 
+    const int8_t binary_count    = anime__syntax_expr__count_binary   (this, expr_lexeme_start_i, expr_lexemes_nb); 
+    if (constants_count > 1 + binary_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_CONSTANTS; }; 
+    if (constants_count < 1 + binary_count) { return ANIME__SYNTAX__EXPR_TOO_MANY_BINARY_OP; }; 
+  
 #if 0  
-  if (23 == expr_lexeme_start_i) {
-    dputs3(STDERR_FILENO, "constants_count: ", int_string(constants_count), "\n"); 
-    dputs3(STDERR_FILENO, "binary_count:    ", int_string(binary_count), "\n"); 
-    assert(false); 
-  };
+    if (23 == expr_lexeme_start_i) {
+      dputs3(STDERR_FILENO, "constants_count: ", int_string(constants_count), "\n"); 
+      dputs3(STDERR_FILENO, "binary_count:    ", int_string(binary_count), "\n"); 
+      assert(false); 
+    };
 #endif 
-
-  return error_id; 
+  
+    error_id = anime__syntax_expr__sous_expression_huh(this, expr_lexeme_start_i, expr_lexemes_nb);
+    if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
+  
+    return ANIME__OK; 
+  }; 
 };
 
 

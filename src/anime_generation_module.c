@@ -107,27 +107,27 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
   int_lexeme_t postfix_buffer[ANIME__LONGEST_INFIX_EXPRESSION];		\
   int8_t       postfix_buffer_nb;					\
   error_id = anime__generation__convert_infix_to_postfix(this, __lexeme_i__, __lexemes_nb__, postfix_buffer, ANIME__LONGEST_INFIX_EXPRESSION, &postfix_buffer_nb); \
-  if (ANIME__OK != error_id) goto label__error__infix_to_postfix_failed; \
+  if (ANIME__OK != error_id) { error_sub__line = __LINE__; goto label__error__sub; }; \
   /* END OF MACRO */
 
 #define READ_LALR_FLOAT(__lexeme_i__, __lexemes_nb__) {			\
     CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
     error_id = anime__generation__eval_postfix_float(this, postfix_buffer, postfix_buffer_nb, &floatval, /*stduser_d*/-1, this -> stdlog_d); \
-    if (ANIME__OK != error_id) goto label__error__error_in_postfix_computation; \
+    if (ANIME__OK != error_id) { error_sub__line = __LINE__; goto label__error__sub; }; \
   };									\
   /* END OF MACRO */
 
 #define READ_LALR_INT(__lexeme_i__, __lexemes_nb__) {			\
     CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
     error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/NULL, /*int16val_r*/&intval, /*boolval_r*/NULL, /*stduser_d*/-1, this -> stdlog_d); \
-    if (ANIME__OK != error_id) goto label__error__error_in_postfix_computation; \
+    if (ANIME__OK != error_id) { error_sub__line = __LINE__; goto label__error__sub; }; \
   };									\
   /* END OF MACRO */
 
 #define READ_LALR_BOOL(__lexeme_i__, __lexemes_nb__) {			\
     CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
     error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/NULL, /*int16val_r*/NULL, /*boolval_r*/&boolval, /*stduser_d*/-1, this -> stdlog_d); \
-    if (ANIME__OK != error_id) goto label__error__error_in_postfix_computation; \
+    if (ANIME__OK != error_id) { error_sub__line = __LINE__; goto label__error__sub; }; \
   };									\
   /* END OF MACRO */
 
@@ -135,7 +135,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
     CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
     /* POSTFIX_BUFFER_PRINT(postfix_buffer,postfix_buffer_nb);	*/	\
     error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/&floatval, /*int16val_r*/&intval, /*boolval_r*/&boolval, /*stduser_d*/-1, this -> stdlog_d); \
-    if (ANIME__OK != error_id) goto label__error__error_in_postfix_computation; \
+    if (ANIME__OK != error_id) { error_sub__line = __LINE__; goto label__error__sub; }; \
   };									\
   /* END OF MACRO */
 
@@ -149,34 +149,31 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
   int_anime_error_t error_id; 
   goto label__body; 
 
- label__error__infix_to_postfix_failed: {
+
+
+  int16_t error_sub__line = -1;
+ label__error__sub: { 
+    //this -> error_id = error_id; *this -> error_str = '\0'; 
+    DISPLAY_TRACE(this -> stdlog_d, error_id); 
+    return error_id; 
+  };
+
+ label__error__token_id_is_negative: {
+    error_id = ANIME__FIELD_VALUE__TOKEN_ID_NEG; 
+    DISPLAY_TRACE(this -> stdlog_d, error_id); 
+    //dputs(2, "ANIME__FIELD_VALUE__TOKEN_ID_NEG ="); dputn(2, ANIME__FIELD_VALUE__TOKEN_ID_NEG); dput_eol(2); 
     return error_id; 
   }; 
 
- label__error__error_in_postfix_computation: { 
-    return this -> error_id; 
-  }; 
-
- label__error__token_id_is_negative: {
-    //dputs(2, "ANIME__FIELD_VALUE__TOKEN_ID_NEG ="); dputn(2, ANIME__FIELD_VALUE__TOKEN_ID_NEG); dput_eol(2); 
-    return ANIME__FIELD_VALUE__TOKEN_ID_NEG; 
-  }; 
-
  label__error__token_id_is_out_of_bound: { 
+    error_id = ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND; 
+    DISPLAY_TRACE(this -> stdlog_d, error_id); 
     //dputs(2, "ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND ="); dputn(2, ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); dput_eol(2); 
-    return ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND; 
+    return error_id; 
   }; 
 
- label__body: { 
-    const int_lexeme_t lexeme_stack__nb = this -> lexeme_stack__nb; 
-#if 0 
-    const int_lexeme_t lexeme_i   = this -> masse__lexeme_i; 
-    const int8_t       lexemes_nb = this -> masse__lexemes_nb;
-    if (0 > lexeme_i) goto label__error__token_id_is_negative; 
-    READ_LALR_FLOAT(lexeme_i, lexemes_nb); 
-    this -> masse = floatval; 
-#endif 
-    
+
+ label__macros: { 
 #define COMPUTE_FLOAT(__field_name__) {					\
       const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
       const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
@@ -211,8 +208,20 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
       if (lexeme_stack__nb <= lexeme_i + lexemes_nb) goto label__error__token_id_is_out_of_bound; \
       READ_LALR_VALUE(lexeme_i, lexemes_nb);				\
       this -> __field_name__[__item_i__] = __type_val__;		\
-  };									\
-  /* END OF MACRO */
+    };									\
+    /* END OF MACRO */
+  }; 
+
+ label__body: { 
+    const int_lexeme_t lexeme_stack__nb = this -> lexeme_stack__nb; 
+#if 0 
+    const int_lexeme_t lexeme_i   = this -> masse__lexeme_i; 
+    const int8_t       lexemes_nb = this -> masse__lexemes_nb;
+    if (0 > lexeme_i) goto label__error__token_id_is_negative; 
+    READ_LALR_FLOAT(lexeme_i, lexemes_nb); 
+    this -> masse = floatval; 
+#endif 
+    
     
     COMPUTE_FLOAT(choc_longueur);
     COMPUTE_FLOAT(choc_largeur);
@@ -223,9 +232,9 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
     COMPUTE_BOOL(hostile); 
 
 #if 0
-  float              membres_largeur    [ANIME_MEMBRES_SIZE]; 
-  float              membres_hauteur    [ANIME_MEMBRES_SIZE]; 
-  float              membres_angle_max_y[ANIME_MEMBRES_SIZE]; 
+    float              membres_largeur    [ANIME_MEMBRES_SIZE]; 
+    float              membres_hauteur    [ANIME_MEMBRES_SIZE]; 
+    float              membres_angle_max_y[ANIME_MEMBRES_SIZE]; 
 
     for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) DO_ARRAY_ITEM(actions_array_nom,action_i);
     for (int8_t  event_i = 0;  event_i < this ->  events_nb;  event_i++) DO_ARRAY_ITEM( events_array_nom,event_i);
@@ -251,13 +260,13 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
       COMPUTE_ARRAY_ITEM(racines_angle_y,racine_i,floatval);
     };
     
+    return ANIME__OK; 
+  };
+  
 #undef COMPUTE_ARRAY_ITEM
 #undef COMPUTE_BOOL
 #undef COMPUTE_INT
 #undef COMPUTE_FLOAT
-    
-    return ANIME__OK; 
-  };
 }; 
 
 
