@@ -39,11 +39,16 @@ static int_anime_error_t anime__syntax_expr__arity__compute__one(anime_t * this,
   const int8_t       lexemes_nb     = this -> expr_lexemes_nb    [expr_id]; 
   goto label__body; 
   
+  int16_t error_sub__line = -1;
  label__error__sub: {
+#if 1 
+    DISPLAY_TRACE(this -> stdlog_d, error_id); 
+#else
     enum { ERROR_STR_BYTESIZE = 2048 }; 
     char error_str[ERROR_STR_BYTESIZE]; 
     snprintf(error_str, ERROR_STR_BYTESIZE, "<%s>: " "%s[%d]: " "%s: %s" "\n", anime__filename_get(this), error_id > 0 ? LANG("Attention","Warning") : LANG("Erreur","Error"), error_id, int_anime_error__get_cstr(error_id), anime__error_cstr_get(this)); 
     if (this -> stdlog_d > 0) {  dputs9(this -> stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", error_str, "\n"); }; 
+#endif
     return error_id; 
   }; 
   
@@ -104,11 +109,16 @@ int_anime_error_t anime__syntax_expr__arity__compute(anime_t * this) {
   int_anime_error_t error_id; 
   goto label__body; 
   
+  int16_t error_sub__line = -1;
  label__error__sub: {
+#if 1 
+    DISPLAY_TRACE(this -> stdlog_d, error_id); 
+#else
     enum { ERROR_STR_BYTESIZE = 2048 }; 
     char error_str[ERROR_STR_BYTESIZE]; 
     snprintf(error_str, ERROR_STR_BYTESIZE, "<%s>: " "%s[%d]: " "%s: %s" "\n", anime__filename_get(this), error_id > 0 ? LANG("Attention","Warning") : LANG("Erreur","Error"), error_id, int_anime_error__get_cstr(error_id), anime__error_cstr_get(this)); 
     if (this -> stdlog_d > 0) {  dputs9(this -> stdlog_d, "{", __FILE__, ":", STRINGIFY(__LINE__), ":<", __func__, "()>}: ", error_str, "\n"); }; 
+#endif
     return error_id; 
   }; 
   
@@ -1289,3 +1299,7 @@ static int_anime_error_t anime__syntax__is_well_parenthesised_huh(const anime_t 
     return ANIME__OK; 
   };  
 }; 
+
+
+void anime__syntax__check_and_assert(void) {
+};

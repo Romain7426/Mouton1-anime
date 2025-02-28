@@ -205,7 +205,63 @@ static void main__usage(const int argc, const char * argv[], const int stduser_d
 static void main__help_src(const int argc, const char * argv[], const int stduser_d) { 
   dputs_array(stduser_d, "[ ", argv[0], "] -- ", "LIB ANIME" "\n"); 
   dputs_array(stduser_d, "Le code source du programme est ainsi structuré: " "\n"); 
-  dputs_array(stduser_d, "AGENDA TOTO XXX FIXME" "\n"); 
+
+  static const char structure_du_code_source[] = 
+    "FRA <RL>" "\n"
+    "Ce module est le point d'entrée du programme. " "\n"
+    "Il est le coordonnateur entre les sous-modules. " "\n"
+    "Lui-même ne calcule rien. " "\n"
+    "Les autres modules sont le traitement pendant que il est la commande. " "\n"
+    "" "\n"
+    "anime_module.h est vide puisque: " "\n"
+    " - Il n'est le sous-module d'aucun module. " "\n"
+    "   Donc il n'exporte aucune fonction à un sur-module. " "\n"
+    " - Il n'exporte que les fonctions exportées dans la bibliothèque, " "\n"
+    "   c'est-à-dire celles déclarées dans anime.h. " "\n"
+    "" "\n"
+    "Pour les sous-modules, les fonctions exportées par les sous-modules sont les " "\n"
+    "fonctions utilisées par le module coordinateur. " "\n"
+    "" "\n"
+    "Les sous-modules: " "\n"
+    " - anime_lexer_module.c " "\n"
+    " - anime_syntax_module.c " "\n"
+    " - anime_generation_module.c " "\n"
+    "" "\n"
+    "Le sous-module anime_lexer_module.c procède à l'analyse lexicale:" "\n"
+    " - celui-là recompose le fichier de description (une suite de caractères) " "\n"
+    "   en unités lexicales (lexèmes, tokens), c'est-à-dire manipulable " "\n"
+    "   par l'analyseur de structure. " "\n"
+    "" "\n"
+    "Le sous-module anime_syntax_module.c procède à l'analyse syntaxique:" "\n"
+    " - Celui-là vérifie la structure du fichier de description." "\n"
+    "   Celui-ci est-il correctement structuré? " "\n"
+    "   Celui-ci est-il correctement écrit? " "\n"
+    " - Techniquement, du fait des expressions infixes pouvant avoir un nombre arbitraire " "\n"
+    "   de sous-expressions, il s'agit de la partie la plus complexe. " "\n"
+    "   (Interdire les sous-expressions réduirait considérablement la complexité.) " "\n"
+    "" "\n"
+    "Le sous-module anime_generation_module.c procède à l'évaluation et au remplissage de la structure de données:" "\n"
+    " - Rien à ajouter. " "\n"
+    "" "\n"
+    "Chaque sous-module est composé de sous-fichiers." "\n"
+    "Chacun sont directement inclus dans le sous-module:" "\n"
+    " - Les fichiers hi et les fichier ci." "\n"
+    "" "\n"
+    "Également, il existe le module \"main.c\" pour le programmen indépendant " "\n"
+    "d'analyse et de vérification d'un fichier de description. " "\n"
+    "Ce module est indépendant de la bibliothèque: " "\n"
+    " - Celui-là n'inclut que le fichier anime.h. " "\n"
+    " - Après la compilation, il est lié à la bibliothèque anime.a. " "\n"
+    "" "\n"
+    "Aussi, il y a le fichier \"anime_global.h\". " "\n"
+    "Celui-ci est juste un fichier de convenance, pour éviter les répétitions." "\n"
+    "(Il pourrait être renommé \"global.h\"? Ou \"common_headers.h\"?) " "\n"
+    "Il ne devrait pas y avoir de \"anime_gloabl.c\"" "\n"
+    "" "\n"
+    "Enfin, il y a les bibliothèques communes: lib*.ci." "\n"
+    ; 
+
+  dputs(stduser_d, structure_du_code_source); 
 };
 
 static void main__lang_list(const int argc, const char * argv[], const int stduser_d) { 

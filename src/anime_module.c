@@ -20,7 +20,60 @@
 #include "anime_module_divers.ci"
 
 
-
+#if 0
+// FRA <RL>
+// Ce module est le point d'entrée du programme. 
+// Il est le coordonnateur entre les sous-modules. 
+// Lui-même ne calcule rien. 
+// Les autres modules sont le traitement pendant que il est la commande. 
+// 
+// anime_module.h est vide puisque: 
+//  - Il n'est le sous-module d'aucun module. 
+//    Donc il n'exporte aucune fonction à un sur-module. 
+//  - Il n'exporte que les fonctions exportées dans la bibliothèque, 
+//    c'est-à-dire celles déclarées dans anime.h. 
+// 
+// Pour les sous-modules, les fonctions exportées par les sous-modules sont les 
+// fonctions utilisées par le module coordinateur. 
+// 
+// Les sous-modules: 
+//  - anime_lexer_module.c 
+//  - anime_syntax_module.c 
+//  - anime_generation_module.c 
+// 
+// Le sous-module anime_lexer_module.c procède à l'analyse lexicale:
+//  - celui-là recompose le fichier de description (une suite de caractères) 
+//    en unités lexicales (lexèmes, tokens), c'est-à-dire manipulable 
+//    par l'analyseur de structure. 
+// 
+// Le sous-module anime_syntax_module.c procède à l'analyse syntaxique:
+//  - Celui-là vérifie la structure du fichier de description.
+//    Celui-ci est-il correctement structuré? 
+//    Celui-ci est-il correctement écrit? 
+//  - Techniquement, du fait des expressions infixes pouvant avoir un nombre arbitraire 
+//    de sous-expressions, il s'agit de la partie la plus complexe. 
+//    (Interdire les sous-expressions réduirait considérablement la complexité.) 
+// 
+// Le sous-module anime_generation_module.c procède à l'évaluation et au remplissage de la structure de données:
+//  - Rien à ajouter. 
+// 
+// Chaque sous-module est composé de sous-fichiers.
+// Chacun sont directement inclus dans le sous-module:
+//  - Les fichiers hi et les fichier ci.
+// 
+// Également, il existe le module "main.c" pour le programmen indépendant 
+// d'analyse et de vérification d'un fichier de description. 
+// Ce module est indépendant de la bibliothèque: 
+//  - Celui-là n'inclut que le fichier anime.h. 
+//  - Après la compilation, il est lié à la bibliothèque anime.a. 
+// 
+// Aussi, il y a le fichier "anime_global.h". 
+// Celui-ci est juste un fichier de convenance, pour éviter les répétitions.
+// (Il pourrait être renommé "global.h"? Ou "common_headers.h"?) 
+// Il ne devrait pas y avoir de "anime_gloabl.c".
+//
+// Enfin, il y a les bibliothèques communes: lib*.ci.
+#endif 
 
 
 
@@ -33,14 +86,18 @@ int_anime_error_t anime__fill_from_file(anime_t * this, const char * filepathnam
 int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d) { 
   goto label__body; 
 
-label__error__cannot_make_pipe: { 
+  int16_t error_sub__line = -1;
+  //label__error__sub: {
+ label__error__cannot_make_pipe: { 
     this -> error_id = ANIME__TOKEN_PARSER__CANNOT_MAKE_PIPE; 
+    *this -> error_str = '\0'; 
+    DISPLAY_TRACE(this -> stdlog_d, this -> error_id); 
     return this -> error_id; 
   }; 
 
-label__pipe_buffer_size_ok: { 
+ label__pipe_buffer_size_ok: { 
     int buffer_pipe[2]; // RL: [0] is output (read end), [1] is input (write end) 
-    if (-1 == pipe(buffer_pipe)) goto label__error__cannot_make_pipe; 
+    if (-1 == pipe(buffer_pipe)) { error_sub__line = __LINE__ ; goto label__error__cannot_make_pipe; }; 
     write(buffer_pipe[1], buffer, buffer_bytesize); 
     this -> error_id = anime__fill_from_fd(this, input_name, buffer_pipe[0], stduser_d); 
     close(buffer_pipe[0]);
@@ -50,31 +107,31 @@ label__pipe_buffer_size_ok: {
 
  label__pipe_buffer_size_is_too_small: { 
     const int my_buffer_fd = buffer_to_fd__open(buffer, buffer_bytesize); 
-    if (0 > my_buffer_fd) goto label__error__cannot_make_pipe; 
+    if (0 > my_buffer_fd) { error_sub__line = __LINE__ ; goto label__error__cannot_make_pipe; }; 
     this -> error_id = anime__fill_from_fd(this, input_name, my_buffer_fd, stduser_d); 
     buffer_to_fd__close(my_buffer_fd); 
     return this -> error_id;
   }; 
-
-label__body: {   
+  
+ label__body: {   
     if (UINTMAX_C(PIPEBUFFERSIZE) <= (uintmax_t)buffer_bytesize) goto label__pipe_buffer_size_ok; 
     goto label__pipe_buffer_size_is_too_small; 
   }; 
 }; 
 
 
+
+
+
 int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, const int input_fd, const int stduser_d) { 
   int_anime_error_t error_id; 
   goto label__body; 
 
-#if 0
- label__error__input_error: { 
-    this -> error_id = ANIME__TOKEN__INPUT__ERROR; 
-    snprintf(this -> error_str, this -> error_size, "Error while initializing input buffer for tokenizing"); 
-    if (this -> stdlog_d > 0) { dprintf(this -> stdlog_d, "{" __FILE__ ":" STRINGIFY(__LINE__) ":<%s()>}: " "%s" "\n", __func__, this -> error_str); }; 
-    return this -> error_id; 
+  int16_t error_sub__line = -1;
+ label__error__sub: { 
+    DISPLAY_TRACE(this -> stdlog_d, error_id); 
+    return error_id; 
   }; 
-#endif
   
   
  label__body: { 
@@ -83,13 +140,13 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[LEXEMES]" "\n"); }; 
     error_id = anime__lexer__fill_from_fd(this, input_fd); 
-    if (error_id != ANIME__OK) { return error_id; }; 
+    if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
     if (this -> stdlog_d > 0) { anime__lexeme__print_all(this, this -> stdlog_d); }; 
     
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[STRUCTURE]" "\n"); }; 
     error_id = anime__syntax__structure_check_and_fill(this, /*stdwarning_d*/stduser_d, /*stderror_d*/stduser_d); 
-    if (error_id != ANIME__OK) { return error_id; }; 
+    if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Reconstruction de la structure: réalisée" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Cohérence de la structure: vérifiée" "\n"); }; 
     if (this -> stdlog_d > 0) { anime__syntax__print(this, this -> stdlog_d); }; 
@@ -98,10 +155,10 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[EXPRESSION -> SYNTAXE]" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Pour commencer, nous devons déterminer l'arité des symboles d'addition et de soustraction (unaire ou binaire?)." "\n"); }; 
     error_id = anime__syntax_expr__arity__compute(this);
-    if (error_id != ANIME__OK) { return error_id; }; 
+    if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Arités calculées" "\n"); }; 
     error_id = anime__syntax_expr__check_syntax(this); 
-    if (error_id != ANIME__OK) { return error_id; }; 
+    if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Chaque expression est correctement écrite." "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> // Pour le moment, cette fonction ne détecte pas:  MaSSe := 240. (* +) 1;" "\n"); }; 
     if (true) { dputs(STDERR_FILENO, "---> // Pour le moment, cette fonction ne détecte pas:  MaSSe := 240. (* +) 1;" "\n"); }; 
@@ -110,25 +167,25 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[NOMS DES CHAMPS]" "\n"); }; 
     error_id = anime__generation__field_names__compute(this); 
-    if (error_id != ANIME__OK) { return error_id; }; 
+    if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Noms des champs: calculés" "\n"); }; 
     
     this -> filled_huh = 2; // RL: À supprimer. 
     error_id = anime__post_syntax__consistency_check(this, stduser_d); 
-    if (error_id != ANIME__OK) { return error_id; }; 
+    if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Absence d’incohérence entre les noms des champs: vérifiée" "\n"); }; 
     
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[VALEURS DES CHAMPS]" "\n"); }; 
     error_id = anime__generation__field_values__compute(this); 
-    if (error_id != ANIME__OK) { return error_id; }; 
+    if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "---> Valeurs des champs: calculées" "\n"); }; 
     
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[TERMINÉ]" "\n"); }; 
     if (this -> stdlog_d > 0) { anime__print_d(this, this -> stdlog_d); }; 
     
-    return error_id; 
+    return ANIME__OK; 
   };   
     
 }; 
@@ -148,9 +205,12 @@ void anime__check_and_assert(const int8_t debug_print_huh, const int stddebug_d)
   assert(ANIME_VERSION_MAJOR == ANIME_VERSION_MAJOR__compiled_value); 
   assert(ANIME_VERSION_MINOR <= ANIME_VERSION_MINOR__compiled_value); 
   //assert(ANIME_VERSION_REVISION <= ANIME_VERSION_REVISION__compiled_value); 
+  
 
-
+  int_anime_error__check_and_assert();   
   anime__lexer__check_and_assert(); 
+  anime__syntax__check_and_assert(); 
+  anime__generation__check_and_assert(); 
 }; 
 
 

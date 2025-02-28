@@ -587,3 +587,10 @@ static int_anime_error_t anime__generation__eval_postfix_float(anime_t * this, c
   return anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, floatval_r, /*int16val_r*/NULL, /*boolval_r*/NULL, stduser_d, stdlog_d); 
 }; 
 
+
+
+
+void anime__generation__check_and_assert(void) {
+  // FRA <RL>: Il semblerait que cet élément ne soit plus utile.
+  //int_anime_syntax_type__check_and_assert(); 
+};

@@ -62,4 +62,16 @@ extern const uint8_t ANIME__LONGEST_INFIX_EXPRESSION__compiled_value;
 extern const int16_t anime_t_sizeof;
 
 
+
+
+#define DISPLAY_TRACE(__stdlog_d__,__error_id__) {			\
+    enum { TRACE_BYTESIZE = 1 << 11 };					\
+    char trace[TRACE_BYTESIZE];						\
+    snprintf(trace, TRACE_BYTESIZE, "{" __FILE__ ":%d:<%s()>}: " "%s" "\n", error_sub__line, __func__, int_anime_error__get_cstr(__error_id__)); \
+    if (__stdlog_d__ > 0) { dputs(__stdlog_d__, trace); };		\
+  };									\
+  /* END OF MACRO*/ 
+  
+
+
 #endif /* ANIME_GLOBAL_H */
