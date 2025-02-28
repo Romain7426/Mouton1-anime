@@ -1,0 +1,143 @@
+
+#ifdef ANIME__AUTOMATA_TYPE__H 
+#  ifdef ANIME__AUTOMATA_TYPE__C 
+#    error Exclusivement soit ANIME__AUTOMATA_TYPE__H soit ANIME__AUTOMATA_TYPE__C 
+#  endif 
+#else
+#  ifndef ANIME__AUTOMATA_TYPE__C 
+#    define ANIME__AUTOMATA_TYPE__H 
+#  endif 
+#endif 
+
+#ifdef ANIME__AUTOMATA_TYPE__H 
+#  define ANIME__AUTOMATA_TYPE__H__ALREADY_INCLUDED 
+#endif 
+
+#ifdef ANIME__AUTOMATA_TYPE__C 
+#  define ANIME__AUTOMATA_TYPE__C__ALREADY_INCLUDED 
+#endif 
+
+#ifdef ANIME__AUTOMATA_TYPE__H 
+#  define EMPTY_ARRAY_DEFINITION 
+#  define VALUE_DEFINITION(value)
+#else 
+#  define EMPTY_ARRAY_DEFINITION = { } 
+#  define VALUE_DEFINITION(value) = value
+#endif 
+
+#ifndef EXTERN 
+#  define EXTERN extern
+#endif
+
+#define extern 1
+#define static 2
+// RL: Lors d’une définition ‘extern’, le mot-clef ‘extern’ doit ne pas être énoncé. 
+//     Lors d’une définition ‘static’, le mot-clef ‘static’ doit être répété. 
+//     D’où la macro ‘EXTERN_DEFINITION’. 
+#if   (EXTERN == extern) 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#elif (EXTERN == static) 
+#  define EXTERN_DECLARATION static
+#  define EXTERN_DEFINITION  static
+#else 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#endif 
+#undef extern 
+#undef static 
+
+#ifndef ANIME__AUTOMATA_TYPE__TYPE_T
+#  define ANIME__AUTOMATA_TYPE__TYPE_T int8_t 
+#endif 
+
+
+
+#ifndef ANIME__AUTOMATA_TYPE__LIST 
+#  error Il faut définir ‘ANIME__AUTOMATA_TYPE__LIST’ 
+#endif 
+
+
+// ___________________________________ 
+// **** ANIME__AUTOMATA_TYPE **** 
+
+#ifdef ANIME__AUTOMATA_TYPE__H 
+
+#define X(ident, value) ident value, 
+enum { 
+  ANIME__AUTOMATA_TYPE__LIST
+}; 
+#undef X 
+
+#define X(ident, value) ident##___ID, 
+enum { 
+  ANIME__AUTOMATA_TYPE__LIST
+  ANIME__AUTOMATA_TYPE__COUNT
+}; 
+#undef X 
+
+typedef                  ANIME__AUTOMATA_TYPE__TYPE_T  int_anime_automata_type_t; 
+EXTERN_DECLARATION const char *                     int_anime_automata_type__get_cstr(const int_anime_automata_type_t automata_type); 
+EXTERN_DECLARATION const int_anime_automata_type_t     int_anime_automata_type__id_value[ANIME__AUTOMATA_TYPE__COUNT]; 
+enum {                                              int_anime_automata_type__id_value__size = ARRAY_SIZE(int_anime_automata_type__id_value) }; 
+EXTERN_DECLARATION const uint8_t                    int_anime_automata_type__id_value__size__compiled_value; 
+EXTERN_DECLARATION const char *                     int_anime_automata_type__id_cstr [ANIME__AUTOMATA_TYPE__COUNT + 1]; 
+enum {                                              int_anime_automata_type__id_cstr__size = ARRAY_SIZE(int_anime_automata_type__id_cstr) }; 
+EXTERN_DECLARATION const uint8_t                    int_anime_automata_type__id_cstr__size__compiled_value; 
+
+#define X(ident, value) EXTERN_DECLARATION const int_anime_automata_type_t ident##__compiled_value; 
+ANIME__AUTOMATA_TYPE__LIST 
+#undef X 
+
+static void int_anime_automata_type__check_and_assert(void) { 
+  assert(ANIME__AUTOMATA_TYPE__COUNT <= UINT8_MAX); 
+#define X(ident, value) assert(ident == ident##__compiled_value); 
+ANIME__AUTOMATA_TYPE__LIST 
+#undef X 
+  assert(int_anime_automata_type__id_cstr__size  == int_anime_automata_type__id_cstr__size__compiled_value ); 
+  assert(int_anime_automata_type__id_value__size == int_anime_automata_type__id_value__size__compiled_value); 
+}; 
+
+#else /* ANIME__AUTOMATA_TYPE__C */
+
+#define X(ident, value) EXTERN_DEFINITION const int_anime_automata_type_t ident##__compiled_value = ident; 
+ANIME__AUTOMATA_TYPE__LIST 
+#undef X 
+
+#define X(ident, value) #ident, 
+EXTERN_DEFINITION const char * int_anime_automata_type__id_cstr[ANIME__AUTOMATA_TYPE__COUNT + 1] = { 
+ANIME__AUTOMATA_TYPE__LIST 
+  NULL
+}; 
+#undef X 
+ 
+EXTERN_DEFINITION const uint8_t int_anime_automata_type__id_cstr__size__compiled_value = ARRAY_SIZE(int_anime_automata_type__id_cstr); 
+
+#define X(ident, value) ident, 
+EXTERN_DEFINITION const int_anime_automata_type_t int_anime_automata_type__id_value[ANIME__AUTOMATA_TYPE__COUNT] = { 
+ANIME__AUTOMATA_TYPE__LIST 
+}; 
+#undef X 
+
+EXTERN_DEFINITION const uint8_t int_anime_automata_type__id_value__size__compiled_value = ARRAY_SIZE(int_anime_automata_type__id_value); 
+
+const char * int_anime_automata_type__get_cstr(const int_anime_automata_type_t automata_type) { 
+  const char * automata_type__cstr = NULL; 
+  switch (automata_type) { 
+#define X(ident, value) case ident: automata_type__cstr = #ident; break; 
+  ANIME__AUTOMATA_TYPE__LIST
+#undef X 
+  }; 
+  return automata_type__cstr; 
+}; 
+
+
+
+#endif /* ANIME__AUTOMATA_TYPE__H */
+
+#undef EXTERN_DECLARATION
+#undef EXTERN_DEFINITION
+#undef EXTERN 
+#undef EMPTY_ARRAY_DEFINITION
+#undef VALUE_DEFINITION
+
