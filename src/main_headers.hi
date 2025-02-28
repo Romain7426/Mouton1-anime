@@ -1,0 +1,34 @@
+#include "lib__01__pre_header.ci"
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+#include <strings.h>
+#include <assert.h>
+#include <limits.h> // NL_TEXTMAX 
+#include <fcntl.h>
+#include <errno.h>
+#include <stdint.h> // INT64_MAX, etc. 
+#include <inttypes.h> // int8_t, etc 
+#include <ctype.h>
+//#include <sys/types.h>
+#include <time.h>
+#include <signal.h> 
+#include "lib__02__header.ci"
+#include "lib__10__local_alloca.ci"
+#include "lib__03.ci"
+#include "lib__04__string_stack.ci"
+#include "lib__05__error_state.ci"
+#include "lib__06__exception.ci"
+
+#define BUFFERED_OUTSTREAM__H 
+#include "lib__07__buffered_outstream.ci"
+#undef  BUFFERED_OUTSTREAM__H 
+
+#include "lib__08__cstring.ci"
+#include "lib__09__write_string.ci"
+#include "lib__10__local_alloca.ci"
+
+#define BUFFER_TO_FD__H 
+#include "lib__11__buffer_to_fd.ci"
+#undef  BUFFER_TO_FD__H 

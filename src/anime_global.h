@@ -52,15 +52,6 @@
 typedef int8_t bool_t; 
 
 
-enum { ANIME__EXPRESSION_NESTEDNESS_MAX = 16 }; 
-extern const uint8_t ANIME__EXPRESSION_NESTEDNESS_MAX__compiled_value; 
-
-// Length in tokens (it means we cannot analyze expressions longer than that). 
-enum { ANIME__LONGEST_INFIX_EXPRESSION = 64 }; // 2^6 = 64 — therefore, it means roughly a six-height tree (on average). 
-extern const uint8_t ANIME__LONGEST_INFIX_EXPRESSION__compiled_value; 
-
-extern const int16_t anime_t_sizeof;
-
 
 
 

@@ -1,10 +1,19 @@
-#include "anime_global.h"
-#include "anime.h"
+#include "main_headers.hi"
 #include "main.h"
+
+#define LANG_ID 1
+#define LANG_ID_FRA 1
+#define LANG_ID_ENG 2
+#define LANG(str_fra,str_eng) ((LANG_ID == LANG_ID_ENG) ? (str_eng) : (str_fra))
+
+typedef int8_t bool_t; 
+
+#include "anime.h"
 
 #include "main_stdlog_buffering.ci" 
 #include "main_subr.ci"
 #include "main_options.ci"
+
 
 //struct a_t { char u; char aa[]; }; // RL: sizeof(struct a_t) = 1 
 
