@@ -21,7 +21,9 @@ enum {
   PROGRAM_OPTIONS_INDEX__RESTORE, 
   PROGRAM_OPTIONS_INDEX__LIMITS, 
   PROGRAM_OPTIONS_INDEX__LANG, 
+  PROGRAM_OPTIONS_INDEX__LANG_LIST, 
   PROGRAM_OPTIONS_INDEX__HELP_SRC, 
+  PROGRAM_OPTIONS_INDEX__SIZE_OF_ANIME_T, 
   PROGRAM_OPTIONS_INDEX__COUNT, 
 }; 
  
@@ -144,6 +146,12 @@ static int program_options__parse(const int argc, const char * argv[]) {
       i++; 
       continue; 
     };
+
+    if (0 == strcasecmp(s, "size-of-anime-t"     )) { program_options[PROGRAM_OPTIONS_INDEX__SIZE_OF_ANIME_T           ]++; continue; }; 
+    if (0 == strcasecmp(s, "sizeof-anime-t"      )) { program_options[PROGRAM_OPTIONS_INDEX__SIZE_OF_ANIME_T           ]++; continue; }; 
+    if (0 == strcasecmp(s, "size-of-anime"       )) { program_options[PROGRAM_OPTIONS_INDEX__SIZE_OF_ANIME_T           ]++; continue; }; 
+    if (0 == strcasecmp(s, "sizeof-anime"        )) { program_options[PROGRAM_OPTIONS_INDEX__SIZE_OF_ANIME_T           ]++; continue; }; 
+    if (0 == strcasecmp(s, "lang-list"           )) { program_options[PROGRAM_OPTIONS_INDEX__LANG_LIST                 ]++; continue; }; 
     if (0 == strcasecmp(s, "lang"                )) { program_options[PROGRAM_OPTIONS_INDEX__LANG                      ]++; 
       p++; 
       if (*p == NULL) return false; 
@@ -188,13 +196,45 @@ static void main__usage(const int argc, const char * argv[], const int stduser_d
   dputs(stduser_d, "  " "--restore                          " "  \t  " "Input file is datacode" "\n"); 
   dputs(stduser_d, "  " "--limits,--limites                 " "  \t  " "Print program limitations" "\n"); 
   dputs(stduser_d, "  " "--lang <lang>                      " "  \t  " "Change la langue du programme" "\n"); 
+  dputs(stduser_d, "  " "--lang-list                        " "  \t  " "Liste les langues du programme" "\n"); 
   dputs(stduser_d, "  " "--help-src                         " "  \t  " "Décrit la structure et l'architecture du programme source" "\n"); 
+  dputs(stduser_d, "  " "--size-of-anime-t,--sizeof-anime-t " "  \t  " "Affiche la taille en octets de la structure de données anime_t" "\n"); 
+  dputs(stduser_d, "  " "--size-of-anime,--sizeof-anime     " "  \t  " "" "\n"); 
 }; 
 
 static void main__help_src(const int argc, const char * argv[], const int stduser_d) { 
   dputs_array(stduser_d, "[ ", argv[0], "] -- ", "LIB ANIME" "\n"); 
   dputs_array(stduser_d, "Le code source du programme est ainsi structuré: " "\n"); 
   dputs_array(stduser_d, "AGENDA TOTO XXX FIXME" "\n"); 
+};
+
+static void main__lang_list(const int argc, const char * argv[], const int stduser_d) { 
+  dputs_array(stduser_d, "[ ", argv[0], "] -- ", "LIB ANIME" "\n"); 
+  dputs_array(stduser_d, "Je comprends les langues suivantes: " "\n"); 
+  dputs_array(stduser_d, "AGENDA TOTO XXX FIXME" "\n"); 
+};
+
+static void main__print_sizeof_anime_t(const int argc, const char * argv[], const int stduser_d) { 
+  dputn_eol(stduser_d, anime_t_sizeof); 
+};
+
+static void main__limites(const int argc, const char * argv[], const int stduser_d) { 
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  dputs_array(stduser_d, "[ ", argv[0], "] -- ", "LIB ANIME" "\n"); 
+  dputs_array(stduser_d, "Les limites majeures du programme sont les suivantes: " "\n"); 
+  dputs_array(stduser_d, " - Taille maximale d'une ligne: ", int_string(ANIME_LINE_LEN_MAX), " (variable ", STRINGIFY(ANIME_LINE_LEN_MAX), ")", "\n"); 
+  dputs_array(stduser_d, "    * Note: Cette limite implique que un lexème ne peut pas être plus long que ", int_string(ANIME_LINE_LEN_MAX), " caractères.", "\n"); 
+  dputs_array(stduser_d, "    * Note: Un lexème ne peut être à cheval sur deux lignes." "\n"); 
+  dputs_array(stduser_d, "    * Note: Cette taille comprend les caractères de fin de ligne (LF ou CR LF) et le caractère terminal nul." "\n"); 
+  dputs_array(stduser_d, " - La profondeur maximale d'une expression (sous-expressions imbriquées) est de ", int_string(ANIME__EXPRESSION_NESTEDNESS_MAX), " (variable ANIME__EXPRESSION_NESTEDNESS_MAX)", "\n"); 
+  dputs_array(stduser_d, " - La longueur (en lexèmes) maximale d'une expression est de ", int_string(ANIME__LONGEST_INFIX_EXPRESSION), " (variable ANIME__LONGEST_INFIX_EXPRESSION)" "\n"); 
+  dputs_array(stduser_d, "" "\n"); 
+  dputs_array(stduser_d, "Autres:" "\n"); 
+  dputs_array(stduser_d, " - Il y a de nombreuses limites mineures dans le programme. Normalement, celles-ci dépendent des précédentes et sont dimensionnées en proportion." "\n"); 
+  dputs_array(stduser_d, " - Par ailleurs, le programme est concu afin d'être compilable sur un processeur seize bits: tous les entiers sont seize bits." "\n"); 
+  dputs_array(stduser_d, " - Également, les décimaux sont de taille trente-deux bits. (sizeof(float) = ", int_string((sizeof(float)) << 3), ")", "\n"); 
+  dputs_array(stduser_d, "" "\n"); 
+  dputs_array(stduser_d, "Toutes ces limites sont modifiables. Mais il faut recompiler." "\n"); 
 };
 
 static int program_options__run(const int argc, const char * argv[], const int stdprint_d, const int stduser_d, const int stdlog_d) { 
@@ -209,6 +249,21 @@ static int program_options__run(const int argc, const char * argv[], const int s
     }; 
     return ANIME__MAIN__OPTIONS__UNKNOWN; 
   }; 
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__LIMITS]) { 
+    main__limites(argc, argv, stduser_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  };
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__SIZE_OF_ANIME_T]) { 
+    main__print_sizeof_anime_t(argc, argv, stduser_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  };
+  
+  if (0 != program_options[PROGRAM_OPTIONS_INDEX__LANG_LIST]) { 
+    main__lang_list(argc, argv, stduser_d); 
+    return ANIME__MAIN__OPTIONS__EXIT_QUICK; 
+  };
   
   if (0 != program_options[PROGRAM_OPTIONS_INDEX__HELP_SRC]) { 
     main__help_src(argc, argv, stduser_d); 

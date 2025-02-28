@@ -336,6 +336,7 @@ int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd)
 
 void anime__lexer__check_and_assert(void) {
   int_anime_token_type__check_and_assert(); 
+  int_anime_automata_type__check_and_assert(); 
 };
 
 

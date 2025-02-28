@@ -4,6 +4,7 @@
 #include "anime_lexer_module.h"
 #include "anime_syntax_module.h"
 
+#include "anime_module_type.ci"
 #include "anime_module_string.ci" 
 #include "anime_module_subr.ci" 
 //#include "anime_module_error.ci" 
@@ -122,6 +123,8 @@ void             anime_example__print(const int stduser_d) { if (stduser_d > 0) 
 enum { ANIME_BYTESIZE_ACTUAL = sizeof(anime_t) }; 
 const int16_t anime_bytesize_actual = ANIME_BYTESIZE_ACTUAL; 
 ASSERT_COMPILE__TOPLEVEL(ANIME_BYTESIZE_ACTUAL <= ANIME_BYTESIZE); 
+
+const int16_t anime_t_sizeof = ANIME_BYTESIZE_ACTUAL; 
 
 const int8_t ANIME_LINE_LEN_MAX__compiled_value = ANIME_LINE_LEN_MAX; 
 

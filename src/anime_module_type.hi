@@ -8,13 +8,6 @@ enum { ANIME_RACINES_SIZE = ANIME_MEMBRES_SIZE };
 enum { ANIME_EXPR_SIZE    = INT8_MAX }; 
 enum { ANIME_EVENTS_TOUS, ANIME_EVENTS_AUCUN, ANIME_EVENTS_CODE }; 
 
-enum { ANIME__EXPRESSION_NESTEDNESS_MAX = 16 }; 
-extern const uint8_t ANIME__EXPRESSION_NESTEDNESS_MAX__compiled_value; 
-
-// Length in tokens (it means we cannot analyze expressions longer than that). 
-enum { ANIME__LONGEST_INFIX_EXPRESSION = 64 }; // 2^6 = 64 — therefore, it means roughly a six-height tree (on average). 
-extern const uint8_t ANIME__LONGEST_INFIX_EXPRESSION__compiled_value; 
-
 enum { ANIME__ERROR_BUFFER_SIZE = (1 << 11) }; 
 enum { ANIME__STRING_STACK_SIZE = (1 << 12) }; 
 enum { ANIME__LEXEME_STACK_SIZE = (1 << 10) }; 
@@ -209,6 +202,7 @@ struct anime_t {
 }; 
 
 
+extern const int16_t anime_t_sizeof;
 
 extern const char *       anime__string_stack__get(const anime_t * this, const int_anime_string_t astr); 
 extern int_anime_string_t anime__string_stack__push_nolookup(anime_t * this, const char * cstr); 

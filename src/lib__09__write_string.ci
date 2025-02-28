@@ -218,6 +218,7 @@ static int write_long_long_int(const int file_des, long long int n) {
   }; 
 }; 
 
+#define write_llint_eol write_long_long_int_eol
 static int write_long_long_int_ln(const int file_des, const long long int n) { 
   const int len1 = write_long_long_int(file_des, n); 
   const int len2 = write_eol(file_des); 
@@ -234,17 +235,18 @@ static int dputc(const int fd, const char c) {
   return write(fd, &c, 1); 
 }; 
 
-#define dputs    write_string
-#define dput_eol write_eol
-#define dputn    write_llint 
-#define dputs2   write_string2
-#define dputs3   write_string3
-#define dputs4   write_string4
-#define dputs5   write_string5
-#define dputs6   write_string6
-#define dputs7   write_string7
-#define dputs8   write_string8
-#define dputs9   write_string9
+#define dputs     write_string
+#define dput_eol  write_eol
+#define dputn     write_llint 
+#define dputn_eol write_llint_eol
+#define dputs2    write_string2
+#define dputs3    write_string3
+#define dputs4    write_string4
+#define dputs5    write_string5
+#define dputs6    write_string6
+#define dputs7    write_string7
+#define dputs8    write_string8
+#define dputs9    write_string9
 
 static int dputc_rep(const int fd, const int8_t rep_n, const char c) {
   if (rep_n <= 0) return 0; 
