@@ -1,4 +1,4 @@
-#include "main_headers.hi"
+#include "main_inc.hi"
 #include "main.h"
 
 #define LANG_ID 1

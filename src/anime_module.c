@@ -52,7 +52,13 @@
 //    Celui-ci est-il correctement écrit? 
 //  - Techniquement, du fait des expressions infixes pouvant avoir un nombre arbitraire 
 //    de sous-expressions, il s'agit de la partie la plus complexe. 
-//    (Interdire les sous-expressions réduirait considérablement la complexité.) 
+//     * Interdire les sous-expressions réduirait considérablement la complexité. 
+//     * Pour analyser les sous-expressions, il est nécessaire d'avoir un automate d'analyse. 
+//     * En l'espèce, l'automate d'analyse ne contient que deux états. 
+//       (Voire la fonction <anime__syntax_expr__sous_expression_huh()>.) 
+//       (Il s'agit d'un automate LR(0) qui regarde le caractère sur le ruban pour 
+//        décider de la transition - c'est donc un automate LALR(0).) 
+// 
 // 
 // Le sous-module anime_generation_module.c procède à l'évaluation et au remplissage de la structure de données:
 //  - Rien à ajouter. 

@@ -142,14 +142,15 @@ $(info LONGLONGINTSIZE: $(LONGLONGINTSIZE))
 $(info FLOATSIZE      : $(FLOATSIZE)      ) 
 $(info DOUBLESIZE     : $(DOUBLESIZE)     ) 
 $(info LONGDOUBLESIZE : $(LONGDOUBLESIZE) ) 
-endif 
 $(info DEFAULTSTACKSIZE : $(DEFAULTSTACKSIZE) ) 
+endif 
 
 
 CC_CONFIG:=
 CC_CONFIG:=$(CC_CONFIG) -D ENDIANNESS="$(ENDIANNESS)"
 CC_CONFIG:=$(CC_CONFIG) -D PIPEBUFFERSIZE="$(PIPEBUFFERSIZE)"
 CC_CONFIG:=$(CC_CONFIG) -D FLOATBYTESIZE="$(FLOATSIZE)"
+CC_CONFIG:=$(CC_CONFIG) -D DEFAULTSTACKSIZE="$(DEFAULTSTACKSIZE)"
 
 STDLIB_PROVIDES_ARC4RANDOM_HUH := $(shell echo "#include <stdlib.h>\nint main(int argc, char * argv[]) { return arc4random(); }; " | $(CC) -x c -std=c99 -O0 - -o - > /dev/null 2>&1 ; echo $$?)
 ifeq ($(STDLIB_PROVIDES_ARC4RANDOM_HUH),0) 
@@ -174,7 +175,7 @@ CC_FLAGS_F := -fmessage-length=0 -fdiagnostics-show-location=once -fdiagnostics-
 CC_FLAGS_F_NO := -fno-exceptions -fno-omit-frame-pointer  -fno-builtin -fno-builtin-printf -fno-builtin-abs -fno-builtin-strcpy -fno-builtin-strcat -fno-builtin-strlen -fno-builtin-bzero -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-assert -fno-builtin-tolower -fno-builtin-toupper -fno-builtin-log -fno-builtin-alloca -fno-common -fno-non-call-exceptions -fno-asynchronous-unwind-tables -fno-inline -fno-inline-functions -fno-inline-functions 
 # unknown: -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon 
 CC_FLAGS_W := -Wall -W -Wextra  -Werror -Wfatal-errors  -Werror-implicit-function-declaration -Wparentheses -Wimplicit -Wreturn-type -Wcomment -Wpointer-arith -Wchar-subscripts -Wimplicit-int -Werror-implicit-function-declaration -Wmain -Wmissing-braces -Wmultichar -Wsequence-point -Wreturn-type -Wstrict-prototypes -Wpacked -Wcast-qual -Winline -Wformat-nonliteral -Wwrite-strings -Wmissing-field-initializers -Wsign-compare  -Wformat-zero-length -Wswitch -Wswitch-enum -Wswitch-default -Wnested-externs -Wunknown-pragmas
-CC_FLAGS_W_NO := -Wno-cast-align -Wno-system-headers  -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral $(if $(strip $(filter $(CC_NAME),gcc)),,-Wno-unused-command-line-argument) 
+CC_FLAGS_W_NO := -Wno-missing-prototypes -Wno-cast-align -Wno-system-headers -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral $(if $(strip $(filter $(CC_NAME),gcc)),,-Wno-unused-command-line-argument) 
 # unknown: -gstabs+3 
 
 # -I /usr/X11R6/include  -I ./libs/SDL-1.2.15/destroot/include -I ./src/SDL_image -I ./src/SDL_mixer # -Wmissing-prototypes -Wmissing-declarations 
