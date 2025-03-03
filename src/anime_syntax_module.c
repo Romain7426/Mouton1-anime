@@ -1058,12 +1058,12 @@ int_anime_error_t anime__syntax__structure_check_and_fill__aux(anime_t * anime_d
 	if (action_i >= ANIME_ACTIONS_SIZE) goto actions__overflow; 
 	anime_data -> actions_nb++; 
 	
-	CHECK_IDENT("action"); READ_EXPRESSION__ARRAY__OPEN(actions_array_nom,action_i); CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
-	  CHECK_IDENT("affichage"   ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_EXPRESSION__ARRAY(actions_array_affichage,action_i); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
-	  CHECK_IDENT("icone"       ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_EXPRESSION__ARRAY(actions_array_icone,action_i); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	CHECK_IDENT("action"); READ_EXPRESSION__ARRAY__OPEN(actions_nom,action_i); CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
+	  CHECK_IDENT("affichage"   ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_EXPRESSION__ARRAY(actions_affichage,action_i); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	  CHECK_IDENT("icone"       ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_EXPRESSION__ARRAY(actions_icone,action_i); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  CHECK_IDENT("gestionnaire"); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); CHECK_SUGAR(ANIME_TOKEN_OPENBRACE); { 
-	    CHECK_IDENT("fichier"   ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_EXPRESSION__ARRAY(actions_array_gestionnaire_fichier,action_i);CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
-	    { LOOKAHEAD_SUGAR(ANIME_TOKEN_PROCEDURE); if (lookahead_match_huh) { MOVE_TO_NEXT_TOKEN(); } else  { CHECK_IDENT("procedure" ); }; }; CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_EXPRESSION__ARRAY(actions_array_gestionnaire_proc,action_i); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	    CHECK_IDENT("fichier"   ); CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_EXPRESSION__ARRAY(actions_gestionnaire_fichier,action_i);CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
+	    { LOOKAHEAD_SUGAR(ANIME_TOKEN_PROCEDURE); if (lookahead_match_huh) { MOVE_TO_NEXT_TOKEN(); } else  { CHECK_IDENT("procedure" ); }; }; CHECK_SUGAR(ANIME_TOKEN_AFFECTATION); READ_EXPRESSION__ARRAY(actions_gestionnaire_proc,action_i); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	  }; CHECK_SUGAR(ANIME_TOKEN_CLOSEBRACE); CHECK_SUGAR(ANIME_TOKEN_PTVIRG); 
 	}; CHECK_SUGAR(ANIME_TOKEN_CLOSEBRACE); 
 	LOOKAHEAD_SUGAR(ANIME_TOKEN_PTVIRG); if (lookahead_match_huh) token_i++; 
@@ -1367,10 +1367,10 @@ void anime__syntax__print(const anime_t * this, const int stdprint_d) {
   dputs(stdprint_d, "  hostile := "); PRINT_LEXEMES(hostile); dputs(stdprint_d, ";" "\n"); 
 
   for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) { 
-    dputs(stdprint_d, "  action "); PRINT_LEXEMES_ARRAY(actions_array_nom,action_i); dputs(stdprint_d, " {" "\n"); 
-    dputs(stdprint_d, "    affichage := "); PRINT_LEXEMES_ARRAY(actions_array_affichage,action_i); dputs(stdprint_d, ";" "\n"); 
-    dputs(stdprint_d, "    icone := "); PRINT_LEXEMES_ARRAY(actions_array_icone,action_i); dputs(stdprint_d, ";" "\n"); 
-    dputs(stdprint_d, "    gestionnaire := { fichier := "); PRINT_LEXEMES_ARRAY(actions_array_gestionnaire_fichier,action_i); dputs(stdprint_d, "; procedure := "); PRINT_LEXEMES_ARRAY(actions_array_gestionnaire_proc,action_i); dputs(stdprint_d, "; };" "\n"); 
+    dputs(stdprint_d, "  action "); PRINT_LEXEMES_ARRAY(actions_nom,action_i); dputs(stdprint_d, " {" "\n"); 
+    dputs(stdprint_d, "    affichage := "); PRINT_LEXEMES_ARRAY(actions_affichage,action_i); dputs(stdprint_d, ";" "\n"); 
+    dputs(stdprint_d, "    icone := "); PRINT_LEXEMES_ARRAY(actions_icone,action_i); dputs(stdprint_d, ";" "\n"); 
+    dputs(stdprint_d, "    gestionnaire := { fichier := "); PRINT_LEXEMES_ARRAY(actions_gestionnaire_fichier,action_i); dputs(stdprint_d, "; procedure := "); PRINT_LEXEMES_ARRAY(actions_gestionnaire_proc,action_i); dputs(stdprint_d, "; };" "\n"); 
     dputs(stdprint_d, "  }" "\n"); 
   };
   dputs(stdprint_d, "}" "\n");

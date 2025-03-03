@@ -26,7 +26,7 @@ void anime__print_d(const anime_t * this, const int fd) {
   dprintf(fd, "  " "hostile       :=  %s;" "\n", this -> hostile    ? "vrai" : "faux"); 
 
   for (int i = 0; i < this -> actions_nb; i++) { 
-    dprintf(fd, "  " "action %15s { affichage := %10s; icone := %10s ; gestionnaire := { fichier := %10s ; proc := %10s ; } ; }" "\n", anime__string_stack__get(this, this -> actions_array_nom[i]), anime__string_stack__get(this, this -> actions_array_affichage[i]), anime__string_stack__get(this, this -> actions_array_icone[i]), anime__string_stack__get(this, this -> actions_array_gestionnaire_fichier[i]), anime__string_stack__get(this, this -> actions_array_gestionnaire_proc[i])); 
+    dprintf(fd, "  " "action %15s { affichage := %10s; icone := %10s ; gestionnaire := { fichier := %10s ; proc := %10s ; } ; }" "\n", anime__string_stack__get(this, this -> actions_nom[i]), anime__string_stack__get(this, this -> actions_affichage[i]), anime__string_stack__get(this, this -> actions_icone[i]), anime__string_stack__get(this, this -> actions_gestionnaire_fichier[i]), anime__string_stack__get(this, this -> actions_gestionnaire_proc[i])); 
   }; 
 
 

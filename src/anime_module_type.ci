@@ -101,19 +101,19 @@ int8_t            anime__hostile__get      (const anime_t * this) { return this 
 #define ANIME__ARRAY_GET__BODY(field_array,field_nb,field_i) { if (0 > field_i) return NULL; if (this -> field_nb <= field_i) return NULL; return anime__string_stack__get(this, this -> field_array[field_i]); } 
 
 int8_t       anime__actions_nb__get                  (const anime_t * this) { return this -> actions_nb; }; 
-const char * anime__actions_nom__get                 (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_nom,actions_nb,action_i); 
-const char * anime__actions_affichage__get           (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_affichage,actions_nb,action_i); 
-const char * anime__actions_icone__get               (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_icone,actions_nb,action_i); 
-const char * anime__actions_gestionnaire_fichier__get(const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_gestionnaire_fichier,actions_nb,action_i); 
-const char * anime__actions_gestionnaire_proc__get   (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_array_gestionnaire_proc,actions_nb,action_i); 
+const char * anime__actions_nom__get                 (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_nom,actions_nb,action_i); 
+const char * anime__actions_affichage__get           (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_affichage,actions_nb,action_i); 
+const char * anime__actions_icone__get               (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_icone,actions_nb,action_i); 
+const char * anime__actions_gestionnaire_fichier__get(const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_gestionnaire_fichier,actions_nb,action_i); 
+const char * anime__actions_gestionnaire_proc__get   (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_gestionnaire_proc,actions_nb,action_i); 
 
 int8_t       anime__events_nb__get                     (const anime_t * this) { return this -> events_nb; }; 
-const char * anime__events_nom__get                    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_nom,events_nb,event_i); 
-const char * anime__events_genere_type__get            (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_genere_type,events_nb,event_i); 
-const char * anime__events_genere_code_fichier__get    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_genere_code_fichier,events_nb,event_i); 
-const char * anime__events_genere_code_proc__get       (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_genere_code_proc,events_nb,event_i); 
-const char * anime__events_traitement_code_fichier__get(const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_traitement_code_fichier,events_nb,event_i); 
-const char * anime__events_traitement_code_proc__get   (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_array_traitement_code_proc,events_nb,event_i); 
+const char * anime__events_nom__get                    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_nom,events_nb,event_i); 
+const char * anime__events_genere_type__get            (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_genere_type,events_nb,event_i); 
+const char * anime__events_genere_code_fichier__get    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_genere_code_fichier,events_nb,event_i); 
+const char * anime__events_genere_code_proc__get       (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_genere_code_proc,events_nb,event_i); 
+const char * anime__events_traitement_code_fichier__get(const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_traitement_code_fichier,events_nb,event_i); 
+const char * anime__events_traitement_code_proc__get   (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_traitement_code_proc,events_nb,event_i); 
 
 int8_t       anime__membres_nb__get         (const anime_t * this) { return this -> membres_nb; }; 
 const char * anime__membres_nom__get        (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_nom,membres_nb,membre_i); 
@@ -137,11 +137,11 @@ const char * anime__racines_angle_y__get(const anime_t * this, const int8_t raci
 int8_t anime__actions_push(anime_t * this, const char * nom, const char * affichage, const char * icone, const char * gestionnaire_fichier, const char * gestionnaire_proc) {  
   if (ANIME_ACTIONS_SIZE <= this -> actions_nb) return -1; 
   const int8_t action_i = this -> actions_nb; 
-  this -> actions_array_nom                 [action_i] = anime__string_stack__push_lookup(this, nom); 
-  this -> actions_array_affichage           [action_i] = anime__string_stack__push_lookup(this, affichage); 
-  this -> actions_array_icone               [action_i] = anime__string_stack__push_lookup(this, icone); 
-  this -> actions_array_gestionnaire_fichier[action_i] = anime__string_stack__push_lookup(this, gestionnaire_fichier); 
-  this -> actions_array_gestionnaire_proc   [action_i] = anime__string_stack__push_lookup(this, gestionnaire_proc); 
+  this -> actions_nom                 [action_i] = anime__string_stack__push_lookup(this, nom); 
+  this -> actions_affichage           [action_i] = anime__string_stack__push_lookup(this, affichage); 
+  this -> actions_icone               [action_i] = anime__string_stack__push_lookup(this, icone); 
+  this -> actions_gestionnaire_fichier[action_i] = anime__string_stack__push_lookup(this, gestionnaire_fichier); 
+  this -> actions_gestionnaire_proc   [action_i] = anime__string_stack__push_lookup(this, gestionnaire_proc); 
   this -> actions_nb++; 
   return action_i; 
 };  
@@ -149,12 +149,12 @@ int8_t anime__actions_push(anime_t * this, const char * nom, const char * affich
 int8_t anime__events_push(anime_t * this, const char * events_nom, const int8_t events_genere_type, const char * events_genere_code_fichier, const char * events_genere_code_proc, const char * events_traitement_fichier, const char * events_traitement_proc) {  
   if (ANIME_EVENTS_SIZE <= this -> events_nb) return -1; 
   const int8_t event_i = this -> events_nb; 
-  this -> events_array_nom                    [event_i] = anime__string_stack__push_lookup(this, events_nom); 
-  this -> events_array_genere_type            [event_i] = events_genere_type; 
-  this -> events_array_genere_code_fichier    [event_i] = anime__string_stack__push_lookup(this, events_genere_code_fichier); 
-  this -> events_array_genere_code_proc       [event_i] = anime__string_stack__push_lookup(this, events_genere_code_proc); 
-  this -> events_array_traitement_code_fichier[event_i] = anime__string_stack__push_lookup(this, events_traitement_fichier); 
-  this -> events_array_traitement_code_proc   [event_i] = anime__string_stack__push_lookup(this, events_traitement_proc); 
+  this -> events_nom                    [event_i] = anime__string_stack__push_lookup(this, events_nom); 
+  this -> events_genere_type            [event_i] = events_genere_type; 
+  this -> events_genere_code_fichier    [event_i] = anime__string_stack__push_lookup(this, events_genere_code_fichier); 
+  this -> events_genere_code_proc       [event_i] = anime__string_stack__push_lookup(this, events_genere_code_proc); 
+  this -> events_traitement_code_fichier[event_i] = anime__string_stack__push_lookup(this, events_traitement_fichier); 
+  this -> events_traitement_code_proc   [event_i] = anime__string_stack__push_lookup(this, events_traitement_proc); 
   this -> events_nb++; 
   return event_i; 
 };  

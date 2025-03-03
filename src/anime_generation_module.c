@@ -49,8 +49,8 @@ int_anime_error_t anime__generation__field_names__compute(anime_t * this) {
   }; 
   
  label__body: {   
-    for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) DO_ARRAY_ITEM(actions_array_nom,action_i);
-    for (int8_t  event_i = 0;  event_i < this ->  events_nb;  event_i++) DO_ARRAY_ITEM( events_array_nom,event_i);
+    for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) DO_ARRAY_ITEM(actions_nom,action_i);
+    for (int8_t  event_i = 0;  event_i < this ->  events_nb;  event_i++) DO_ARRAY_ITEM( events_nom,event_i);
     for (int8_t membre_i = 0; membre_i < this -> membres_nb; membre_i++) DO_ARRAY_ITEM(membres_nom,membre_i);
     for (int8_t racine_i = 0; racine_i < this -> racines_nb; racine_i++) DO_ARRAY_ITEM(racines_qui,racine_i);  
     return ANIME__OK; 
@@ -226,29 +226,17 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
     COMPUTE_BOOL(invincible); 
     COMPUTE_BOOL(hostile); 
 
-#if 0
-    float              membres_largeur    [ANIME_MEMBRES_SIZE]; 
-    float              membres_hauteur    [ANIME_MEMBRES_SIZE]; 
-    float              membres_angle_max_y[ANIME_MEMBRES_SIZE]; 
+    for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) { 
+      COMPUTE_ARRAY_ITEM(actions_affichage,action_i,anime__string_stack__push_lookup(this,strval));
+      //dputs(STDERR_FILENO, "action_i: "); dputn(STDERR_FILENO, action_i); dput_eol(STDERR_FILENO); 
+    };
 
-    for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) DO_ARRAY_ITEM(actions_array_nom,action_i);
-    for (int8_t  event_i = 0;  event_i < this ->  events_nb;  event_i++) DO_ARRAY_ITEM( events_array_nom,event_i);
-    for (int8_t membre_i = 0; membre_i < this -> membres_nb; membre_i++) DO_ARRAY_ITEM(membres_nom,membre_i);
-    for (int8_t racine_i = 0; racine_i < this -> racines_nb; racine_i++) DO_ARRAY_ITEM(racines_qui,racine_i);  
-#endif 
-
-    //anime__syntax__print(this, STDERR_FILENO);  
-
-#if 1
     for (int8_t membre_i = 0; membre_i < this -> membres_nb; membre_i++) { 
+      COMPUTE_ARRAY_ITEM(membres_image,membre_i,anime__string_stack__push_lookup(this,strval));
       COMPUTE_ARRAY_ITEM(membres_largeur,membre_i,floatval);
       COMPUTE_ARRAY_ITEM(membres_hauteur,membre_i,floatval);
-      //dputs(STDERR_FILENO, "membre_i: "); dputn(STDERR_FILENO, membre_i); dput_eol(STDERR_FILENO); 
       COMPUTE_ARRAY_ITEM(membres_angle_max_y,membre_i,floatval);
-
-      COMPUTE_ARRAY_ITEM(membres_image,membre_i,anime__string_stack__push_lookup(this,strval));
     };
-#endif
 
     for (int8_t racine_i = 0; racine_i < this -> racines_nb; racine_i++) { 
       COMPUTE_ARRAY_ITEM(racines_x,racine_i,floatval);

@@ -16,6 +16,7 @@
 #include "anime_module_print_field.ci" 
 #include "anime_module_consistency.ci" 
 #include "anime_module_dump_and_restore.ci"
+#include "anime_module_endian_swap.ci"
 #include "anime_module_lexeme.ci"
 #include "anime_module_divers.ci"
 

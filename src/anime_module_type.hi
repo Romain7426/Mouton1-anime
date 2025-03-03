@@ -82,20 +82,20 @@ struct anime_t {
   int8_t  invincible;
   int8_t  hostile;
   
-  int_anime_string_t actions_array_nom                 [ANIME_ACTIONS_SIZE];
-  int_anime_string_t actions_array_affichage           [ANIME_ACTIONS_SIZE];
-  int_anime_string_t actions_array_icone               [ANIME_ACTIONS_SIZE];
-  int_anime_string_t actions_array_gestionnaire_fichier[ANIME_ACTIONS_SIZE];
-  int_anime_string_t actions_array_gestionnaire_proc   [ANIME_ACTIONS_SIZE];
+  int_anime_string_t actions_nom                 [ANIME_ACTIONS_SIZE];
+  int_anime_string_t actions_affichage           [ANIME_ACTIONS_SIZE];
+  int_anime_string_t actions_icone               [ANIME_ACTIONS_SIZE];
+  int_anime_string_t actions_gestionnaire_fichier[ANIME_ACTIONS_SIZE];
+  int_anime_string_t actions_gestionnaire_proc   [ANIME_ACTIONS_SIZE];
   int8_t             actions_size;
   int8_t             actions_nb;
   
-  int_anime_string_t events_array_nom                    [ANIME_EVENTS_SIZE]; 
-  int8_t             events_array_genere_type            [ANIME_EVENTS_SIZE]; 
-  int_anime_string_t events_array_genere_code_fichier    [ANIME_EVENTS_SIZE]; 
-  int_anime_string_t events_array_genere_code_proc       [ANIME_EVENTS_SIZE]; 
-  int_anime_string_t events_array_traitement_code_fichier[ANIME_EVENTS_SIZE]; 
-  int_anime_string_t events_array_traitement_code_proc   [ANIME_EVENTS_SIZE]; 
+  int_anime_string_t events_nom                    [ANIME_EVENTS_SIZE]; 
+  int8_t             events_genere_type            [ANIME_EVENTS_SIZE]; 
+  int_anime_string_t events_genere_code_fichier    [ANIME_EVENTS_SIZE]; 
+  int_anime_string_t events_genere_code_proc       [ANIME_EVENTS_SIZE]; 
+  int_anime_string_t events_traitement_code_fichier[ANIME_EVENTS_SIZE]; 
+  int_anime_string_t events_traitement_code_proc   [ANIME_EVENTS_SIZE]; 
   int8_t             events_size;
   int8_t             events_nb;
   
@@ -150,8 +150,8 @@ struct anime_t {
 
   DECLARE_EXPR_4(choc_longueur,choc_largeur,choc_hauteur,masse); 
   DECLARE_EXPR_3(vie,invincible,hostile); 
-  DECLARE_EXPR_ARRAY_5(actions_array_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
-  DECLARE_EXPR_ARRAY_6(events_array_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
+  DECLARE_EXPR_ARRAY_5(actions_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
+  DECLARE_EXPR_ARRAY_6(events_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
   DECLARE_EXPR_ARRAY_5(membres_,nom,image,largeur,hauteur,angle_max_y,ANIME_MEMBRES_SIZE); 
   DECLARE_EXPR_ARRAY_5(racines_,qui,x,y,z,angle_y,ANIME_RACINES_SIZE); 
 
@@ -165,8 +165,8 @@ struct anime_t {
   
   DECLARE_LEXEME_I_4(choc_longueur,choc_largeur,choc_hauteur,masse); 
   DECLARE_LEXEME_I_3(vie,invincible,hostile); 
-  DECLARE_LEXEME_I_5_ARRAY(actions_array_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
-  DECLARE_LEXEME_I_6_ARRAY(events_array_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
+  DECLARE_LEXEME_I_5_ARRAY(actions_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
+  DECLARE_LEXEME_I_6_ARRAY(events_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
   DECLARE_LEXEME_I_5_ARRAY(membres_,nom,image,largeur,hauteur,angle_max_y,ANIME_MEMBRES_SIZE); 
   DECLARE_LEXEME_I_5_ARRAY(racines_,qui,x,y,z,angle_y,ANIME_RACINES_SIZE); 
   
@@ -178,8 +178,8 @@ struct anime_t {
   
   DECLARE_LEXEMES_NB_4(choc_longueur,choc_largeur,choc_hauteur,masse);
   DECLARE_LEXEMES_NB_3(vie,invincible,hostile);   
-  DECLARE_LEXEMES_NB_5_ARRAY(actions_array_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
-  DECLARE_LEXEMES_NB_6_ARRAY(events_array_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
+  DECLARE_LEXEMES_NB_5_ARRAY(actions_,nom,affichage,icone,gestionnaire_fichier,gestionnaire_proc,ANIME_ACTIONS_SIZE); 
+  DECLARE_LEXEMES_NB_6_ARRAY(events_,nom,genere_type,genere_code_fichier,genere_code_proc,traitement_code_fichier,traitement_code_proc,ANIME_EVENTS_SIZE); 
   DECLARE_LEXEMES_NB_5_ARRAY(membres_,nom,image,largeur,hauteur,angle_max_y,ANIME_MEMBRES_SIZE); 
   DECLARE_LEXEMES_NB_5_ARRAY(racines_,qui,x,y,z,angle_y,ANIME_RACINES_SIZE); 
   
