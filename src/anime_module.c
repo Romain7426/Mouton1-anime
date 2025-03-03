@@ -16,9 +16,9 @@
 #include "anime_module_print_field.ci" 
 #include "anime_module_consistency.ci" 
 #include "anime_module_dump_and_restore.ci"
-#include "anime_module_endian_swap.ci"
 #include "anime_module_lexeme.ci"
 #include "anime_module_divers.ci"
+#include "anime_module_endian_swap.ci"
 
 
 #if 0
@@ -226,3 +226,15 @@ void anime__check_and_assert(const int8_t debug_print_huh, const int stddebug_d)
 #include "anime_module_error.ci"
 #undef  EXTERN
 #undef  ANIME__ERROR__C
+
+#define BUFFERED_OUTSTREAM__C 
+#define BUFFERED_OUTSTREAM__MAX 8 
+#include "lib__07__buffered_outstream.ci"
+#undef  BUFFERED_OUTSTREAM__MAX
+#undef  BUFFERED_OUTSTREAM__C 
+
+#define BUFFER_TO_FD__C 
+#define BUFFER_TO_FD__MAX 8 
+#include "lib__11__buffer_to_fd.ci"
+#undef  BUFFER_TO_FD__MAX 
+#undef  BUFFER_TO_FD__C 

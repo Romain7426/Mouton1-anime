@@ -29,14 +29,13 @@ int_anime_error_t anime__dump_to_buffer(const anime_t * this, char * buffer, con
 #elif defined ENDIANNESS__NATIVE_IS_BIG 
     dump -> endianness_flag = ANIME__ENDIANNESS_BIG;
 #else 
-    return ANIME__DUMP__ENDIANNESS_UNKNOWN; 
-#endif 
+    // FRA: Nous resterons donc en natif. 
     return ANIME__OK; 
+#endif 
+    /* NOT REACHED */ assert(false); 
   }; 
   
   return ANIME__DUMP__ENDIANNESS_UNKNOWN; 
-  
-  assert(false); 
 }; 
 
 
@@ -121,6 +120,6 @@ int_anime_error_t anime__restore_from_buffer(anime_t * this, const char * buffer
     return ANIME__RESTORE__ENDIANNESS_IS_UNSPECIFIED; 
   }; 
   
-  assert(false); 
+  return ANIME__RESTORE__ENDIANNESS_UNKNOWN; 
 }; 
 

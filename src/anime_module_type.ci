@@ -5,15 +5,18 @@ ASSERT_COMPILE__TOPLEVEL(ANIME_BYTESIZE_ACTUAL <= ANIME_BYTESIZE);
 
 const int16_t anime_t_sizeof = ANIME_BYTESIZE_ACTUAL; 
 
-anime_t * anime__make(const int stdlog_d) {  
-  MALLOC_BZERO(anime_t,this); 
-  anime__make_r(this, stdlog_d); 
-  this -> malloced_flag = 1; 
-  return this; 
-};  
+anime_t * anime__make_m(const int stdlog_d, void * (*malloc_to_use)(size_t)) {
+  if (NULL == malloc_to_use) return NULL; 
+  anime_t * this = (anime_t *) malloc_to_use(sizeof(anime_t)); 
+  return anime__make_r(this, stdlog_d); 
+};
+
+
 
 anime_t * anime__make_r(anime_t * this, const int stdlog_d) { 
-  bzero(this, sizeof(*this)); 
+  if (NULL == this) return NULL; 
+  
+  anime__bzero(this);
   
   this -> this_bytesize = ENDIANNESS__NATIVE_TO_LITTLE__UINT32(sizeof(*this)); 
   this -> this_typename_bytesize = sizeof(this -> this_typename); 
@@ -45,6 +48,11 @@ anime_t * anime__make_r(anime_t * this, const int stdlog_d) {
   this -> membres_nb   = 0; 
   this -> racines_size = ANIME_RACINES_SIZE; 
   this -> racines_nb   = 0; 
+
+  this -> expr_nb = 0; 
+
+  this -> userdata_nb = 0; 
+  this -> userdata_bytesize = ANIME_USERDATA_BYTESIZE; 
   
   return this; 
 };  
@@ -62,21 +70,26 @@ void anime__delete_b(anime_t * this) {
 }; 
 
 void anime__delete_r(anime_t * this) { 
-  const int malloced_flag = this -> malloced_flag; 
-  bzero(this, sizeof(*this)); 
-  this -> malloced_flag = malloced_flag; 
+  anime__bzero(this);
 }; 
 
-void anime__delete(anime_t * this) { 
-  const int malloced_flag = this -> malloced_flag; 
+void anime__delete_m(anime_t * this, void (*free_to_use)(void * ptr)) { 
   anime__delete_r(this); 
-  if (1 == malloced_flag) free(this); 
+  if (NULL == free_to_use) return;
+  free_to_use(this); 
 };  
 
 void anime__bzero(anime_t * this) { 
+#if 0
   const int malloced_flag = this -> malloced_flag; 
   bzero(this, sizeof(*this)); 
   this -> malloced_flag = malloced_flag; 
+#else
+  char userdata[ANIME_USERDATA_BYTESIZE];
+  bcopy(/*src*/this -> userdata,/*dst*/userdata,/*len*/ANIME_USERDATA_BYTESIZE); 
+  bzero(this, sizeof(*this)); 
+  bcopy(/*src*/userdata,/*dst*/this -> userdata,/*len*/ANIME_USERDATA_BYTESIZE); 
+#endif
 }; 
 
 
@@ -209,3 +222,14 @@ int_expr_t anime_expr_push(anime_t * this, const int_lexeme_t expr_lexeme_start_
 };
 
 
+
+
+void * anime__userdata_alloc(anime_t * this, const int8_t requested_bytesize) {
+  if (0                       >= requested_bytesize) return NULL;
+  if (ANIME_USERDATA_BYTESIZE <= requested_bytesize) return NULL; 
+  const int8_t avail = ANIME_USERDATA_BYTESIZE - this -> userdata_nb; 
+  if (avail                   <= requested_bytesize) return NULL; 
+  void * data = this -> userdata + this -> userdata_nb; 
+  this -> userdata_nb += requested_bytesize;
+  return data;
+};

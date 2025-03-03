@@ -8,6 +8,8 @@ enum { ANIME_RACINES_SIZE = ANIME_MEMBRES_SIZE };
 enum { ANIME_EXPR_SIZE    = INT8_MAX }; 
 enum { ANIME_EVENTS_TOUS, ANIME_EVENTS_AUCUN, ANIME_EVENTS_CODE }; 
 
+enum { ANIME_USERDATA_BYTESIZE = INT8_MAX }; 
+
 enum { ANIME__ERROR_BUFFER_SIZE = (1 << 11) }; 
 enum { ANIME__STRING_STACK_SIZE = (1 << 12) }; 
 enum { ANIME__LEXEME_STACK_SIZE = (1 << 10) }; 
@@ -36,7 +38,7 @@ struct anime_t {
   uint8_t  endianness_flag; 
 
   // RL: Anime data 
-  uint8_t malloced_flag; // 0 if not, 1 if yes. 
+  //uint8_t malloced_flag; // 0 if not, 1 if yes. 
   int     stdlog_d; // Foreign — we don't own it; valid only if 'stdlog_d > 0' 
   
   int8_t filled_huh; // Values: 
@@ -124,6 +126,11 @@ struct anime_t {
   int8_t             expr_value_bool    [ANIME_EXPR_SIZE];
 #endif 
   int_expr_t         expr_nb; 
+  
+  // FRA: Si l'utilisateur veut ajouter des données. 
+  char               userdata           [ANIME_USERDATA_BYTESIZE];
+  int8_t             userdata_nb;
+  int8_t             userdata_bytesize;
   
 
   // EXPR 
@@ -224,6 +231,9 @@ extern void         anime__lexeme__print_stats(const anime_t * this, const int8_
 
 
 extern int_expr_t anime_expr_push(anime_t * this, const int_lexeme_t expr_lexeme_start_i, const int8_t expr_lexemes_nb); 
+
+
+extern void * anime__userdata_alloc(anime_t * this, const int8_t requested_bytesize); 
 
 
 #endif /* ANIME_TYPE_H */

@@ -155,6 +155,7 @@ extern void anime__check_and_assert(const int8_t debug_print_huh, const int stdd
   X(ANIME__RESTORE__READING_FROM_TTY,)					\
     X(ANIME__RESTORE__ERROR_WHILE_READING_INPUT,)			\
     X(ANIME__RESTORE__INPUT_TOO_SMALL,)					\
+  X(ANIME__RESTORE__ENDIANNESS_UNKNOWN,)				\
     X(ANIME__LEXER__GENERIC_ERROR,)					\
     X(ANIME__LEXER__BAD_INPUT_FD,)					\
   X(ANIME__LEXER__LINE_TOO_LARGE,)					\
@@ -214,10 +215,10 @@ typedef struct anime_t anime_t;
 
 extern void         anime__print_f         (const anime_t * this, FILE * out_stream); 
 extern void         anime__print_d         (const anime_t * this, const int fd); 
-extern anime_t *    anime__make            (const int stdlog_d); 
+extern anime_t *    anime__make_m          (const int stdlog_d, void * (*malloc_to_use)(size_t)); 
 extern anime_t *    anime__make_r          (anime_t * this, const int stdlog_d); 
 extern anime_t *    anime__make_b          (char * anime_buffer, const int16_t anime_buffer_bytesize, int16_t * anime_buffer_bytesize_used_r, const int stdlog_d); 
-extern void         anime__delete          (anime_t * this);  
+extern void         anime__delete_m        (anime_t * this, void (*free_to_use)(void * ptr)); 
 extern void         anime__delete_r        (anime_t * this);  
 extern void         anime__delete_b        (anime_t * this);  
 extern void         anime__bzero           (anime_t * this);  
@@ -283,6 +284,7 @@ extern int_anime_error_t anime__print_field_value_by_name(const anime_t * this, 
 
 extern const char * anime__convert_token_cstring_to_regular_string(anime_t * this, const char * cstr); 
 
+extern void anime__endianness_byte_swap(anime_t * this); 
 
 
 

@@ -1,6 +1,6 @@
 
 
-static void anime__endianness_byte_swap(anime_t * this) { 
+void anime__endianness_byte_swap(anime_t * this) { 
   // TODO: Changer toutes ces macros en fonctions afin d’automatiser le processus. 
   //       Car, avec des macros, on peut pas sélectionner sur SIZEOF. 
   //       Donc, si on change la taille de int_lexeme_t ou d’un champ, alors il faut changer le code… 

@@ -228,7 +228,9 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
 
     for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) { 
       COMPUTE_ARRAY_ITEM(actions_affichage,action_i,anime__string_stack__push_lookup(this,strval));
-      //dputs(STDERR_FILENO, "action_i: "); dputn(STDERR_FILENO, action_i); dput_eol(STDERR_FILENO); 
+      COMPUTE_ARRAY_ITEM(actions_icone,action_i,anime__string_stack__push_lookup(this,strval));
+      COMPUTE_ARRAY_ITEM(actions_gestionnaire_fichier,action_i,anime__string_stack__push_lookup(this,strval));
+      COMPUTE_ARRAY_ITEM(actions_gestionnaire_proc,action_i,anime__string_stack__push_lookup(this,strval));
     };
 
     for (int8_t membre_i = 0; membre_i < this -> membres_nb; membre_i++) { 
