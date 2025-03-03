@@ -14,8 +14,9 @@ int_anime_error_t anime__generation__field_names__compute(anime_t * this) {
   goto label__body; 
 
 #define DO_ARRAY_ITEM(field_name,__item_i__) {				\
-    const int_lexeme_t lexeme_i   = this -> glue2(field_name,__lexeme_i)  [__item_i__]; \
-    const int8_t       lexemes_nb = this -> glue2(field_name,__lexemes_nb)[__item_i__]; \
+    const int_expr_t   expr_id    = this -> glue2(field_name,__expr)  [__item_i__]; \
+    const int_lexeme_t lexeme_i   = this -> expr_lexeme_start_i[expr_id]; \
+    const int8_t       lexemes_nb = this -> expr_lexemes_nb[expr_id];	\
     if (0                        >  lexeme_i) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_NAME__TOKEN_ID_NEG); }; \
     if (this -> lexeme_stack__nb <= lexeme_i) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_NAME__TOKEN_ID_OUT_OF_BOUND); }; \
     if (0 == lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_NAME__AT_LEAST_ONE_TOKEN); }; \
@@ -161,8 +162,9 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
 
 
 #define COMPUTE_FLOAT(__field_name__) {					\
-      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
-      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
+      const int_expr_t   expr_id    = this -> glue2(__field_name__,__expr); \
+      const int_lexeme_t lexeme_i   = this -> expr_lexeme_start_i[expr_id]; \
+      const int8_t       lexemes_nb = this -> expr_lexemes_nb[expr_id];	\
       if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
       if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
       READ_LALR_FLOAT(lexeme_i, lexemes_nb);				\
@@ -170,8 +172,9 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
     }; 
     
 #define COMPUTE_INT(__field_name__) {					\
-      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
-      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
+      const int_expr_t   expr_id    = this -> glue2(__field_name__,__expr); \
+      const int_lexeme_t lexeme_i   = this -> expr_lexeme_start_i[expr_id]; \
+      const int8_t       lexemes_nb = this -> expr_lexemes_nb[expr_id];	\
       if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
       if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
       READ_LALR_INT(lexeme_i, lexemes_nb);				\
@@ -179,8 +182,9 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
     }; 
     
 #define COMPUTE_BOOL(__field_name__) {					\
-      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
-      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
+      const int_expr_t   expr_id    = this -> glue2(__field_name__,__expr); \
+      const int_lexeme_t lexeme_i   = this -> expr_lexeme_start_i[expr_id]; \
+      const int8_t       lexemes_nb = this -> expr_lexemes_nb[expr_id];	\
       if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
       if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
       READ_LALR_BOOL(lexeme_i, lexemes_nb);				\
@@ -188,8 +192,9 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
     }; 
 
 #define COMPUTE_STRING(__field_name__) {				\
-      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
-      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
+      const int_expr_t   expr_id    = this -> glue2(__field_name__,__expr); \
+      const int_lexeme_t lexeme_i   = this -> expr_lexeme_start_i[expr_id]; \
+      const int8_t       lexemes_nb = this -> expr_lexemes_nb[expr_id];	\
       if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
       if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
       READ_LALR_STRING(lexeme_i, lexemes_nb);				\
@@ -197,8 +202,9 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
     }; 
 
 #define COMPUTE_ARRAY_ITEM(__field_name__,__item_i__,__type_val__) {	\
-      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i  )[__item_i__]; \
-      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb)[__item_i__]; \
+      const int_expr_t   expr_id    = this -> glue2(__field_name__,__expr)  [__item_i__]; \
+      const int_lexeme_t lexeme_i   = this -> expr_lexeme_start_i[expr_id]; \
+      const int8_t       lexemes_nb = this -> expr_lexemes_nb[expr_id];	\
       if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
       if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
       READ_LALR_VALUE(lexeme_i, lexemes_nb);				\

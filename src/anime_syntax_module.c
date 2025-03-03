@@ -866,8 +866,6 @@ static int_lexeme_t anime__syntax__skip_to_end_of_instruction(const anime_t * th
     token_type = anime_data -> lexeme_stack__type[token_i];		\
     assert(token_type == ANIME_TOKEN_PTVIRG || token_type == ANIME_TOKEN_CLOSEBRACE); \
     expression_len = token_i - expression_start;			\
-    anime_data -> glue2(field_name,__lexeme_i  ) = expression_start;	\
-    anime_data -> glue2(field_name,__lexemes_nb) = expression_len;	\
     const int_expr_t expr_id = anime_expr_push(anime_data, expression_start, expression_len); \
     anime_data -> glue2(field_name,__expr) = expr_id;			\
   };									\
@@ -882,8 +880,6 @@ static int_lexeme_t anime__syntax__skip_to_end_of_instruction(const anime_t * th
     token_type = anime_data -> lexeme_stack__type[token_i]; \
     assert(token_type == ANIME_TOKEN_PTVIRG || token_type == ANIME_TOKEN_CLOSEBRACE); \
     expression_len = token_i - expression_start;			\
-    anime_data -> glue2(field_name,__lexeme_i  )[item_i] = expression_start; \
-    anime_data -> glue2(field_name,__lexemes_nb)[item_i] = expression_len; \
     const int_expr_t expr_id = anime_expr_push(anime_data, expression_start, expression_len); \
     anime_data -> glue2(field_name,__expr)[item_i] = expr_id;		\
   };									\
@@ -898,8 +894,6 @@ static int_lexeme_t anime__syntax__skip_to_end_of_instruction(const anime_t * th
     token_type = anime_data -> lexeme_stack__type[token_i];		\
     assert(token_type == ANIME_TOKEN_PTVIRG || token_type == ANIME_TOKEN_OPENBRACE); \
     expression_len = token_i - expression_start;			\
-    anime_data -> glue2(field_name,__lexeme_i  ) = expression_start;	\
-    anime_data -> glue2(field_name,__lexemes_nb) = expression_len;	\
     const int_expr_t expr_id = anime_expr_push(anime_data, expression_start, expression_len); \
     anime_data -> glue2(field_name,__expr)[item_i] = expr_id;		\
   };									\
@@ -914,8 +908,6 @@ static int_lexeme_t anime__syntax__skip_to_end_of_instruction(const anime_t * th
     token_type = anime_data -> lexeme_stack__type[token_i];		\
     assert(token_type == ANIME_TOKEN_PTVIRG || token_type == ANIME_TOKEN_OPENBRACE); \
     expression_len = token_i - expression_start;			\
-    anime_data -> glue2(field_name,__lexeme_i  )[item_i] = expression_start; \
-    anime_data -> glue2(field_name,__lexemes_nb)[item_i] = expression_len; \
     const int_expr_t expr_id = anime_expr_push(anime_data, expression_start, expression_len); \
     anime_data -> glue2(field_name,__expr)[item_i] = expr_id;		\
   };									\
@@ -1326,8 +1318,9 @@ int_anime_error_t anime__syntax__structure_check_and_fill__aux(anime_t * anime_d
 
 
 #define PRINT_LEXEMES(field_name) {					\
-    const int_lexeme_t lex_start = this -> glue2(field_name,__lexeme_i); \
-    const int_lexeme_t lex_nb = this -> glue2(field_name,__lexemes_nb);	\
+    const int_expr_t expr_id = this -> glue2(field_name,__expr);	\
+    const int_lexeme_t lex_start = this -> expr_lexeme_start_i[expr_id]; \
+    const int_lexeme_t lex_nb = this -> expr_lexemes_nb[expr_id];	\
     int_lexeme_t pos = lex_start;					\
     for (int_lexeme_t i = 0; i < lex_nb; i++) {				\
       const int_lexeme_value_t v = this -> lexeme_stack__value[pos + i]; \
@@ -1338,8 +1331,9 @@ int_anime_error_t anime__syntax__structure_check_and_fill__aux(anime_t * anime_d
   /* END OF MACRO */ 
 
 #define PRINT_LEXEMES_ARRAY(field_name,__index__) {			\
-    const int_lexeme_t lex_start = this -> glue2(field_name,__lexeme_i)[__index__]; \
-    const int_lexeme_t lex_nb = this -> glue2(field_name,__lexemes_nb)[__index__]; \
+    const int_expr_t expr_id = this -> glue2(field_name,__expr)[__index__];	\
+    const int_lexeme_t lex_start = this -> expr_lexeme_start_i[expr_id]; \
+    const int_lexeme_t lex_nb = this -> expr_lexemes_nb[expr_id];	\
     int_lexeme_t pos = lex_start;					\
     for (int_lexeme_t i = 0; i < lex_nb; i++) {				\
       const int_lexeme_value_t v = this -> lexeme_stack__value[pos + i]; \

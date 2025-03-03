@@ -17,6 +17,7 @@ set -o pipefail
 MY_DATE=$(TZ="UTC"  date  "+%Y_%m_%d-%Hh%Mm%Ss") 
 MY_NAME=$(basename ${PWD})
 MY_TARVERSION=${MY_NAME}.${MY_DATE}
+PROJECT_TOP_DIR=${PWD}
 
 if false ; then 
 echo ${MY_DATE}
@@ -48,7 +49,9 @@ done;
 
 if ! ls ./tar-version-src/*.tgz > /dev/null 2>&1  ; then 
 #if ! ls *.tgz 2>/dev/null ; then 
-    bsdtar czf ./tar-version-src/${MY_TARVERSION}.tgz --uname "" --gname "" -C ./tar-version-src/ ./${MY_TARVERSION}
+    #bsdtar czf ./tar-version-src/${MY_TARVERSION}.tgz --uname "" --gname "" -C ./tar-version-src/ ./${MY_TARVERSION}
+    #cd ./tar-version-src/ &&  pax -w -z -x pax ./${MY_TARVERSION} > ./${MY_TARVERSION}.tgz ; cd ${PROJECT_TOP_DIR}
+    bsdtar czf ./tar-version-src/${MY_TARVERSION}.tgz  --format pax --uname "" --gname "" -C ./tar-version-src/ ./${MY_TARVERSION}
     rm -Rf ./tar-version-src/${MY_TARVERSION}
     exit 0; 
 fi; 
@@ -62,9 +65,12 @@ echo $1
 exit 0; 
 fi; 
 
+#set -x 
 if test $# -ge 1 ; then 
     if test "$1" = "nodiff" ; then 
-	bsdtar czf ./tar-version-src/${MY_TARVERSION}.tgz --uname "" --gname "" -C ./tar-version-src/ ./${MY_TARVERSION}
+	#bsdtar czf ./tar-version-src/${MY_TARVERSION}.tgz --uname "" --gname "" -C ./tar-version-src/ ./${MY_TARVERSION}
+	#cd ./tar-version-src/ &&  pax -w -z -x pax ./${MY_TARVERSION} > ./${MY_TARVERSION}.tgz ; cd ${PROJECT_TOP_DIR}
+	bsdtar czf ./tar-version-src/${MY_TARVERSION}.tgz --format pax --uname "" --gname "" -C ./tar-version-src/ ./${MY_TARVERSION}
 	rm -Rf ./tar-version-src/${MY_TARVERSION}
     exit 0; 
     fi; 
@@ -80,10 +86,11 @@ LAST_TARVERSION=$(basename ${LAST_TARVERSION} .tgz)
 rm -Rf ./tar-version-src/${LAST_TARVERSION} 
 
 bsdtar xzf ./tar-version-src/${LAST_TARVERSION}.tgz -C ./tar-version-src/ 
+#cd ./tar-version-src/ &&  pax -r -z ./${MY_TARVERSION}  ; cd ${PROJECT_TOP_DIR}
 
 
 # diff(1) returns non-zero status on success. 
-PROJECT_TOP_DIR=${PWD}
+#PROJECT_TOP_DIR=${PWD}
 set +e 
 #diff -u -r ./tar-version-src/${LAST_TARVERSION} ./tar-version-src/${MY_TARVERSION} > ./tar-version-src/${MY_TARVERSION}.diff
 #diff -u -r ./tar-version-src/${LAST_TARVERSION} ./tar-version-src/${MY_TARVERSION} | gzip -f > ./tar-version-src/${MY_TARVERSION}.zdiff
