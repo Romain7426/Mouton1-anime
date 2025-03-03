@@ -163,7 +163,7 @@ $(info STDLIB_PROVIDES_ARC4RANDOM_HUH: $(STDLIB_PROVIDES_ARC4RANDOM_HUH))
 
 
 
-CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -O0 $(CC_CONFIG) 
+CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -O0  -D SRCFILE_UTF8   $(CC_CONFIG) 
 
 #       -aux-info filename
 #           Output to the given filename prototyped declarations for all functions declared and/or defined in a translation
