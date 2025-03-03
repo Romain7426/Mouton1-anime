@@ -1,7 +1,13 @@
-#include "lib__01__pre_header.ci"
+// provides some enum-s before any macro get defined  
+#include "lib__01__pre_header.ci" 
 
-#include <unistd.h>
 
+// lib kernel call 
+#include <unistd.h> 
+//#include <unistd.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/unistd.h.html */ /* https://en.wikipedia.org/wiki/Unistd.h */ 
+
+
+// Std Lib C 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,6 +22,9 @@
 //#include <sys/types.h>
 #include <time.h>
 #include <signal.h> 
+
+
+// User Lib C
 #include "lib__02__header.ci"
 #include "lib__10__local_alloca.ci"
 #include "lib__03.ci"

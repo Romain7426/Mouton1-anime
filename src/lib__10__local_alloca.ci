@@ -23,5 +23,15 @@
 
 
 
+#define strcopy__alloca(__cstr__) \
+  ((NULL == (__cstr__))? NULL : strncpy(LOCAL_ALLOCA(1+strlen(__cstr__)), (__cstr__), 1+strlen(__cstr__))) 
+
+#define strconcat__alloca(__cstr1__,__cstr2__) \
+  ((NULL == (__cstr1__))? strcopy__alloca(__cstr2__) : (NULL == (__cstr2__))? strcopy__alloca(__cstr1__) : strncpy(strncpy(LOCAL_ALLOCA(1+strlen(__cstr1__)+strlen(__cstr2__)), (__cstr1__), strlen(__cstr1__)), (__cstr2__), 1+strlen(__cstr2__))) 
+
+#define strconcat3__alloca(__cstr1__,__cstr2__,__cstr3__) \
+  strconcat__alloca(strconcat__alloca(__cstr1__,__cstr2__),__cstr3__) 
+
+
 
 #endif /* LIB__10__LOCAL_ALLOCA_CI */

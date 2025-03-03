@@ -62,7 +62,30 @@ typedef int8_t bool_t;
     if (__stdlog_d__ > 0) { dputs(__stdlog_d__, trace); };		\
   };									\
   /* END OF MACRO*/ 
-  
+
+
+#define RAISE_ERROR(__stdlog_d__,__error_id__) { error_id = (__error_id__); error_sub__line = __LINE__; error_stdlog_d = (__stdlog_d__); goto label__error__raise; }; 
+
+#define RAISE_ERROR_MSG(__stdlog_d__,__error_id__,__error_msg__) { error_id = (__error_id__); error_sub__line = __LINE__; error_stdlog_d = (__stdlog_d__); error_msg = (__error_msg__); goto label__error__raise; }; 
+
+#define ERROR_RAISE RAISE_ERROR
+
+#define label__error__sub label__error__raise 
+
+#if 0
+{
+  int_anime_error_t error_id; 
+  const char *      error_msg = NULL; 
+  int               error_stdlog_d = -1; 
+  int16_t           error_sub__line = -1; 
+ label__error__raise: { 
+    if (NULL != error_msg) { dputs(error_stdlog_d, error_msg); }; 
+      DISPLAY_TRACE(error_stdlog_d, error_id); 
+      return error_id; 
+    }; 
+};
+#endif 
+
 
 
 #endif /* ANIME_GLOBAL_H */

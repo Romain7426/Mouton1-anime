@@ -4,25 +4,26 @@
 #include "anime_generation_module.h"
 #include "anime_lexer_module.h"
 
-
-
 #include "anime_generation_module_infix_to_postfix.ci"
 
 
 // ********************************************
 // FIELD NAMES 
 
+int_anime_error_t anime__generation__field_names__compute(anime_t * this) { 
+  goto label__body; 
+
 #define DO_ARRAY_ITEM(field_name,__item_i__) {				\
     const int_lexeme_t lexeme_i   = this -> glue2(field_name,__lexeme_i)  [__item_i__]; \
     const int8_t       lexemes_nb = this -> glue2(field_name,__lexemes_nb)[__item_i__]; \
-    if (0                        >  lexeme_i) goto label__error__token_id_is_negative; \
-    if (this -> lexeme_stack__nb <= lexeme_i) goto label__error__token_id_is_out_of_bound; \
-    if (0 == lexemes_nb) goto label__error__at_least_one_token_is_required;		\
-    if (1  < lexemes_nb) goto label__error__need_at_most_one_token;	\
+    if (0                        >  lexeme_i) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_NAME__TOKEN_ID_NEG); }; \
+    if (this -> lexeme_stack__nb <= lexeme_i) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_NAME__TOKEN_ID_OUT_OF_BOUND); }; \
+    if (0 == lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_NAME__AT_LEAST_ONE_TOKEN); }; \
+    if (1  < lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_NAME__AT_MOST_ONE_TOKEN); }; \
     const int_anime_token_type_t lexeme_type = this -> lexeme_stack__type[lexeme_i]; \
     if (ANIME_TOKEN_IDENT == lexeme_type) {				\
       const char * lexeme_value = this -> lexeme_value_stack + this -> lexeme_stack__value[lexeme_i]; \
-      /*dprintf(stderr_d, "lexeme_value = '%s'\n", lexeme_value); */		\
+      /*dprintf(stderr_d, "lexeme_value = '%s'\n", lexeme_value); */	\
       this -> field_name[__item_i__] = anime__string_stack__push_lookup(this, lexeme_value); \
       /*dprintf(stderr_d, "this -> field_name[__item_i__] = '%d'\n", (int) this -> field_name[__item_i__]); */ \
     }									\
@@ -32,34 +33,21 @@
       convert_quoted_encoded_string_to_regular_string(lexeme_value, filtered_str, sizeof(filtered_str)); \
       this -> field_name[__item_i__] = anime__string_stack__push_lookup(this, filtered_str); \
     }									\
-    else goto label__error__expecting_ident;				\
-  };									\
+    else { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_NAME__IDENT_EXPECTED); }; \
+};									\
 /* END OF MACRO */
-
-
-int_anime_error_t anime__generation__field_names__compute(anime_t * this) { 
-  goto label__body; 
   
- label__error__expecting_ident: { 
-    return ANIME__FIELD_NAME__IDENT_EXPECTED; 
-  }; 
   
- label__error__token_id_is_negative: {
-    return ANIME__FIELD_NAME__TOKEN_ID_NEG; 
-  }; 
-
- label__error__token_id_is_out_of_bound: {
-    return ANIME__FIELD_NAME__TOKEN_ID_OUT_OF_BOUND; 
-  };
-
- label__error__at_least_one_token_is_required: { 
-    return ANIME__FIELD_NAME__AT_LEAST_ONE_TOKEN; 
+  int_anime_error_t error_id; 
+  const char *      error_msg = NULL; 
+  int               error_stdlog_d = -1; 
+  int16_t           error_sub__line = -1; 
+ label__error__raise: { 
+    if (NULL != error_msg) { dputs(error_stdlog_d, error_msg); }; 
+    DISPLAY_TRACE(this -> stdlog_d, error_id); 
+    return error_id; 
   }; 
   
- label__error__need_at_most_one_token: { 
-    return ANIME__FIELD_NAME__AT_MOST_ONE_TOKEN; 
-  }; 
-
  label__body: {   
     for (int8_t action_i = 0; action_i < this -> actions_nb; action_i++) DO_ARRAY_ITEM(actions_array_nom,action_i);
     for (int8_t  event_i = 0;  event_i < this ->  events_nb;  event_i++) DO_ARRAY_ITEM( events_array_nom,event_i);
@@ -68,10 +56,10 @@ int_anime_error_t anime__generation__field_names__compute(anime_t * this) {
     return ANIME__OK; 
   };
   
+#undef DO_ARRAY_ITEM
+
 }; 
 
-
-#undef DO_ARRAY_ITEM
 
 
 
@@ -83,7 +71,32 @@ int_anime_error_t anime__generation__field_names__compute(anime_t * this) {
 
 static int_anime_error_t anime__generation__convert_infix_to_postfix(const anime_t * this, const int_lexeme_t lexeme_i, const int8_t lexeme_len, int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_itemsize, int8_t * postfix_buffer_nb_r); 
 static int_anime_error_t anime__generation__eval_postfix_float(anime_t * this, const int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_nb, float * floatval_r, const int stduser_d, const int stdlog_d); 
-static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, const int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_nb, float * floatval_r, int16_t * int16val_r, int8_t * boolval_r, const int stduser_d, const int stdlog_d); 
+static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, const int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_nb, float * floatval_r, int16_t * int16val_r, int8_t * boolval_r, const int16_t strval_btesyze, char * strval_r, const int stduser_d, const int stdlog_d); 
+
+int_anime_error_t anime__generation__field_values__compute(anime_t * this) { 
+  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
+  float   floatval; 
+  int16_t   intval; 
+  int8_t   boolval; 
+  enum { STRVAL_BYTESIZE = INT16_MAX }; 
+  char      strval[STRVAL_BYTESIZE];
+  goto label__body; 
+
+
+
+  int_anime_error_t error_id; 
+  const char *      error_msg = NULL; 
+  int               error_stdlog_d = -1; 
+  int16_t           error_sub__line = -1; 
+ label__error__raise: { 
+    if (NULL != error_msg) { dputs(error_stdlog_d, error_msg); }; 
+    DISPLAY_TRACE(this -> stdlog_d, error_id); 
+    return error_id; 
+  }; 
+
+  
+ label__macros: { 
+
 
 #define INFIX_BUFFER_PRINT(infix_buffer,infix_buffer_nb) {		\
     dputs3(STDERR_FILENO, "infix_buffer[", int_string(infix_buffer_nb),"] = {" "\n"); \
@@ -119,14 +132,21 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
 
 #define READ_LALR_INT(__lexeme_i__, __lexemes_nb__) {			\
     CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
-    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/NULL, /*int16val_r*/&intval, /*boolval_r*/NULL, /*stduser_d*/-1, this -> stdlog_d); \
+    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/NULL, /*int16val_r*/&intval, /*boolval_r*/NULL, /*strval_bytesize*/-1,/*strval_r*/NULL, /*stduser_d*/-1, this -> stdlog_d); \
     if (ANIME__OK != error_id) { error_sub__line = __LINE__; goto label__error__sub; }; \
   };									\
   /* END OF MACRO */
 
 #define READ_LALR_BOOL(__lexeme_i__, __lexemes_nb__) {			\
     CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
-    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/NULL, /*int16val_r*/NULL, /*boolval_r*/&boolval, /*stduser_d*/-1, this -> stdlog_d); \
+    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/NULL, /*int16val_r*/NULL, /*boolval_r*/&boolval, /*strval_bytesize*/-1,/*strval_r*/NULL, /*stduser_d*/-1, this -> stdlog_d); \
+    if (ANIME__OK != error_id) { error_sub__line = __LINE__; goto label__error__sub; }; \
+  };									\
+  /* END OF MACRO */
+
+#define READ_LALR_STRING(__lexeme_i__, __lexemes_nb__) {		\
+    CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
+    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*float_r*/NULL, /*int16val_r*/NULL, /*boolval_r*/NULL, /*strval_bytesize*/STRVAL_BYTESIZE, /*strval_r*/strval, /*stduser_d*/-1, this -> stdlog_d); \
     if (ANIME__OK != error_id) { error_sub__line = __LINE__; goto label__error__sub; }; \
   };									\
   /* END OF MACRO */
@@ -134,51 +154,17 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
 #define READ_LALR_VALUE(__lexeme_i__, __lexemes_nb__) {			\
     CONVERT_INFIX_TO_POSTFIX(__lexeme_i__, __lexemes_nb__);		\
     /* POSTFIX_BUFFER_PRINT(postfix_buffer,postfix_buffer_nb);	*/	\
-    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/&floatval, /*int16val_r*/&intval, /*boolval_r*/&boolval, /*stduser_d*/-1, this -> stdlog_d); \
+    error_id = anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, /*floatval_r*/&floatval, /*int16val_r*/&intval, /*boolval_r*/&boolval, /*strval_bytesize*/STRVAL_BYTESIZE, /*strval_r*/strval, /*stduser_d*/-1, this -> stdlog_d); \
     if (ANIME__OK != error_id) { error_sub__line = __LINE__; goto label__error__sub; }; \
   };									\
   /* END OF MACRO */
 
 
-
-int_anime_error_t anime__generation__field_values__compute(anime_t * this) { 
-  LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
-  float   floatval; 
-  int16_t   intval; 
-  int8_t   boolval; 
-  int_anime_error_t error_id; 
-  goto label__body; 
-
-
-
-  int16_t error_sub__line = -1;
- label__error__sub: { 
-    //this -> error_id = error_id; *this -> error_str = '\0'; 
-    DISPLAY_TRACE(this -> stdlog_d, error_id); 
-    return error_id; 
-  };
-
- label__error__token_id_is_negative: {
-    error_id = ANIME__FIELD_VALUE__TOKEN_ID_NEG; 
-    DISPLAY_TRACE(this -> stdlog_d, error_id); 
-    //dputs(2, "ANIME__FIELD_VALUE__TOKEN_ID_NEG ="); dputn(2, ANIME__FIELD_VALUE__TOKEN_ID_NEG); dput_eol(2); 
-    return error_id; 
-  }; 
-
- label__error__token_id_is_out_of_bound: { 
-    error_id = ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND; 
-    DISPLAY_TRACE(this -> stdlog_d, error_id); 
-    //dputs(2, "ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND ="); dputn(2, ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); dput_eol(2); 
-    return error_id; 
-  }; 
-
-
- label__macros: { 
 #define COMPUTE_FLOAT(__field_name__) {					\
       const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
       const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
-      if (0                >  lexeme_i             ) goto label__error__token_id_is_negative; \
-      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) goto label__error__token_id_is_out_of_bound; \
+      if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
+      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
       READ_LALR_FLOAT(lexeme_i, lexemes_nb);				\
       this -> __field_name__ = floatval;				\
     }; 
@@ -186,8 +172,8 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
 #define COMPUTE_INT(__field_name__) {					\
       const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
       const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
-      if (0                >  lexeme_i             ) goto label__error__token_id_is_negative; \
-      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) goto label__error__token_id_is_out_of_bound; \
+      if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
+      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
       READ_LALR_INT(lexeme_i, lexemes_nb);				\
       this -> __field_name__ = intval;					\
     }; 
@@ -195,17 +181,26 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
 #define COMPUTE_BOOL(__field_name__) {					\
       const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
       const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
-      if (0                >  lexeme_i             ) goto label__error__token_id_is_negative; \
-      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) goto label__error__token_id_is_out_of_bound; \
+      if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
+      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
       READ_LALR_BOOL(lexeme_i, lexemes_nb);				\
+      this -> __field_name__ = boolval;					\
+    }; 
+
+#define COMPUTE_STRING(__field_name__) {				\
+      const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i); \
+      const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb); \
+      if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
+      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
+      READ_LALR_STRING(lexeme_i, lexemes_nb);				\
       this -> __field_name__ = boolval;					\
     }; 
 
 #define COMPUTE_ARRAY_ITEM(__field_name__,__item_i__,__type_val__) {	\
       const int_lexeme_t lexeme_i   = this -> glue2(__field_name__,__lexeme_i  )[__item_i__]; \
       const int8_t       lexemes_nb = this -> glue2(__field_name__,__lexemes_nb)[__item_i__]; \
-      if (0                >  lexeme_i             ) goto label__error__token_id_is_negative; \
-      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) goto label__error__token_id_is_out_of_bound; \
+      if (0                >  lexeme_i             ) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  \
+      if (lexeme_stack__nb <= lexeme_i + lexemes_nb) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_OUT_OF_BOUND); }; \
       READ_LALR_VALUE(lexeme_i, lexemes_nb);				\
       this -> __field_name__[__item_i__] = __type_val__;		\
     };									\
@@ -217,7 +212,7 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
 #if 0 
     const int_lexeme_t lexeme_i   = this -> masse__lexeme_i; 
     const int8_t       lexemes_nb = this -> masse__lexemes_nb;
-    if (0 > lexeme_i) goto label__error__token_id_is_negative; 
+    if (0 > lexeme_i) { RAISE_ERROR(this -> stdlog_d,ANIME__FIELD_VALUE__TOKEN_ID_NEG); };  
     READ_LALR_FLOAT(lexeme_i, lexemes_nb); 
     this -> masse = floatval; 
 #endif 
@@ -250,6 +245,8 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
       COMPUTE_ARRAY_ITEM(membres_hauteur,membre_i,floatval);
       //dputs(STDERR_FILENO, "membre_i: "); dputn(STDERR_FILENO, membre_i); dput_eol(STDERR_FILENO); 
       COMPUTE_ARRAY_ITEM(membres_angle_max_y,membre_i,floatval);
+
+      COMPUTE_ARRAY_ITEM(membres_image,membre_i,anime__string_stack__push_lookup(this,strval));
     };
 #endif
 
@@ -267,6 +264,9 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
 #undef COMPUTE_BOOL
 #undef COMPUTE_INT
 #undef COMPUTE_FLOAT
+
+#undef READ_LALR_VALUE
+
 }; 
 
 
@@ -275,6 +275,7 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
 
 
 
+#if 1
 
 #define GENERIC_MESSAGE_PRINT(__out_d__,__msg__) {			\
   int location_len;							\
@@ -307,6 +308,7 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
   };									\
   /* END OF MACRO */
 
+#endif 
 
 
 
@@ -318,56 +320,9 @@ int_anime_error_t anime__generation__field_values__compute(anime_t * this) {
 // EVAL POSTFIX EXPR 
 
  
-enum { EXPR_STACK_SIZE = ANIME__EXPRESSION_NESTEDNESS_MAX }; 
-
-#define PUSH_GENERIC_STACK(__name__,__value__) {			\
-    if (glue3(stack__,__name__,_nb) >= EXPR_STACK_SIZE) { goto error_label__stack_overflow; }; \
-    glue2(stack__,__name__)[glue3(stack__,__name__,_nb)] = (__value__);			\
-    glue3(stack__,__name__,_nb)++;					\
-  };									\
-/* END OF MACRO */
-
-#define PUSH_FLOAT_STACK(__value__) PUSH_GENERIC_STACK(float,__value__)
-
-#define PUSH_INT16_STACK(__value__) PUSH_GENERIC_STACK(int16,__value__)
-
-#define PUSH_BOOL_STACK(__value__) PUSH_GENERIC_STACK(bool,__value__)
-
-#define UNARY_OPERATOR_GENERIC_STACK(__type__,__name__,__result_expr__) {	\
-	if (glue3(stack__,__name__,_nb) < 1) { goto error_label__stack_underflow; }; \
-	const int stack__i = glue3(stack__,__name__,_nb) - 1;		\
-	const __type__ stack_top = glue2(stack__,__name__)[stack__i];	\
-	glue2(stack__,__name__)[stack__i] = (__result_expr__);			\
-      };								\
-      /* END OF MACRO */
-
-#define UNARY_OPERATOR_FLOAT_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(float,float,__result_expr__)
-
-#define UNARY_OPERATOR_INT16_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(int16_t,int16,__result_expr__)
-
-#define UNARY_OPERATOR_BOOL_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(int8_t,bool,__result_expr__)
 
 
-
-#define BINARY_OPERATOR_GENERIC_STACK(__type__,__name__,__result_expr__) {	\
-	if (glue3(stack__,__name__,_nb) < 2) { goto error_label__stack_underflow; }; \
-	const int stack__i = glue3(stack__,__name__,_nb) - 1;		\
-	const __type__ op_left = glue2(stack__,__name__)[stack__i-1];	\
-	const __type__ op_right = glue2(stack__,__name__)[stack__i];	\
-	glue2(stack__,__name__)[stack__i-1] = (__result_expr__);		\
-	glue3(stack__,__name__,_nb)--;					\
-      };								\
-      /* END OF MACRO */
-
-#define BINARY_OPERATOR_FLOAT_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(float,float,__result_expr__)
-
-#define BINARY_OPERATOR_INT16_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(int16_t,int16,__result_expr__)
-
-#define BINARY_OPERATOR_BOOL_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(int8_t,bool,__result_expr__)
-
-
-
-static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, const int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_nb, float * floatval_r, int16_t * int16val_r, int8_t * boolval_r, const int stduser_d, const int stdlog_d) { 
+static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, const int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_nb, float * floatval_r, int16_t * int16val_r, int8_t * boolval_r, const int16_t strval_bytesize, char * strval_r, const int stduser_d, const int stdlog_d) { 
   LOCAL_ALLOCA__DECLARE(int16_t,INT16_MAX); 
   int_anime_error_t * error_id_r = &this -> error_id; const uint16_t error_size = this -> error_size; char * error_str = this -> error_str; 
   if (NULL == error_id_r) { return        ANIME__DATA_GENERATION__NULL_ERROR_ID_R; }; 
@@ -387,31 +342,99 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
   const int stderror_d = anime_data -> stdlog_d; 
   int_lexeme_t token_i; 
   int_anime_token_type_t token_type; 
+  const char * token_value; 
     
   
   
-  float   stack__float[EXPR_STACK_SIZE]; 
-  int16_t stack__int16[EXPR_STACK_SIZE]; 
-  int8_t  stack__bool [EXPR_STACK_SIZE]; 
+  enum { EXPR_STACK_SIZE = ANIME__EXPRESSION_NESTEDNESS_MAX }; 
+  float        stack__float[EXPR_STACK_SIZE]; 
+  int16_t      stack__int16[EXPR_STACK_SIZE]; 
+  int8_t       stack__bool [EXPR_STACK_SIZE]; 
+  const char * stack__str  [EXPR_STACK_SIZE]; 
   int     stack__float_nb; 
   int     stack__int16_nb; 
   int     stack__bool_nb; 
+  int     stack__str_nb; 
   stack__float_nb = 0; 
   stack__int16_nb = 0; 
   stack__bool_nb  = 0; 
+  stack__str_nb  = 0; 
   
   int8_t postfix_buffer_i; 
   goto label__body; 
 
   
 
+ label__macros: {
+    
+#define PUSH_GENERIC_STACK(__name__,__value__) {			\
+    if (glue3(stack__,__name__,_nb) >= EXPR_STACK_SIZE) { goto error_label__stack_overflow; }; \
+    glue2(stack__,__name__)[glue3(stack__,__name__,_nb)] = (__value__);			\
+    glue3(stack__,__name__,_nb)++;					\
+  };									\
+/* END OF MACRO */
+
+#define PUSH_FLOAT_STACK(__value__) PUSH_GENERIC_STACK(float,__value__)
+
+#define PUSH_INT16_STACK(__value__) PUSH_GENERIC_STACK(int16,__value__)
+
+#define PUSH_BOOL_STACK(__value__) PUSH_GENERIC_STACK(bool,__value__)
+
+#define PUSH_STR_STACK(__value__) PUSH_GENERIC_STACK(str,__value__)
+
+
+#define UNARY_OPERATOR_GENERIC_STACK(__type__,__name__,__result_expr__) {	\
+	if (glue3(stack__,__name__,_nb) < 1) { goto error_label__stack_underflow; }; \
+	const int stack__i = glue3(stack__,__name__,_nb) - 1;		\
+	const __type__ stack_top = glue2(stack__,__name__)[stack__i];	\
+	glue2(stack__,__name__)[stack__i] = (__result_expr__);			\
+      };								\
+      /* END OF MACRO */
+
+#define UNARY_OPERATOR_FLOAT_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(float,float,__result_expr__)
+
+#define UNARY_OPERATOR_INT16_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(int16_t,int16,__result_expr__)
+
+#define UNARY_OPERATOR_BOOL_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(int8_t,bool,__result_expr__)
+
+#define UNARY_OPERATOR_STR_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(const char *,str,__result_expr__)
+
+
+
+#define BINARY_OPERATOR_GENERIC_STACK(__type__,__name__,__result_expr__) {	\
+	if (glue3(stack__,__name__,_nb) < 2) { goto error_label__stack_underflow; }; \
+	const int stack__i = glue3(stack__,__name__,_nb) - 1;		\
+	const __type__ op_left = glue2(stack__,__name__)[stack__i-1];	\
+	const __type__ op_right = glue2(stack__,__name__)[stack__i];	\
+	glue2(stack__,__name__)[stack__i-1] = (__result_expr__);		\
+	glue3(stack__,__name__,_nb)--;					\
+      };								\
+      /* END OF MACRO */
+
+#define BINARY_OPERATOR_FLOAT_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(float,float,__result_expr__)
+
+#define BINARY_OPERATOR_INT16_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(int16_t,int16,__result_expr__)
+
+#define BINARY_OPERATOR_BOOL_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(int8_t,bool,__result_expr__)
+
+#define BINARY_OPERATOR_STR_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(const char *,str,__result_expr__)
+    
+  };
+
+
+
+
+
+
+
  label__body: { 
   postfix_buffer_i = -1; 
   for (;;) { 
     postfix_buffer_i++; 
     if (postfix_buffer_nb <= postfix_buffer_i) goto label__eof_reached; 
-    token_i    = postfix_buffer[postfix_buffer_i]; 
-    token_type = this -> lexeme_stack__type[token_i]; 
+    token_i     = postfix_buffer[postfix_buffer_i]; 
+    token_type  = this -> lexeme_stack__type[token_i]; 
+    token_value = this -> lexeme_value_stack + this -> lexeme_stack__value[token_i]; 
     
     switch (token_type) { 
     case ANIME_TOKEN_TRUE: { 
@@ -419,6 +442,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
       PUSH_FLOAT_STACK(1.0f / 0.0f); 
       PUSH_INT16_STACK(INT16_MAX); 
       PUSH_BOOL_STACK(true); 
+      PUSH_STR_STACK(token_value); 
       continue; 
     };
       
@@ -427,11 +451,12 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
       PUSH_FLOAT_STACK(0); 
       PUSH_INT16_STACK(0); 
       PUSH_BOOL_STACK(false); 
+      PUSH_STR_STACK(token_value); 
       continue; 
     }; 
       
     case ANIME_TOKEN_IDENT: { 
-      const char * lexeme_value = this -> lexeme_value_stack + this -> lexeme_stack__value[token_i]; 
+      const char * lexeme_value = token_value; 
       if (0 == strcasecmp("vrai" , lexeme_value)) goto label__token_true; 
       if (0 == strcasecmp("oui"  , lexeme_value)) goto label__token_true; 
       if (0 == strcasecmp("true" , lexeme_value)) goto label__token_true; 
@@ -444,6 +469,10 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
 	PUSH_FLOAT_STACK(this -> choc_longueur); 
 	PUSH_INT16_STACK(this -> choc_longueur); 
 	PUSH_BOOL_STACK(0 != this -> choc_longueur); 
+	enum { ftoa_size = INT8_MAX }; 
+	char ftoa_str_l[ftoa_size]; 
+	snprintf(ftoa_str_l, sizeof(ftoa_str_l), "%f", this -> choc_longueur);
+	PUSH_STR_STACK(strcopy__alloca(ftoa_str_l)); 
 	continue; 
       }; 
       goto error_label__unexpected_token; 
@@ -451,8 +480,8 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
     }; 
 
     case ANIME_TOKEN_STRING_C: {			
-      const char * lexeme_value = this -> lexeme_value_stack + this -> lexeme_stack__value[token_i]; 
-      char filtered_str[ANIME_LINE_LEN_MAX];				
+      const char * lexeme_value = token_value; 
+      char filtered_str[ANIME_LINE_LEN_MAX];
       convert_quoted_encoded_string_to_regular_string(lexeme_value, filtered_str, sizeof(filtered_str)); 
       if (0 == strcasecmp("vrai" , filtered_str)) goto label__token_true; 
       if (0 == strcasecmp("oui"  , filtered_str)) goto label__token_true; 
@@ -462,26 +491,30 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
       if (0 == strcasecmp("non"  , filtered_str)) goto label__token_false; 
       if (0 == strcasecmp("false", filtered_str)) goto label__token_false; 
       if (0 == strcasecmp("no"   , filtered_str)) goto label__token_false; 
-      goto error_label__unexpected_token; 
+      PUSH_FLOAT_STACK(atof(filtered_str)); 
+      PUSH_INT16_STACK(atoi(filtered_str)); 
+      PUSH_BOOL_STACK(atoi(filtered_str)); 
+      PUSH_STR_STACK(strcopy__alloca(filtered_str)); 
       continue; 
     };
-
+      
       
     case ANIME_TOKEN_ENTIER: 
     case ANIME_TOKEN_REEL__VIRG: 
     case ANIME_TOKEN_REEL__DOT: 
     case ANIME_TOKEN_REEL__E: { 
       //dputs3(STDERR_FILENO, "AVANT - stack__float_nb: ", int_string(stack__float_nb), "\n"); 
-      const char * token_value = this -> lexeme_value_stack + this -> lexeme_stack__value[token_i]; 
       PUSH_FLOAT_STACK(atof(token_value)); 
       PUSH_INT16_STACK(atoi(token_value)); 
       PUSH_BOOL_STACK(0 == atoi(token_value) ? false : true); 
+      PUSH_STR_STACK(token_value); 
       //dputs3(STDERR_FILENO, "APRES - stack__float_nb: ", int_string(stack__float_nb), "\n"); 
       continue; 
     }; 
       
     case ANIME_TOKEN_IPLUS_UNAIRE: 
     case ANIME_TOKEN_RPLUS_UNAIRE: 
+      UNARY_OPERATOR_STR_STACK(strconcat__alloca("+",stack_top));
       continue; 
       
     case ANIME_TOKEN_IMOINS_UNAIRE: 
@@ -490,6 +523,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
       UNARY_OPERATOR_FLOAT_STACK(-stack_top);
       UNARY_OPERATOR_INT16_STACK(-stack_top);
       UNARY_OPERATOR_BOOL_STACK(stack_top);
+      UNARY_OPERATOR_STR_STACK(strconcat__alloca("-",stack_top));
       //dputs3(STDERR_FILENO, "RMOINS - APRES - stack__float_nb: ", int_string(stack__float_nb), "\n"); 
       continue; 
     }; 
@@ -499,6 +533,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
       BINARY_OPERATOR_FLOAT_STACK(op_left + op_right); 
       BINARY_OPERATOR_INT16_STACK(op_left + op_right); 
       BINARY_OPERATOR_BOOL_STACK(op_left || op_right); 
+      BINARY_OPERATOR_STR_STACK(strconcat__alloca(op_left, op_right));
       continue; 
     }; 
       
@@ -507,6 +542,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
       BINARY_OPERATOR_FLOAT_STACK(op_left - op_right); 
       BINARY_OPERATOR_INT16_STACK(op_left - op_right); 
       BINARY_OPERATOR_BOOL_STACK(op_left || op_right); 
+      BINARY_OPERATOR_STR_STACK(strconcat3__alloca(op_left, "-", op_right));
       continue; 
     }; 
       
@@ -515,6 +551,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
       BINARY_OPERATOR_FLOAT_STACK(op_left * op_right); 
       BINARY_OPERATOR_INT16_STACK(op_left * op_right); 
       BINARY_OPERATOR_BOOL_STACK(op_left && op_right); 
+      BINARY_OPERATOR_STR_STACK(strconcat3__alloca(op_left, "*", op_right));
       continue; 
     }; 
       
@@ -522,6 +559,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
       BINARY_OPERATOR_FLOAT_STACK(op_left / op_right); 
       BINARY_OPERATOR_INT16_STACK(op_left / op_right); 
       BINARY_OPERATOR_BOOL_STACK(op_right == op_left ? true : op_left); 
+      BINARY_OPERATOR_STR_STACK(strconcat3__alloca(op_left, "/", op_right));
       continue; 
     }; 
       
@@ -540,9 +578,12 @@ label__eof_reached: {
     if (stack__int16_nb > 1) { goto error_label__stack_too_many_items  ; }; 
     if (stack__bool_nb  < 1) { goto error_label__stack_not_enough_items; }; 
     if (stack__bool_nb  > 1) { goto error_label__stack_too_many_items  ; }; 
+    if (stack__str_nb  < 1) { goto error_label__stack_not_enough_items; }; 
+    if (stack__str_nb  > 1) { goto error_label__stack_too_many_items  ; }; 
     if (NULL != floatval_r) *floatval_r  = stack__float[0]; 
     if (NULL != int16val_r) *int16val_r  = stack__int16[0]; 
     if (NULL !=  boolval_r)  *boolval_r  = stack__bool [0]; 
+    if (NULL !=   strval_r) strlcpy(strval_r, stack__str[0], strval_bytesize); 
     *error_id_r  = ANIME__OK; 
     *error_str   = '\0'; 
     return *error_id_r; 
@@ -593,7 +634,7 @@ label__eof_reached: {
 
 static int_anime_error_t anime__generation__eval_postfix_float(anime_t * this, const int_lexeme_t * postfix_buffer, const int8_t postfix_buffer_nb, float * floatval_r, const int stduser_d, const int stdlog_d) { 
   if (NULL == floatval_r) { this -> error_id = ANIME__DATA_GENERATION__NULL_FLOATVAL_R; snprintf(this -> error_str, this -> error_size, "floatval_r argument is null."); return this -> error_id; }; 
-  return anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, floatval_r, /*int16val_r*/NULL, /*boolval_r*/NULL, stduser_d, stdlog_d); 
+  return anime__generation__eval_postfix_expr(this, postfix_buffer, postfix_buffer_nb, floatval_r, /*int16val_r*/NULL, /*boolval_r*/NULL, /*strval_bytesize*/-1,/*strval_t*/NULL,stduser_d, stdlog_d); 
 }; 
 
 

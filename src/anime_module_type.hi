@@ -115,7 +115,7 @@ struct anime_t {
   int8_t             racines_size; 
   int8_t             racines_nb; 
 
-  // FRA: A terme, il devra remplacer les trucs ci-dessous qui sont trop compliqués. 
+  // FRA: À terme, il devra remplacer les trucs ci-dessous qui sont trop compliqués. 
   int_lexeme_t       expr_lexeme_start_i[ANIME_EXPR_SIZE];
   int8_t             expr_lexemes_nb    [ANIME_EXPR_SIZE];
 #if 0

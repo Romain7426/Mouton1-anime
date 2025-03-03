@@ -1,14 +1,14 @@
 #include "main_inc.hi"
 #include "main.h"
 
+#include "anime.h"
+
 #define LANG_ID 1
 #define LANG_ID_FRA 1
 #define LANG_ID_ENG 2
 #define LANG(str_fra,str_eng) ((LANG_ID == LANG_ID_ENG) ? (str_eng) : (str_fra))
 
 typedef int8_t bool_t; 
-
-#include "anime.h"
 
 #include "main_stdlog_buffering.ci" 
 #include "main_subr.ci"
@@ -60,6 +60,21 @@ int main(const int argc, const char * argv[]) {
   goto label__body; 
 
 
+#define DISPLAY_TRACE(__stdlog_d__,__error_id__) {			\
+    enum { TRACE_BYTESIZE = 1 << 11 };					\
+    char trace[TRACE_BYTESIZE];						\
+    snprintf(trace, TRACE_BYTESIZE, "{" __FILE__ ":%d:<%s()>}: " "%s" "\n", error_sub__line, __func__, int_anime_error__get_cstr(__error_id__)); \
+    if (__stdlog_d__ > 0) { dputs(__stdlog_d__, trace); };		\
+  };									\
+  /* END OF MACRO*/ 
+
+
+  int16_t error_sub__line = -1;
+ label__error__sub: { 
+    DISPLAY_TRACE(stdlog_d, error_id); 
+    return error_id; 
+  }; 
+  
  label__exit: { 
     if (NULL != a_anime) { anime__delete_b(a_anime); a_anime = NULL; }; 
     if (stdlog_d > 0) { dprintf(stdlog_d, "%s = [ %d ] %s " "\n", LANG("Valeur de sortie","Exit value"), error_id, int_anime_error__get_cstr(error_id)); }; 
