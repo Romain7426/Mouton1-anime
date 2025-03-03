@@ -68,6 +68,8 @@ extern void anime__check_and_assert(const int8_t debug_print_huh, const int stdd
     X(ANIME__STRING_STACK_TOO_SMALL,)					\
     X(ANIME__FD_NEG,)							\
     X(ANIME__FDOPEN,)							\
+    X(ANIME__CANNOT_OPEN_INPUT_FILE,)					\
+    X(ANIME__CANNOT_MAKE_PIPE,)						\
     X(ANIME__NULL_FIELD_NAME,)						\
     X(ANIME__UNKNOWN_FIELD,)						\
     X(ANIME__INDEX_OF_OUT_BOUNDS,)					\

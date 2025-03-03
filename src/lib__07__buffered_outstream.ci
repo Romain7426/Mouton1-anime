@@ -17,6 +17,36 @@
 #  define BUFFERED_OUTSTREAM__C__ALREADY_INCLUDED 
 #endif 
 
+#ifdef BUFFERED_OUTSTREAM__H 
+#  define EMPTY_ARRAY_DEFINITION 
+#  define VALUE_DEFINITION(value)
+#else 
+#  define EMPTY_ARRAY_DEFINITION = { } 
+#  define VALUE_DEFINITION(value) = value
+#endif 
+
+#ifndef EXTERN 
+#  define EXTERN extern
+#endif
+
+#define extern 1
+#define static 2
+// RL: Lors d’une définition ‘extern’, le mot-clef ‘extern’ doit ne pas être énoncé. 
+//     Lors d’une définition ‘static’, le mot-clef ‘static’ doit être répété. 
+//     D’où la macro ‘EXTERN_DEFINITION’. 
+#if   (EXTERN == extern) 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#elif (EXTERN == static) 
+#  define EXTERN_DECLARATION static
+#  define EXTERN_DEFINITION  static
+#else 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#endif 
+#undef extern 
+#undef static 
+
 
 #include <unistd.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/unistd.h.html */ /* https://en.wikipedia.org/wiki/Unistd.h */ 
 #include <signal.h> /* https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/signal.h.html */ 
@@ -42,15 +72,6 @@
 // Therefore this one is kind of more accurate. 
 #endif 
 
-#ifdef BUFFERED_OUTSTREAM__H 
-#  define EXTERN extern
-#  define EMPTY_ARRAY_DEFINITION 
-#  define VALUE_DEFINITION(value)
-#else 
-#  define EXTERN 
-#  define EMPTY_ARRAY_DEFINITION = { } 
-#  define VALUE_DEFINITION(value) = value
-#endif 
 
 
 #ifdef BUFFERED_OUTSTREAM__C 
@@ -141,12 +162,12 @@ static int buffered_outstream__lookup_slot_by_pipe1(const int pipe1) {
 
 
 
+#define buffered_outstream__open glue2(BUFFERED_OUTSTREAM__PREFIX,buffered_outstream__open)
 
-EXTERN int buffered_outstream__open(const int write_fd, char * buffer, const int16_t buffer_bytesize) 
-#ifdef BUFFERED_OUTSTREAM__H
-;
+#ifdef BUFFERED_OUTSTREAM__H 
+EXTERN_DECLARATION int buffered_outstream__open(const int write_fd, char * buffer, const int16_t buffer_bytesize); 
 #else /* BUFFERED_OUTSTREAM__C */
-{ 
+EXTERN_DEFINITION int buffered_outstream__open(const int write_fd, char * buffer, const int16_t buffer_bytesize) { 
   int error_id = BUFFERED_OUTSTREAM__ERROR__NONE; 
   if (!buffered_outstream__init_huh) goto label__init; 
   if (!buffered_outstream__handler_installed_huh) goto label__install_handler; 
@@ -213,11 +234,13 @@ EXTERN int buffered_outstream__open(const int write_fd, char * buffer, const int
 };
 #endif /* BUFFERED_OUTSTREAM__H */
 
-EXTERN int buffered_outstream__flush(const int pipe1) 
+
+#define buffered_outstream__flush glue2(BUFFERED_OUTSTREAM__PREFIX,buffered_outstream__flush)
+
 #ifdef BUFFERED_OUTSTREAM__H
-;
+EXTERN_DECLARATION int buffered_outstream__flush(const int pipe1);
 #else /* BUFFERED_OUTSTREAM__C */
-{ 
+EXTERN_DEFINITION int buffered_outstream__flush(const int pipe1) { 
   int error_id = BUFFERED_OUTSTREAM__ERROR__NONE; 
   goto label__body; 
   
@@ -240,11 +263,13 @@ EXTERN int buffered_outstream__flush(const int pipe1)
 };
 #endif /* BUFFERED_OUTSTREAM__H */
 
-EXTERN int buffered_outstream__close(const int pipe1, const int flush_huh) 
-#ifndef BUFFERED_OUTSTREAM__C 
-;
+
+#define buffered_outstream__close glue2(BUFFERED_OUTSTREAM__PREFIX,buffered_outstream__close)
+
+#ifdef BUFFERED_OUTSTREAM__H 
+EXTERN_DECLARATION int buffered_outstream__close(const int pipe1, const int flush_huh); 
 #else /* BUFFERED_OUTSTREAM__C */
-{ 
+EXTERN_DEFINITION int buffered_outstream__close(const int pipe1, const int flush_huh) { 
   int error_id = BUFFERED_OUTSTREAM__ERROR__NONE; 
   goto label__body; 
   
@@ -393,19 +418,29 @@ enum {
 }; 
 #undef X 
 
-typedef      int8_t               int_buffered_outstream__error_t;
-// int_buffered_outstream__error -> cstr 
-EXTERN const char *               int_buffered_outstream__error__get_cstr(const int_buffered_outstream__error_t error_id); 
-// int_buffered_outstream__error__id -> value 
-EXTERN const  int_buffered_outstream__error_t int_buffered_outstream__error__id_value[BUFFERED_OUTSTREAM__ERROR__COUNT]; 
-enum {                            int_buffered_outstream__error__id_value__size = ARRAY_SIZE(int_buffered_outstream__error__id_value) }; 
-EXTERN const uint8_t              int_buffered_outstream__error__id_value__size__compiled_value; 
-// int_buffered_outstream__error__id -> cstr 
-EXTERN const char *               int_buffered_outstream__error__id_cstr [BUFFERED_OUTSTREAM__ERROR__COUNT + 1]; 
-enum {                            int_buffered_outstream__error__id_cstr__size = ARRAY_SIZE(int_buffered_outstream__error__id_cstr) }; 
-EXTERN const uint8_t              int_buffered_outstream__error__id_cstr__size__compiled_value; 
 
-#define X(ident, value) EXTERN const int_buffered_outstream__error_t ident##__compiled_value; 
+#define int_buffered_outstream__error_t                               glue2(BUFFERED_OUTSTREAM__PREFIX,int_buffered_outstream__error_t)
+#define int_buffered_outstream__error__get_cstr                       glue2(BUFFERED_OUTSTREAM__PREFIX,int_buffered_outstream__error__get_cstr)
+#define int_buffered_outstream__error__id_value                       glue2(BUFFERED_OUTSTREAM__PREFIX,int_buffered_outstream__error__id_value)
+#define int_buffered_outstream__error__id_value__size                 glue2(BUFFERED_OUTSTREAM__PREFIX,int_buffered_outstream__error__id_value__size)
+#define int_buffered_outstream__error__id_value__size__compiled_value glue2(BUFFERED_OUTSTREAM__PREFIX,int_buffered_outstream__error__id_value__size__compiled_value)
+#define int_buffered_outstream__error__id_cstr                        glue2(BUFFERED_OUTSTREAM__PREFIX,int_buffered_outstream__error__id_cstr)
+#define int_buffered_outstream__error__id_cstr__size                  glue2(BUFFERED_OUTSTREAM__PREFIX,int_buffered_outstream__error__id_cstr__size)
+#define int_buffered_outstream__error__id_cstr__size__compiled_value  glue2(BUFFERED_OUTSTREAM__PREFIX,int_buffered_outstream__error__id_cstr__size__compiled_value)
+
+typedef                  int8_t                          int_buffered_outstream__error_t;
+// int_buffered_outstream__error -> cstr 
+EXTERN_DECLARATION const char *                          int_buffered_outstream__error__get_cstr(const int_buffered_outstream__error_t error_id); 
+// int_buffered_outstream__error__id -> value 
+EXTERN_DECLARATION const int_buffered_outstream__error_t int_buffered_outstream__error__id_value[BUFFERED_OUTSTREAM__ERROR__COUNT]; 
+enum {                                                   int_buffered_outstream__error__id_value__size = ARRAY_SIZE(int_buffered_outstream__error__id_value) }; 
+EXTERN_DECLARATION const uint8_t                         int_buffered_outstream__error__id_value__size__compiled_value; 
+// int_buffered_outstream__error__id -> cstr 
+EXTERN_DECLARATION const char *                          int_buffered_outstream__error__id_cstr [BUFFERED_OUTSTREAM__ERROR__COUNT + 1]; 
+enum {                                                   int_buffered_outstream__error__id_cstr__size = ARRAY_SIZE(int_buffered_outstream__error__id_cstr) }; 
+EXTERN_DECLARATION const uint8_t                         int_buffered_outstream__error__id_cstr__size__compiled_value; 
+
+#define X(ident, value) static const int_buffered_outstream__error_t ident##__compiled_value; 
 BUFFERED_OUTSTREAM__ERROR__LIST 
 #undef X 
 
@@ -420,28 +455,28 @@ BUFFERED_OUTSTREAM__ERROR__LIST
 
 #else /* BUFFERED_OUTSTREAM__C */
 
-#define X(ident, value) const int_buffered_outstream__error_t ident##__compiled_value = ident; 
+#define X(ident, value) static const int_buffered_outstream__error_t ident##__compiled_value = ident; 
 BUFFERED_OUTSTREAM__ERROR__LIST 
 #undef X 
 
 #define X(ident, value) #ident, 
-const char * int_buffered_outstream__error__id_cstr[BUFFERED_OUTSTREAM__ERROR__COUNT + 1] = { 
+EXTERN_DEFINITION const char * int_buffered_outstream__error__id_cstr[BUFFERED_OUTSTREAM__ERROR__COUNT + 1] = { 
 BUFFERED_OUTSTREAM__ERROR__LIST 
   NULL
 }; 
 #undef X 
  
-const uint8_t int_buffered_outstream__error__id_cstr__size__compiled_value = ARRAY_SIZE(int_buffered_outstream__error__id_cstr); 
+EXTERN_DEFINITION const uint8_t int_buffered_outstream__error__id_cstr__size__compiled_value = ARRAY_SIZE(int_buffered_outstream__error__id_cstr); 
 
 #define X(ident, value) ident, 
-const int_buffered_outstream__error_t int_buffered_outstream__error__id_value[BUFFERED_OUTSTREAM__ERROR__COUNT] = { 
+EXTERN_DEFINITION const int_buffered_outstream__error_t int_buffered_outstream__error__id_value[BUFFERED_OUTSTREAM__ERROR__COUNT] = { 
 BUFFERED_OUTSTREAM__ERROR__LIST 
 }; 
 #undef X 
 
-const uint8_t int_buffered_outstream__error__id_value__size__compiled_value = ARRAY_SIZE(int_buffered_outstream__error__id_value); 
+EXTERN_DEFINITION const uint8_t int_buffered_outstream__error__id_value__size__compiled_value = ARRAY_SIZE(int_buffered_outstream__error__id_value); 
 
-const char * int_buffered_outstream__error__get_cstr(const int_buffered_outstream__error_t error_id) { 
+EXTERN_DEFINITION const char * int_buffered_outstream__error__get_cstr(const int_buffered_outstream__error_t error_id) { 
   const char * error_id__cstr = NULL; 
   switch (error_id) { 
 #define X(ident, value) case ident: error_id__cstr = #ident; break; 
@@ -453,10 +488,8 @@ const char * int_buffered_outstream__error__get_cstr(const int_buffered_outstrea
 
 #endif /* BUFFERED_OUTSTREAM__H */
 
-
-
-
-
+#undef EXTERN_DECLARATION
+#undef EXTERN_DEFINITION
 #undef EXTERN 
-#undef EMPTY_ARRAY_DEFINITION 
-#undef VALUE_DEFINITION 
+#undef EMPTY_ARRAY_DEFINITION
+#undef VALUE_DEFINITION

@@ -118,7 +118,7 @@ ANIME__ERROR__LIST
 
 EXTERN_DEFINITION const uint8_t int_anime_error__id_value__size__compiled_value = ARRAY_SIZE(int_anime_error__id_value); 
 
-const char * int_anime_error__get_cstr(const int_anime_error_t error) { 
+EXTERN_DEFINITION const char * int_anime_error__get_cstr(const int_anime_error_t error) { 
   const char * error__cstr = NULL; 
   switch (error) { 
 #define X(ident, value) case ident: error__cstr = #ident; break; 

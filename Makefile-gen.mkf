@@ -190,7 +190,7 @@ GCC_FLAGS := -g3  -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fn
 CLANG_FLAGS :=
 PCC_FLAGS   := -fpic -Wno-unreachable-code -Wno-shadow #-g #-fpic 
 #PCC: -g: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
-TCC_FLAGS   := -g -bt100 #-b #-fpic #-g #-fpic 
+TCC_FLAGS   := -g -bt100 -static -fsigned-char #-b #-fpic #-g #-fpic 
 
 
 # RL: Le préprocesseur de PCC émet un warning pour chaque identifiant plus que soixante-trois charactères: «identifier exceeds C99 5.2.4.1» 

@@ -1,4 +1,4 @@
-#include "anime_global.h"
+#include "anime_inc.hi"
 #include "anime.h"
 #include "anime_type.h"
 #include "anime_generation_module.h"

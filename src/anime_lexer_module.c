@@ -1,4 +1,4 @@
-#include "anime_global.h"
+#include "anime_inc.hi"
 #include "anime.h"
 #include "anime_type.h"
 #include "anime_lexer_module.h"
@@ -17,12 +17,6 @@
 // =================================================================================================== 
 // LEXING / TOKENIZATION 
 
-#define ANIME_LEXER__VALIDATE(one_line_start,one_line_next) {		\
-    one_line_start__col0 += (one_line_next - one_line_start);		\
-    one_line_start = one_line_next;					\
-  }; 
-
-#define ANIME_LEXER__PUSH_BACK(one_line_start,one_line_next,push_back_nb) { one_line_next -= (push_back_nb); assert(one_line_start <= one_line_next); }; 
 
 int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd) { 
   LOCAL_ALLOCA__DECLARE(int16_t,1 << 14); 
@@ -41,8 +35,20 @@ int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd)
   int c; 
   int error_var__recognized_token_type; 
   goto label__body; 
-  
+
+
+ label__macros: { 
+    
+#define ANIME_LEXER__VALIDATE(one_line_start,one_line_next) {		\
+      one_line_start__col0 += (one_line_next - one_line_start);		\
+      one_line_start = one_line_next;					\
+    }; 
+    
+#define ANIME_LEXER__PUSH_BACK(one_line_start,one_line_next,push_back_nb) { one_line_next -= (push_back_nb); assert(one_line_start <= one_line_next); }; 
+    
 #define GOTO_LABEL_ERROR(__error_label__) { srcval_len = one_line_next - one_line_start; srcval_rstr = one_line + one_line_start; goto __error_label__; }
+    
+};
 
  label__error__error_while_reading_the_input_stream: { 
     return ANIME__TOKEN_PARSER__ERROR_WHILE_READING_THE_INPUT_STREAM; 
@@ -315,6 +321,19 @@ int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd)
 }; 
 
 
+
+
+
+void anime__lexer__check_and_assert(void) {
+  int_anime_token_type__check_and_assert(); 
+  int_anime_automata_type__check_and_assert(); 
+};
+
+
+
+
+
+
 #define ANIME__TOKEN_TYPE__C
 //#define ANIME__TOKEN_TYPE__TYPE_T uint8_t 
 #define EXTERN extern
@@ -330,13 +349,3 @@ int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd)
 #undef  EXTERN
 //#undef  ANIME__AUTOMATA_TYPE__TYPE_T
 #undef  ANIME__AUTOMATA_TYPE__C
-
-
-
-
-void anime__lexer__check_and_assert(void) {
-  int_anime_token_type__check_and_assert(); 
-  int_anime_automata_type__check_and_assert(); 
-};
-
-

@@ -1,6 +1,7 @@
 #include "main_inc.hi"
 #include "main.h"
 
+
 #include "anime.h"
 
 #define LANG_ID 1
@@ -311,3 +312,19 @@ int main(const int argc, const char * argv[]) {
 
 
 
+
+#define BUFFERED_OUTSTREAM__C 
+#define BUFFERED_OUTSTREAM__MAX 8 
+#define EXTERN extern
+#include "lib__07__buffered_outstream.ci"
+#undef  EXTERN
+#undef  BUFFERED_OUTSTREAM__MAX
+#undef  BUFFERED_OUTSTREAM__C 
+
+#define BUFFER_TO_FD__C 
+#define BUFFER_TO_FD__MAX 8 
+#define EXTERN extern
+#include "lib__11__buffer_to_fd.ci"
+#undef  EXTERN
+#undef  BUFFER_TO_FD__MAX 
+#undef  BUFFER_TO_FD__C 

@@ -17,6 +17,36 @@
 #  define BUFFER_TO_FD__C__ALREADY_INCLUDED 
 #endif 
 
+#ifdef BUFFER_TO_FD__H 
+#  define EMPTY_ARRAY_DEFINITION 
+#  define VALUE_DEFINITION(value)
+#else 
+#  define EMPTY_ARRAY_DEFINITION = { } 
+#  define VALUE_DEFINITION(value) = value
+#endif 
+
+#ifndef EXTERN 
+#  define EXTERN extern
+#endif
+
+#define extern 1
+#define static 2
+// RL: Lors d’une définition ‘extern’, le mot-clef ‘extern’ doit ne pas être énoncé. 
+//     Lors d’une définition ‘static’, le mot-clef ‘static’ doit être répété. 
+//     D’où la macro ‘EXTERN_DEFINITION’. 
+#if   (EXTERN == extern) 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#elif (EXTERN == static) 
+#  define EXTERN_DECLARATION static
+#  define EXTERN_DEFINITION  static
+#else 
+#  define EXTERN_DECLARATION extern
+#  define EXTERN_DEFINITION 
+#endif 
+#undef extern 
+#undef static 
+
 
 // RL: Pour transformer un buffer en fd, l’idée est d’utiliser un pipe. 
 // RL:  -- On crée un pipe. 
@@ -69,15 +99,6 @@
 // Therefore this one is kind of more accurate. 
 #endif 
 
-#ifdef BUFFER_TO_FD__H 
-#  define EXTERN extern
-#  define EMPTY_ARRAY_DEFINITION 
-#  define VALUE_DEFINITION(value)
-#else 
-#  define EXTERN 
-#  define EMPTY_ARRAY_DEFINITION = { } 
-#  define VALUE_DEFINITION(value) = value
-#endif 
 
 
 #ifdef BUFFER_TO_FD__C 
@@ -91,8 +112,8 @@ enum { BUFFER_TO_FD__COUNT = BUFFER_TO_FD__MAX };
 
 #ifdef BUFFER_TO_FD__C 
 
-static int     buffer_to_fd__init_huh = false; 
-static int     buffer_to_fd__handler_installed_huh = false; 
+static int          buffer_to_fd__init_huh = false; 
+static int          buffer_to_fd__handler_installed_huh = false; 
 
 static int          buffer_to_fd__pipe           [BUFFER_TO_FD__COUNT << 1] EMPTY_ARRAY_DEFINITION; // RL: [0] is output (read end), [1] is input (write end) 
 static int8_t       buffer_to_fd__slot_in_use_huh[BUFFER_TO_FD__COUNT]      EMPTY_ARRAY_DEFINITION; 
@@ -100,8 +121,8 @@ static const char * buffer_to_fd__buffer         [BUFFER_TO_FD__COUNT]      EMPT
 static int16_t      buffer_to_fd__buffer_bytesize[BUFFER_TO_FD__COUNT]      EMPTY_ARRAY_DEFINITION; 
 static int16_t      buffer_to_fd__buffer_pos     [BUFFER_TO_FD__COUNT]      EMPTY_ARRAY_DEFINITION; 
 
-static void (* buffer_to_fd__former_handler)(int) = NULL; 
-static void    buffer_to_fd__handler(const int signal_id); 
+static void      (* buffer_to_fd__former_handler)(int) = NULL; 
+static void         buffer_to_fd__handler(const int signal_id); 
 
 #endif /* BUFFER_TO_FD__C */
 
@@ -117,7 +138,7 @@ static void    buffer_to_fd__handler(const int signal_id);
     X(BUFFER_TO_FD__ERROR__FILENAME_IS_NULL, )				\
     X(BUFFER_TO_FD__ERROR__FILENAME_IS_EMPTY, )				\
     X(BUFFER_TO_FD__ERROR__BUFFER_IS_NULL, )				\
-    X(BUFFER_TO_FD__ERROR__BUFFER_BYTESIZE_IS_NEG, )		\
+    X(BUFFER_TO_FD__ERROR__BUFFER_BYTESIZE_IS_NEG, )			\
     X(BUFFER_TO_FD__ERROR__BUFFER_BYTESIZE_IS_NULL, )			\
   X(BUFFER_TO_FD__ERROR__NO_SLOT_LEFT, )				\
   X(BUFFER_TO_FD__ERROR__CANNOT_OPEN_FILE, )				\
@@ -179,12 +200,12 @@ static int buffer_to_fd__lookup_slot_by_pipe0(const int pipe0) {
 
 
 
+#define buffer_to_fd__open glue2(BUFFER_TO_FD__PREFIX,buffer_to_fd__open)
 
-EXTERN int buffer_to_fd__open(const char * buffer, const int16_t buffer_bytesize) 
 #ifdef BUFFER_TO_FD__H
-;
+EXTERN_DECLARATION int buffer_to_fd__open(const char * buffer, const int16_t buffer_bytesize); 
 #else /* BUFFER_TO_FD__C */
-{ 
+EXTERN_DEFINITION int buffer_to_fd__open(const char * buffer, const int16_t buffer_bytesize) { 
   int error_id = BUFFER_TO_FD__ERROR__NONE; 
   if (!buffer_to_fd__init_huh) goto label__init; 
   if (!buffer_to_fd__handler_installed_huh) goto label__install_handler; 
@@ -242,11 +263,13 @@ EXTERN int buffer_to_fd__open(const char * buffer, const int16_t buffer_bytesize
 };
 #endif /* BUFFER_TO_FD__H */
 
-EXTERN int buffer_to_fd__flush(const int pipe1) 
+
+#define buffer_to_fd__flush glue2(BUFFER_TO_FD__PREFIX,buffer_to_fd__flush)
+
 #ifdef BUFFER_TO_FD__H
-;
+EXTERN_DECLARATION int buffer_to_fd__flush(const int pipe1);
 #else /* BUFFER_TO_FD__C */
-{ 
+EXTERN_DEFINITION int buffer_to_fd__flush(const int pipe1) { 
   assert(false); 
   int error_id = BUFFER_TO_FD__ERROR__NONE; 
   goto label__body; 
@@ -270,11 +293,13 @@ EXTERN int buffer_to_fd__flush(const int pipe1)
 };
 #endif /* BUFFER_TO_FD__H */
 
-EXTERN int buffer_to_fd__close(const int pipe0) 
-#ifndef BUFFER_TO_FD__C 
-;
+
+#define buffer_to_fd__close glue2(BUFFER_TO_FD__PREFIX,buffer_to_fd__close)
+
+#ifdef BUFFER_TO_FD__H 
+EXTERN_DECLARATION int buffer_to_fd__close(const int pipe0); 
 #else /* BUFFER_TO_FD__C */
-{ 
+EXTERN_DEFINITION int buffer_to_fd__close(const int pipe0) { 
   int error_id = BUFFER_TO_FD__ERROR__NONE; 
   goto label__body; 
   
@@ -420,19 +445,31 @@ enum {
 }; 
 #undef X 
 
-typedef      int8_t               int_buffer_to_fd__error_t;
-// int_buffer_to_fd__error -> cstr 
-EXTERN const char *               int_buffer_to_fd__error__get_cstr(const int_buffer_to_fd__error_t error_id); 
-// int_buffer_to_fd__error__id -> value 
-EXTERN const  int_buffer_to_fd__error_t int_buffer_to_fd__error__id_value[BUFFER_TO_FD__ERROR__COUNT]; 
-enum {                            int_buffer_to_fd__error__id_value__size = ARRAY_SIZE(int_buffer_to_fd__error__id_value) }; 
-EXTERN const uint8_t              int_buffer_to_fd__error__id_value__size__compiled_value; 
-// int_buffer_to_fd__error__id -> cstr 
-EXTERN const char *               int_buffer_to_fd__error__id_cstr [BUFFER_TO_FD__ERROR__COUNT + 1]; 
-enum {                            int_buffer_to_fd__error__id_cstr__size = ARRAY_SIZE(int_buffer_to_fd__error__id_cstr) }; 
-EXTERN const uint8_t              int_buffer_to_fd__error__id_cstr__size__compiled_value; 
 
-#define X(ident, value) EXTERN const int_buffer_to_fd__error_t ident##__compiled_value; 
+#define int_buffer_to_fd__error_t                               glue2(BUFFER_TO_FD__PREFIX,int_buffer_to_fd__error_t)
+#define int_buffer_to_fd__error__get_cstr                       glue2(BUFFER_TO_FD__PREFIX,int_buffer_to_fd__error__get_cstr)
+#define int_buffer_to_fd__error__id_value                       glue2(BUFFER_TO_FD__PREFIX,int_buffer_to_fd__error__id_value)
+#define int_buffer_to_fd__error__id_value__size                 glue2(BUFFER_TO_FD__PREFIX,int_buffer_to_fd__error__id_value__size)
+#define int_buffer_to_fd__error__id_value__size__compiled_value glue2(BUFFER_TO_FD__PREFIX,int_buffer_to_fd__error__id_value__size__compiled_value)
+#define int_buffer_to_fd__error__id_cstr                        glue2(BUFFER_TO_FD__PREFIX,int_buffer_to_fd__error__id_cstr)
+#define int_buffer_to_fd__error__id_cstr__size                  glue2(BUFFER_TO_FD__PREFIX,int_buffer_to_fd__error__id_cstr__size)
+#define int_buffer_to_fd__error__id_cstr__size__compiled_value  glue2(BUFFER_TO_FD__PREFIX,int_buffer_to_fd__error__id_cstr__size__compiled_value)
+
+
+
+typedef                  int8_t                     int_buffer_to_fd__error_t;
+// int_buffer_to_fd__error -> cstr 
+EXTERN_DECLARATION const char *                     int_buffer_to_fd__error__get_cstr(const int_buffer_to_fd__error_t error_id); 
+// int_buffer_to_fd__error__id -> value 
+EXTERN_DECLARATION const  int_buffer_to_fd__error_t int_buffer_to_fd__error__id_value[BUFFER_TO_FD__ERROR__COUNT]; 
+enum {                                              int_buffer_to_fd__error__id_value__size = ARRAY_SIZE(int_buffer_to_fd__error__id_value) }; 
+EXTERN_DECLARATION const uint8_t                    int_buffer_to_fd__error__id_value__size__compiled_value; 
+// int_buffer_to_fd__error__id -> cstr 
+EXTERN_DECLARATION const char *                     int_buffer_to_fd__error__id_cstr [BUFFER_TO_FD__ERROR__COUNT + 1]; 
+enum {                                              int_buffer_to_fd__error__id_cstr__size = ARRAY_SIZE(int_buffer_to_fd__error__id_cstr) }; 
+EXTERN_DECLARATION const uint8_t                    int_buffer_to_fd__error__id_cstr__size__compiled_value; 
+
+#define X(ident, value) static const int_buffer_to_fd__error_t ident##__compiled_value; 
 BUFFER_TO_FD__ERROR__LIST 
 #undef X 
 
@@ -447,28 +484,28 @@ BUFFER_TO_FD__ERROR__LIST
 
 #else /* BUFFER_TO_FD__C */
 
-#define X(ident, value) const int_buffer_to_fd__error_t ident##__compiled_value = ident; 
+#define X(ident, value) static const int_buffer_to_fd__error_t ident##__compiled_value = ident; 
 BUFFER_TO_FD__ERROR__LIST 
 #undef X 
 
 #define X(ident, value) #ident, 
-const char * int_buffer_to_fd__error__id_cstr[BUFFER_TO_FD__ERROR__COUNT + 1] = { 
+EXTERN_DEFINITION const char * int_buffer_to_fd__error__id_cstr[BUFFER_TO_FD__ERROR__COUNT + 1] = { 
 BUFFER_TO_FD__ERROR__LIST 
   NULL
 }; 
 #undef X 
  
-const uint8_t int_buffer_to_fd__error__id_cstr__size__compiled_value = ARRAY_SIZE(int_buffer_to_fd__error__id_cstr); 
+EXTERN_DEFINITION const uint8_t int_buffer_to_fd__error__id_cstr__size__compiled_value = ARRAY_SIZE(int_buffer_to_fd__error__id_cstr); 
 
 #define X(ident, value) ident, 
-const int_buffer_to_fd__error_t int_buffer_to_fd__error__id_value[BUFFER_TO_FD__ERROR__COUNT] = { 
+EXTERN_DEFINITION const int_buffer_to_fd__error_t int_buffer_to_fd__error__id_value[BUFFER_TO_FD__ERROR__COUNT] = { 
 BUFFER_TO_FD__ERROR__LIST 
 }; 
 #undef X 
 
-const uint8_t int_buffer_to_fd__error__id_value__size__compiled_value = ARRAY_SIZE(int_buffer_to_fd__error__id_value); 
+EXTERN_DEFINITION const uint8_t int_buffer_to_fd__error__id_value__size__compiled_value = ARRAY_SIZE(int_buffer_to_fd__error__id_value); 
 
-const char * int_buffer_to_fd__error__get_cstr(const int_buffer_to_fd__error_t error_id) { 
+EXTERN_DEFINITION const char * int_buffer_to_fd__error__get_cstr(const int_buffer_to_fd__error_t error_id) { 
   const char * error_id__cstr = NULL; 
   switch (error_id) { 
 #define X(ident, value) case ident: error_id__cstr = #ident; break; 
@@ -480,10 +517,8 @@ const char * int_buffer_to_fd__error__get_cstr(const int_buffer_to_fd__error_t e
 
 #endif /* BUFFER_TO_FD__H */
 
-
-
-
-
+#undef EXTERN_DECLARATION
+#undef EXTERN_DEFINITION
 #undef EXTERN 
-#undef EMPTY_ARRAY_DEFINITION 
-#undef VALUE_DEFINITION 
+#undef EMPTY_ARRAY_DEFINITION
+#undef VALUE_DEFINITION

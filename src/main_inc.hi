@@ -32,14 +32,24 @@
 #include "lib__05__error_state.ci"
 #include "lib__06__exception.ci"
 
+
 #define BUFFERED_OUTSTREAM__H 
+#define EXTERN extern
+#define BUFFERED_OUTSTREAM__PREFIX main__
 #include "lib__07__buffered_outstream.ci"
+#undef  EXTERN
 #undef  BUFFERED_OUTSTREAM__H 
+
 
 #include "lib__08__cstring.ci"
 #include "lib__09__write_string.ci"
 #include "lib__10__local_alloca.ci"
 
+
 #define BUFFER_TO_FD__H 
+#define EXTERN extern
+#define BUFFER_TO_FD__PREFIX main__
 #include "lib__11__buffer_to_fd.ci"
+#undef  EXTERN
 #undef  BUFFER_TO_FD__H 
+

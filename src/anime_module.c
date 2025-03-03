@@ -1,4 +1,4 @@
-#include "anime_global.h"
+#include "anime_inc.hi"
 #include "anime.h"
 #include "anime_module.h"
 #include "anime_type.h"
@@ -19,6 +19,8 @@
 #include "anime_module_lexeme.ci"
 #include "anime_module_divers.ci"
 #include "anime_module_endian_swap.ci"
+
+
 
 
 #if 0
@@ -87,9 +89,11 @@
 
 
 int_anime_error_t anime__fill_from_file(anime_t * this, const char * filepathname, const int stduser_d) { 
-  assert(false); 
-  return 0; 
+  const int fd = open(filepathname, O_RDONLY); 
+  if (0 > fd) return ANIME__CANNOT_OPEN_INPUT_FILE; 
+  return anime__fill_from_fd(this, filepathname, fd, stduser_d); 
 };
+
 
 int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d) { 
   goto label__body; 
@@ -97,7 +101,7 @@ int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_nam
   int16_t error_sub__line = -1;
   //label__error__sub: {
  label__error__cannot_make_pipe: { 
-    this -> error_id = ANIME__TOKEN_PARSER__CANNOT_MAKE_PIPE; 
+    this -> error_id = ANIME__CANNOT_MAKE_PIPE; 
     *this -> error_str = '\0'; 
     DISPLAY_TRACE(this -> stdlog_d, this -> error_id); 
     return this -> error_id; 
@@ -213,6 +217,9 @@ void anime__check_and_assert(const int8_t debug_print_huh, const int stddebug_d)
   //assert(ANIME_VERSION_REVISION <= ANIME_VERSION_REVISION__compiled_value); 
   
 
+  int_buffered_outstream__error__check_and_assert(); 
+  int_buffer_to_fd__error__check_and_assert(); 
+  
   int_anime_error__check_and_assert();   
   anime__lexer__check_and_assert(); 
   anime__syntax__check_and_assert(); 
@@ -229,12 +236,16 @@ void anime__check_and_assert(const int8_t debug_print_huh, const int stddebug_d)
 
 #define BUFFERED_OUTSTREAM__C 
 #define BUFFERED_OUTSTREAM__MAX 8 
+#define EXTERN extern
 #include "lib__07__buffered_outstream.ci"
+#undef  EXTERN
 #undef  BUFFERED_OUTSTREAM__MAX
 #undef  BUFFERED_OUTSTREAM__C 
 
 #define BUFFER_TO_FD__C 
 #define BUFFER_TO_FD__MAX 8 
+#define EXTERN extern
 #include "lib__11__buffer_to_fd.ci"
+#undef  EXTERN
 #undef  BUFFER_TO_FD__MAX 
 #undef  BUFFER_TO_FD__C 
