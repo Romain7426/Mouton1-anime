@@ -28,8 +28,7 @@ enum { ANIME__ENDIANNESS_NATIVE      = 3 };
 
 
 struct anime_t { 
-  // RL: Chunks data 
-  uint32_t this_bytesize; // RL: Toujours en little endian. 
+  uint32_t this_bytesize__little_endian; 
   int8_t   this_typename_bytesize; 
   char     this_typename[16]; 
   uint8_t  version_major; 
@@ -120,11 +119,6 @@ struct anime_t {
   // FRA: À terme, il devra remplacer les trucs ci-dessous qui sont trop compliqués. 
   int_lexeme_t       expr_lexeme_start_i[ANIME_EXPR_SIZE];
   int8_t             expr_lexemes_nb    [ANIME_EXPR_SIZE];
-#if 0
-  float              expr_value_float   [ANIME_EXPR_SIZE];
-  int16_t            expr_value_int16   [ANIME_EXPR_SIZE];
-  int8_t             expr_value_bool    [ANIME_EXPR_SIZE];
-#endif 
   int_expr_t         expr_nb; 
   
   // FRA: Si l'utilisateur veut ajouter des données. 

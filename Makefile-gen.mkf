@@ -151,6 +151,9 @@ CC_CONFIG:=$(CC_CONFIG) -D ENDIANNESS="$(ENDIANNESS)"
 CC_CONFIG:=$(CC_CONFIG) -D PIPEBUFFERSIZE="$(PIPEBUFFERSIZE)"
 CC_CONFIG:=$(CC_CONFIG) -D FLOATBYTESIZE="$(FLOATSIZE)"
 CC_CONFIG:=$(CC_CONFIG) -D DEFAULTSTACKSIZE="$(DEFAULTSTACKSIZE)"
+ifeq ($(CC_NAME),pcc)
+CC_CONFIG:=$(CC_CONFIG) -D COMPILER_PCC
+endif
 
 STDLIB_PROVIDES_ARC4RANDOM_HUH := $(shell echo "#include <stdlib.h>\nint main(int argc, char * argv[]) { return arc4random(); }; " | $(CC) -x c -std=c99 -O0 - -o - > /dev/null 2>&1 ; echo $$?)
 ifeq ($(STDLIB_PROVIDES_ARC4RANDOM_HUH),0) 
@@ -183,11 +186,11 @@ CC_FLAGS_W_NO := -Wno-missing-prototypes -Wno-cast-align -Wno-system-headers -Wn
 # unsupported: -fpcc-struct-return -fno-ivopts -fno-inline-functions-called-once 
 # unused: -fno-eliminate-unused-debug-symbols 
 
-CLANG_FLAGS := -gfull -W -Wextra -Wnewline-eof -Wno-unsequenced 
 #GCC: -gstabs+3: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
 #pragma GCC diagnostics disable "-Wtype-limits" 
 GCC_FLAGS := -g3  -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon  -fno-stack-check -Wno-error -Wno-enum-compare #-Wno-extra -Wno-sign-compare #-Werror=no-type-limits #-Wno-absolute-value #-Wno-type-limits #-Wframe-larger-than=76368 #-Wframe-larger-than=1844674407370955161 #-Wframe-larger-than=18446744073709551615 #-Wframe-larger-than=18446744073709551615UL #-Wframe-larger-than='18446744073709551615UL' #-Wframe-larger-than='SIZE_MAX' #-Wno-frame-larger-than # -Wno-stack-usage # -Wstack-usage=1844674407370955161
-CLANG_FLAGS :=
+#CLANG_FLAGS :=
+CLANG_FLAGS := -gfull -W -Wextra -Wnewline-eof -Wno-unsequenced -Wno-typedef-redefinition -Wno-uninitialized
 PCC_FLAGS   := -fpic -Wno-unreachable-code -Wno-shadow #-g #-fpic 
 #PCC: -g: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
 TCC_FLAGS   := -g -bt100 -static -fsigned-char #-b #-fpic #-g #-fpic 

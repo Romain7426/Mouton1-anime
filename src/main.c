@@ -96,7 +96,7 @@ int main(const int argc, const char * argv[]) {
   }; 
   
  label__error__options_running_failed: { 
-    if (error_id = ANIME__MAIN__OPTIONS__EXIT_QUICK) { error_id = ANIME__OK; goto label__exit; }; 
+    if (ANIME__MAIN__OPTIONS__EXIT_QUICK == error_id) { error_id = ANIME__OK; goto label__exit; }; 
     //error_id = ANIME__MAIN__OPTIONS__RUNNING_ERROR; 
     const char * err_str = LANG("Erreur lors de l'interprétation des options","Error while running options"); 
     if (stduser_out_d > 0) { dputs2(stduser_out_d, err_str, "\n"); }; 

@@ -71,14 +71,7 @@ int_anime_error_t anime__restore_from_buffer(anime_t * this, const char * buffer
   
   // FRA: RL: D’abord, quelques vérifications. 
   { 
-    uint32_t this_bytesize = 0; 
-    for (;;) { 
-      if (ANIME__ENDIANNESS_LITTLE == this -> endianness_flag) { 
-	this_bytesize = ENDIANNESS__LITTLE_TO_NATIVE__UINT32(this -> this_bytesize); break; };
-      if (ANIME__ENDIANNESS_BIG == this -> endianness_flag) {
-	this_bytesize = ENDIANNESS__BIG_TO_NATIVE__UINT32(this -> this_bytesize); break; };
-      this_bytesize = this -> this_bytesize; 
-    };
+    const uint32_t this_bytesize = ENDIANNESS__LITTLE_TO_NATIVE__UINT32(this -> this_bytesize__little_endian); 
     assert((size_t)this_bytesize == sizeof(*this)); 
     
     uint8_t this_typename_bytesize = 0; 
@@ -88,6 +81,7 @@ int_anime_error_t anime__restore_from_buffer(anime_t * this, const char * buffer
       if (ANIME__ENDIANNESS_LITTLE == this -> endianness_flag) { 
 	this_typename_bytesize = ENDIANNESS__BIG_TO_NATIVE__UINT8(this -> this_typename_bytesize); break; }; 
       this_typename_bytesize = this -> this_typename_bytesize;
+      break; 
     };
     assert((size_t)this_typename_bytesize == sizeof(this -> this_typename)); 
     

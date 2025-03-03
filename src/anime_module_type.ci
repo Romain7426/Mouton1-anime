@@ -18,7 +18,7 @@ anime_t * anime__make_r(anime_t * this, const int stdlog_d) {
   
   anime__bzero(this);
   
-  this -> this_bytesize = ENDIANNESS__NATIVE_TO_LITTLE__UINT32(sizeof(*this)); 
+  this -> this_bytesize__little_endian = ENDIANNESS__NATIVE_TO_LITTLE__UINT32(sizeof(*this)); 
   this -> this_typename_bytesize = sizeof(this -> this_typename); 
   strlcpy(this -> this_typename, "anime_t", sizeof(this -> this_typename)); 
   this -> version_major    = ANIME_VERSION_MAJOR; 

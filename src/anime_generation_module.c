@@ -393,7 +393,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
 
 #define UNARY_OPERATOR_BOOL_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(int8_t,bool,__result_expr__)
 
-#define UNARY_OPERATOR_STR_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(const char *,str,__result_expr__)
+#define UNARY_OPERATOR_STR_STACK(__result_expr__) UNARY_OPERATOR_GENERIC_STACK(char *,str,__result_expr__)
 
 
 
@@ -413,7 +413,7 @@ static int_anime_error_t anime__generation__eval_postfix_expr(anime_t * this, co
 
 #define BINARY_OPERATOR_BOOL_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(int8_t,bool,__result_expr__)
 
-#define BINARY_OPERATOR_STR_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(const char *,str,__result_expr__)
+#define BINARY_OPERATOR_STR_STACK(__result_expr__) BINARY_OPERATOR_GENERIC_STACK(char *,str,__result_expr__)
     
   };
 
