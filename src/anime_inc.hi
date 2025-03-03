@@ -38,8 +38,7 @@
 
 
 #define PREFIX anime
-//#define CDIR ".."
-//#define HDIR "../../include"
+
 
 #define LANG_ID 1
 #define LANG_ID_FRA 1
