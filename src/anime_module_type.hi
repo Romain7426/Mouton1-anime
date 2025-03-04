@@ -187,7 +187,6 @@ extern int8_t anime__events_push (anime_t * this, const char * nom, const int8_t
 extern int8_t anime__membres_push(anime_t * this, const char * nom, const char * image, const float largeur, const float hauteur, const float angle_max_y); 
 extern int8_t anime__racines_push(anime_t * this, const char * qui, const float x, const float y, const float z, const float angle_y); 
 
-extern int8_t anime__membres_lookup(const anime_t * this, const char * nom); 
 
 
 

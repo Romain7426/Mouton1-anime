@@ -37,7 +37,7 @@ clean:
 PROJECT_NAME := anime
 DATETIME_UTC := $(shell TZ="UTC" date "+%Z[%z] %Y_%m_%d-%Hh%Mm%Ss %A")
 
-# RL: GMake fournit automatiquement une variable CC, même si il n’y en a nulle pas. 
+# RL: GMake fournit automatiquement une variable CC, même si il n’y en a nul part. 
 # RL: Il faut donc ignorer cette variable, et ne considérer que l’environnement. 
 #CC           := $(if $(strip $(CC)),$(if $(strip $(filter $(CC),cc)),$(shell which cc),$(CC)),$(shell which cc))
 #$(info $(origin CC)) # returns "default" "undefined" or something else 
@@ -177,7 +177,7 @@ CC_FLAGS := -std=c99 -D_THREAD_SAFE -D_REENTRANT -D __DEBUG__ -D DEBUG -O0  -D S
 CC_FLAGS_F := -fmessage-length=0 -fdiagnostics-show-location=once -fdiagnostics-show-option -fstack-check  -fverbose-asm -ffreestanding -feliminate-unused-debug-types -fjump-tables -fmerge-all-constants -fshort-enums -ftrapv -fvisibility=hidden 
 CC_FLAGS_F_NO := -fno-exceptions -fno-omit-frame-pointer  -fno-builtin -fno-builtin-printf -fno-builtin-abs -fno-builtin-strcpy -fno-builtin-strcat -fno-builtin-strlen -fno-builtin-bzero -fno-builtin-memset -fno-builtin-memcpy -fno-builtin-assert -fno-builtin-tolower -fno-builtin-toupper -fno-builtin-log -fno-builtin-alloca -fno-common -fno-non-call-exceptions -fno-asynchronous-unwind-tables -fno-inline -fno-inline-functions -fno-inline-functions 
 # unknown: -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon 
-CC_FLAGS_W := -Wall -W -Wextra  -Werror -Wfatal-errors  -Werror-implicit-function-declaration -Wparentheses -Wimplicit -Wreturn-type -Wcomment -Wpointer-arith -Wchar-subscripts -Wimplicit-int -Werror-implicit-function-declaration -Wmain -Wmissing-braces -Wmultichar -Wsequence-point -Wreturn-type -Wstrict-prototypes -Wpacked -Wcast-qual -Winline -Wformat-nonliteral -Wwrite-strings -Wmissing-field-initializers -Wsign-compare  -Wformat-zero-length -Wswitch -Wswitch-enum -Wswitch-default -Wnested-externs -Wunknown-pragmas
+CC_FLAGS_W := -Wall -W -Wextra  -Werror -Wfatal-errors  -Werror-implicit-function-declaration -Wparentheses -Wimplicit -Wreturn-type -Wcomment -Wpointer-arith -Wchar-subscripts -Wimplicit-int -Werror-implicit-function-declaration -Wmain -Wmissing-braces -Wmultichar -Wsequence-point -Wreturn-type -Wstrict-prototypes -Wpacked -Wcast-qual -Winline -Wformat-nonliteral -Wwrite-strings -Wmissing-field-initializers -Wsign-compare  -Wformat-zero-length -Wswitch -Wswitch-enum -Wswitch-default -Wnested-externs -Wunknown-pragmas -Wpointer-sign 
 CC_FLAGS_W_NO := -Wno-missing-prototypes -Wno-cast-align -Wno-system-headers -Wno-undef -Wno-redundant-decls -Wno-unused -Wno-unused-parameter -Wno-unused-function -Wno-switch-default -Wno-format-nonliteral $(if $(strip $(filter $(CC_NAME),gcc)),,-Wno-unused-command-line-argument) 
 # unknown: -gstabs+3 
 
@@ -186,11 +186,11 @@ CC_FLAGS_W_NO := -Wno-missing-prototypes -Wno-cast-align -Wno-system-headers -Wn
 # unsupported: -fpcc-struct-return -fno-ivopts -fno-inline-functions-called-once 
 # unused: -fno-eliminate-unused-debug-symbols 
 
+#CLANG_FLAGS :=
+CLANG_FLAGS := -gfull -W -Wextra -Wnewline-eof -Wno-unsequenced -Wno-typedef-redefinition -Wno-uninitialized
 #GCC: -gstabs+3: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
 #pragma GCC diagnostics disable "-Wtype-limits" 
 GCC_FLAGS := -g3  -fno-early-inlining -fno-gcse-lm -fno-move-loop-invariants -fno-peephole  -fno-sched-interblock -fno-sched-spec -fno-split-ivs-in-unroller -fno-toplevel-reorder -fno-tree-loop-optimize -fno-tree-vect-loop-version -fno-tree-loop-im -fno-tree-loop-ivcanon  -fno-stack-check -Wno-error -Wno-enum-compare #-Wno-extra -Wno-sign-compare #-Werror=no-type-limits #-Wno-absolute-value #-Wno-type-limits #-Wframe-larger-than=76368 #-Wframe-larger-than=1844674407370955161 #-Wframe-larger-than=18446744073709551615 #-Wframe-larger-than=18446744073709551615UL #-Wframe-larger-than='18446744073709551615UL' #-Wframe-larger-than='SIZE_MAX' #-Wno-frame-larger-than # -Wno-stack-usage # -Wstack-usage=1844674407370955161
-#CLANG_FLAGS :=
-CLANG_FLAGS := -gfull -W -Wextra -Wnewline-eof -Wno-unsequenced -Wno-typedef-redefinition -Wno-uninitialized
 PCC_FLAGS   := -fpic -Wno-unreachable-code -Wno-shadow #-g #-fpic 
 #PCC: -g: does not work: «SHF_MERGE section size must be a multiple of sh_entsize» 
 TCC_FLAGS   := -g -bt100 -static -fsigned-char #-b #-fpic #-g #-fpic 
@@ -224,6 +224,12 @@ CC_FLAGS_W :=
 CC_FLAGS_W_NO :=
 endif
 
+ifeq ($(CC_NAME),pcc)
+$(info ****** PCC ******)
+$(info PCC: Le préprocesseur de PCC ne comprend pas les macros multi-lignes. Donc c'est fini.)
+$(info ****** PCC ******)
+endif
+
 
 #CLANG_FLAGS := $(CLANG_FLAGS) -nostdinc -I/usr/include -nostdlib 
 #PCC_FLAGS   := $(PCC_FLAGS) -nodefaultlibs -nostartfiles -nostdinc -nostdlib -static 
@@ -234,6 +240,7 @@ CC_FLAGS_SPEC := $(CC_FLAGS_SPEC) $(if $(strip $(filter $(CC_NAME),gcc)),$(GCC_F
 CC_FLAGS_SPEC := $(CC_FLAGS_SPEC) $(if $(strip $(filter $(CC_NAME),pcc)),$(PCC_FLAGS),) 
 CC_FLAGS_SPEC := $(CC_FLAGS_SPEC) $(if $(strip $(filter $(CC_NAME),tcc)),$(TCC_FLAGS),) 
 
+CC_FLAGS_M := -msse2 -msse -m3dnow -mmmx 
 
 CC_FLAGS := $(CC_FLAGS) $(CC_FLAGS_F) $(CC_FLAGS_W) $(CC_FLAGS_SPEC) $(CC_FLAGS_F_NO) $(CC_FLAGS_W_NO) 
 

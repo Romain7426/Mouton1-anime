@@ -11,7 +11,7 @@ void anime__lexeme__print_one(const anime_t * this, const int token_i, const int
   const char * token_type_i_str             = int_string__stack(token_type); //anime_parser__token_type__get_cstr(token_type); 
   const int    token_type_i_str__spaces_nb  = MAX(0, 3 - strlen(token_type_i_str)); 
   const char * token_type_str               = anime_token__type_get_cstr(token_type); //anime_parser__token_type__get_cstr(token_type); 
-  const int    token_type_str__spaces_nb    = MAX(0, 18 - strlen(token_type_str)); 
+  const int    token_type_str__spaces_nb    = MAX(0, 24 - strlen(token_type_str)); 
   
   const char * token_srcval_cstr            = this -> lexeme_value_stack + (this -> lexeme_stack__value[token_i]);
   const int    token_srcval_cstr__spaces_nb = MAX(0, 47 - strlen(token_srcval_cstr)); 

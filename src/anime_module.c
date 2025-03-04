@@ -96,6 +96,9 @@ int_anime_error_t anime__fill_from_file(anime_t * this, const char * filepathnam
 
 
 int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_name, const char * buffer, const int16_t buffer_bytesize, const int stduser_d) { 
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
   goto label__body; 
 
   int16_t error_sub__line = -1;
@@ -108,25 +111,70 @@ int_anime_error_t anime__fill_from_buffer(anime_t * this, const char * input_nam
   }; 
 
  label__pipe_buffer_size_ok: { 
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     int buffer_pipe[2]; // RL: [0] is output (read end), [1] is input (write end) 
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     if (-1 == pipe(buffer_pipe)) { error_sub__line = __LINE__ ; goto label__error__cannot_make_pipe; }; 
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     write(buffer_pipe[1], buffer, buffer_bytesize); 
-    this -> error_id = anime__fill_from_fd(this, input_name, buffer_pipe[0], stduser_d); 
-    close(buffer_pipe[0]);
     close(buffer_pipe[1]);
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
+    this -> error_id = anime__fill_from_fd(this, input_name, buffer_pipe[0], stduser_d); 
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
+    close(buffer_pipe[0]);
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     return this -> error_id;
   }; 
 
  label__pipe_buffer_size_is_too_small: { 
+#define DEBUG_TRACE 1
+#ifdef DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     const int my_buffer_fd = buffer_to_fd__open(buffer, buffer_bytesize); 
+#ifdef DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     if (0 > my_buffer_fd) { error_sub__line = __LINE__ ; goto label__error__cannot_make_pipe; }; 
+#ifdef DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     this -> error_id = anime__fill_from_fd(this, input_name, my_buffer_fd, stduser_d); 
+#ifdef DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     buffer_to_fd__close(my_buffer_fd); 
+#ifdef DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     return this -> error_id;
+#undef DEBUG_TRACE 
   }; 
   
  label__body: {   
-    if (UINTMAX_C(PIPEBUFFERSIZE) <= (uintmax_t)buffer_bytesize) goto label__pipe_buffer_size_ok; 
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
+#if DEBUG_TRACE
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "PIPEBUFFERSIZE: %lld" "\n", (long long int) PIPEBUFFERSIZE); dputs(STDERR_FILENO, trace); }; 
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "buffer_bytesize: %lld" "\n", (long long int) buffer_bytesize); dputs(STDERR_FILENO, trace); }; 
+#endif
+    if (UINTMAX_C(PIPEBUFFERSIZE) >= (uintmax_t)buffer_bytesize) goto label__pipe_buffer_size_ok; 
     goto label__pipe_buffer_size_is_too_small; 
   }; 
 }; 
@@ -148,13 +196,19 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
  
  label__body: { 
     this -> filename = anime__string_stack__push_lookup(this, input_name); 
-    
+
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[LEXEMES]" "\n"); }; 
     error_id = anime__lexer__fill_from_fd(this, input_fd); 
     if (error_id != ANIME__OK) { error_sub__line = __LINE__; goto label__error__sub; }; 
+#if 1
+    // Cette fonction n'est pas rapide. 
     if (this -> stdlog_d > 0) { anime__lexeme__print_all(this, this -> stdlog_d); }; 
+#endif 
     
+#if 0
+    return ANIME__ERROR_GENERIC;
+#else
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "===============================================================================" "\n"); }; 
     if (this -> stdlog_d > 0) { dputs(this -> stdlog_d, "[STRUCTURE]" "\n"); }; 
     error_id = anime__syntax__structure_check_and_fill(this, /*stdwarning_d*/stduser_d, /*stderror_d*/stduser_d); 
@@ -196,6 +250,7 @@ int_anime_error_t anime__fill_from_fd(anime_t * this, const char * input_name, c
     if (this -> stdlog_d > 0) { anime__print_d(this, this -> stdlog_d); }; 
     
     return ANIME__OK; 
+#endif
   };   
   
 }; 

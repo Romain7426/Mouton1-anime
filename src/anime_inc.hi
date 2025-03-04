@@ -56,22 +56,13 @@
 typedef int8_t bool_t; 
 
 
-#ifdef COMPILER_PCC
-// FRA: Sinon PCC se plaint. 
-//#define __func__ ""
-#endif
-
 #define DISPLAY_TRACE(__stdlog_d__,__error_id__) {			\
     enum { TRACE_BYTESIZE = 1 << 11 };					\
     char trace[TRACE_BYTESIZE];						\
-    snprintf(trace, TRACE_BYTESIZE, "{" __FILE__ ":%d:<%s()>}: " "%s" "\n", error_sub__line, "", int_anime_error__get_cstr(__error_id__)); \
+    snprintf(trace, TRACE_BYTESIZE, "{" __FILE__ ":%d:<%s()>}: " "%s" "\n", error_sub__line, __func__, int_anime_error__get_cstr(__error_id__)); \
     if (__stdlog_d__ > 0) { dputs(__stdlog_d__, trace); };		\
   };									\
   /* END OF MACRO*/ 
-
-#ifdef COMPILER_PCC
-//#undef __func__ 
-#endif
 
 
 #define RAISE_ERROR(__stdlog_d__,__error_id__) { error_id = (__error_id__); error_sub__line = __LINE__; error_stdlog_d = (__stdlog_d__); goto label__error__raise; }; 

@@ -22,15 +22,36 @@
 
 
 
+// Note: strlen segfault sur NULL. 
 
-#define strcopy__alloca(__cstr__) \
-  ((NULL == (__cstr__))? NULL : strncpy(LOCAL_ALLOCA(1+strlen(__cstr__)), (__cstr__), 1+strlen(__cstr__))) 
+// char * strncat(char *dst, const char *append, size_t count);
+// The strncat() function appends not more than count characters of the string append to the end of the string found in the buffer dst.  Space for the terminating ‘\0’ should not be included in count.
 
-#define strconcat__alloca(__cstr1__,__cstr2__) \
-  ((NULL == (__cstr1__))? strcopy__alloca(__cstr2__) : (NULL == (__cstr2__))? strcopy__alloca(__cstr1__) : strncpy(strncpy(LOCAL_ALLOCA(1+strlen(__cstr1__)+strlen(__cstr2__)), (__cstr1__), strlen(__cstr1__)), (__cstr2__), 1+strlen(__cstr2__))) 
+// char * strncpy(char *dst, const char *src, size_t len);
+// If the length of src is greater than or equal to len, dst will not be NUL-terminated.
 
+
+#define strcopy__alloca(__cstr__)					\
+  ((NULL == (__cstr__))? NULL :						\
+   strncpy(LOCAL_ALLOCA(1+strlen(__cstr__)), (__cstr__), 1+strlen(__cstr__))) 
+
+#define strconcat__alloca(__cstr1__,__cstr2__)		\
+  ((NULL == (__cstr1__)) ? strcopy__alloca(__cstr2__) : \
+   (NULL == (__cstr2__)) ? strcopy__alloca(__cstr1__) :			\
+   strncat(strncpy(LOCAL_ALLOCA(1+strlen(__cstr1__)+strlen(__cstr2__)), (__cstr1__), 1+strlen(__cstr1__)), (__cstr2__), strlen(__cstr2__))) 
+
+#define strconcat3__alloca(__cstr1__,__cstr2__,__cstr3__)	    \
+  ((NULL == (__cstr3__)) ? strconcat__alloca(__cstr1__,__cstr2__) : \
+   (NULL == (__cstr2__)) ? strconcat__alloca(__cstr1__,__cstr3__) : \
+   (NULL == (__cstr1__)) ? strconcat__alloca(__cstr2__,__cstr3__) : \
+   strncat(strncat(strncpy(LOCAL_ALLOCA(1+strlen(__cstr1__)+strlen(__cstr2__)+strlen(__cstr3__)), (__cstr1__), 1+strlen(__cstr1__)), (__cstr2__), strlen(__cstr2__)), (__cstr3__), strlen(__cstr3__)))
+
+#define strconcat2__alloca strconcat__alloca
+
+#if 0
 #define strconcat3__alloca(__cstr1__,__cstr2__,__cstr3__) \
   strconcat__alloca(strconcat__alloca(__cstr1__,__cstr2__),__cstr3__) 
+#endif
 
 
 

@@ -13,6 +13,7 @@
 
 
 
+#define DEBUG_TRACE 0
 
 // =================================================================================================== 
 // LEXING / TOKENIZATION 
@@ -34,6 +35,9 @@ int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd)
   int line1_offset0 = 0; 
   int c; 
   int error_var__recognized_token_type; 
+#if DEBUG_TRACE != 0
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
   goto label__body; 
 
 
@@ -119,6 +123,9 @@ int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd)
     input_filename_cstr = anime__filename_get(this); 
       
     
+#if DEBUG_TRACE != 0
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     
     int token_type = -1; 
     int this_is_an_token_error_huh = false; 
@@ -134,6 +141,9 @@ int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd)
     one_line_start = 0; 
     one_line_next = 0; 
     one_line_start__col0 = 0; 
+#if DEBUG_TRACE != 0
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" "\n", __LINE__, __func__, __LINE__, ""); dputs(STDERR_FILENO, trace); }; 
+#endif
     goto label__lexing; 
 		
     
@@ -280,7 +290,13 @@ int_anime_error_t anime__lexer__fill_from_fd(anime_t * this, const int input_fd)
 
       for (int8_t read_huh = false;;) { 
 	if (read_huh) { 
+#if DEBUG_TRACE != 0
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" " - offset0: %d " "\n", __LINE__, __func__, __LINE__, "", offset0); dputs(STDERR_FILENO, trace); }; 
+#endif
 	  const ssize_t read_nb = read(input_fd, one_line + one_line_next, sizeof(one_line) - one_line_next); 
+#if DEBUG_TRACE != 0
+    { char trace[INT8_MAX]; snprintf(trace, sizeof(trace), "{" __FILE__ ":%d:<%s()>}: -- DEBUG: %d " "%s" " - offset0: %d - read_nb = %d" "\n", __LINE__, __func__, __LINE__, "", offset0, (int)read_nb); dputs(STDERR_FILENO, trace); }; 
+#endif
 	  if (-1 == read_nb) { goto label__error__error_while_reading_the_input_stream; }; 
 	  if ( 0 == read_nb) { c = EOF; break; }; 
 	  one_line_nb += read_nb; 

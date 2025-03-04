@@ -231,6 +231,9 @@ extern int_anime_error_t anime__dump_to_buffer(const anime_t * this, char * buff
 extern int_anime_error_t anime__restore_from_fd(anime_t * this, const int stddata_in_d);
 extern int_anime_error_t anime__restore_from_buffer(anime_t * this, const char * buffer, const int16_t buffer_bytesize, int16_t * used_bytesize_r);
 
+extern int               anime__stdlog_d__get     (const anime_t * this); 
+extern void              anime__stdlog_d__set     (      anime_t * this, const int stdlog_d); 
+
 extern const char *      anime__filename_get      (const anime_t * this); 
 extern const char *      anime__copyright_get     (const anime_t * this); 
 extern int_anime_error_t anime__error_id_get      (const anime_t * this); 
@@ -252,7 +255,7 @@ extern const char * anime__actions_gestionnaire_proc__get   (const anime_t * thi
 
 extern int8_t       anime__events_nb__get                     (const anime_t * this);
 extern const char * anime__events_nom__get                    (const anime_t * this, const int8_t event_i);
-extern const char * anime__events_genere_type__get            (const anime_t * this, const int8_t event_i);
+extern int8_t       anime__events_genere_type__get            (const anime_t * this, const int8_t event_i);
 extern const char * anime__events_genere_code_fichier__get    (const anime_t * this, const int8_t event_i);
 extern const char * anime__events_genere_code_proc__get       (const anime_t * this, const int8_t event_i);
 extern const char * anime__events_traitement_code_fichier__get(const anime_t * this, const int8_t event_i);
@@ -261,17 +264,18 @@ extern const char * anime__events_traitement_code_proc__get   (const anime_t * t
 extern int8_t       anime__membres_nb__get         (const anime_t * this);
 extern const char * anime__membres_nom__get        (const anime_t * this, const int8_t membre_i);
 extern const char * anime__membres_image__get      (const anime_t * this, const int8_t membre_i);
-extern const char * anime__membres_largeur__get    (const anime_t * this, const int8_t membre_i);
-extern const char * anime__membres_hauteur__get    (const anime_t * this, const int8_t membre_i);
-extern const char * anime__membres_angle_max_y__get(const anime_t * this, const int8_t membre_i);
+extern float        anime__membres_largeur__get    (const anime_t * this, const int8_t membre_i);
+extern float        anime__membres_hauteur__get    (const anime_t * this, const int8_t membre_i);
+extern float        anime__membres_angle_max_y__get(const anime_t * this, const int8_t membre_i);
 
 extern int8_t       anime__racines_nb__get     (const anime_t * this);
 extern const char * anime__racines_qui__get    (const anime_t * this, const int8_t racine_i);
-extern const char * anime__racines_x__get      (const anime_t * this, const int8_t racine_i);
-extern const char * anime__racines_y__get      (const anime_t * this, const int8_t racine_i);
-extern const char * anime__racines_z__get      (const anime_t * this, const int8_t racine_i);
-extern const char * anime__racines_angle_y__get(const anime_t * this, const int8_t racine_i);
+extern float        anime__racines_x__get      (const anime_t * this, const int8_t racine_i);
+extern float        anime__racines_y__get      (const anime_t * this, const int8_t racine_i);
+extern float        anime__racines_z__get      (const anime_t * this, const int8_t racine_i);
+extern float        anime__racines_angle_y__get(const anime_t * this, const int8_t racine_i);
 
+extern int8_t anime__membres_lookup(const anime_t * this, const char * nom); 
 
 
 extern int_anime_error_t anime__consistency_check(anime_t * this, const int stduser_d); 

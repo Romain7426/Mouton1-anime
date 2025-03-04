@@ -440,6 +440,9 @@ EXTERN_DECLARATION const char *                          int_buffered_outstream_
 enum {                                                   int_buffered_outstream__error__id_cstr__size = ARRAY_SIZE(int_buffered_outstream__error__id_cstr) }; 
 EXTERN_DECLARATION const uint8_t                         int_buffered_outstream__error__id_cstr__size__compiled_value; 
 
+// RL: En C, une déclaration static sans valeur est aussi une définition. 
+//     En l'espèce, même si la valeur n'est pas définie, le compilateur considérera zéro comme valeur (voire nimporte laquelle).
+//     Putain, je déteste le C - putain de langage de merde.
 #define X(ident, value) static const int_buffered_outstream__error_t ident##__compiled_value; 
 BUFFERED_OUTSTREAM__ERROR__LIST 
 #undef X 

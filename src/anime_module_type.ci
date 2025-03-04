@@ -94,9 +94,8 @@ void anime__bzero(anime_t * this) {
 
 
 
-
-
-
+int               anime__stdlog_d__get     (const anime_t * this) { return this -> stdlog_d; };  
+void              anime__stdlog_d__set     (      anime_t * this, const int stdlog_d) { this -> stdlog_d = stdlog_d; };  
 
 const char *      anime__filename_get      (const anime_t * this) { return anime__string_stack__get(this, this -> filename); }; 
 const char *      anime__copyright_get     (const anime_t * this) { return anime__string_stack__get(this, this -> copyright); }; 
@@ -111,38 +110,40 @@ int8_t            anime__invincible__get   (const anime_t * this) { return this 
 int8_t            anime__hostile__get      (const anime_t * this) { return this -> hostile; }; 
 
 
-#define ANIME__ARRAY_GET__BODY(field_array,field_nb,field_i) { if (0 > field_i) return NULL; if (this -> field_nb <= field_i) return NULL; return anime__string_stack__get(this, this -> field_array[field_i]); } 
+#define ANIME__ARRAY_GET__CSTR(field_array,field_nb,field_i) { if (0 > field_i) return NULL; if (this -> field_nb <= field_i) return NULL; return anime__string_stack__get(this, this -> field_array[field_i]); } 
+#define ANIME__ARRAY_GET__NUM(field_array,field_nb,field_i)  { if (0 > field_i) return -1; if (this -> field_nb <= field_i) return -1; return this -> field_array[field_i]; } 
 
 int8_t       anime__actions_nb__get                  (const anime_t * this) { return this -> actions_nb; }; 
-const char * anime__actions_nom__get                 (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_nom,actions_nb,action_i); 
-const char * anime__actions_affichage__get           (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_affichage,actions_nb,action_i); 
-const char * anime__actions_icone__get               (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_icone,actions_nb,action_i); 
-const char * anime__actions_gestionnaire_fichier__get(const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_gestionnaire_fichier,actions_nb,action_i); 
-const char * anime__actions_gestionnaire_proc__get   (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__BODY(actions_gestionnaire_proc,actions_nb,action_i); 
+const char * anime__actions_nom__get                 (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__CSTR(actions_nom,actions_nb,action_i); 
+const char * anime__actions_affichage__get           (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__CSTR(actions_affichage,actions_nb,action_i); 
+const char * anime__actions_icone__get               (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__CSTR(actions_icone,actions_nb,action_i); 
+const char * anime__actions_gestionnaire_fichier__get(const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__CSTR(actions_gestionnaire_fichier,actions_nb,action_i); 
+const char * anime__actions_gestionnaire_proc__get   (const anime_t * this, const int8_t action_i) ANIME__ARRAY_GET__CSTR(actions_gestionnaire_proc,actions_nb,action_i); 
 
 int8_t       anime__events_nb__get                     (const anime_t * this) { return this -> events_nb; }; 
-const char * anime__events_nom__get                    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_nom,events_nb,event_i); 
-const char * anime__events_genere_type__get            (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_genere_type,events_nb,event_i); 
-const char * anime__events_genere_code_fichier__get    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_genere_code_fichier,events_nb,event_i); 
-const char * anime__events_genere_code_proc__get       (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_genere_code_proc,events_nb,event_i); 
-const char * anime__events_traitement_code_fichier__get(const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_traitement_code_fichier,events_nb,event_i); 
-const char * anime__events_traitement_code_proc__get   (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__BODY(events_traitement_code_proc,events_nb,event_i); 
+const char * anime__events_nom__get                    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__CSTR(events_nom,events_nb,event_i); 
+int8_t       anime__events_genere_type__get            (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__NUM(events_genere_type,events_nb,event_i); 
+const char * anime__events_genere_code_fichier__get    (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__CSTR(events_genere_code_fichier,events_nb,event_i); 
+const char * anime__events_genere_code_proc__get       (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__CSTR(events_genere_code_proc,events_nb,event_i); 
+const char * anime__events_traitement_code_fichier__get(const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__CSTR(events_traitement_code_fichier,events_nb,event_i); 
+const char * anime__events_traitement_code_proc__get   (const anime_t * this, const int8_t event_i) ANIME__ARRAY_GET__CSTR(events_traitement_code_proc,events_nb,event_i); 
 
 int8_t       anime__membres_nb__get         (const anime_t * this) { return this -> membres_nb; }; 
-const char * anime__membres_nom__get        (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_nom,membres_nb,membre_i); 
-const char * anime__membres_image__get      (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_image,membres_nb,membre_i); 
-const char * anime__membres_largeur__get    (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_largeur,membres_nb,membre_i); 
-const char * anime__membres_hauteur__get    (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_hauteur,membres_nb,membre_i); 
-const char * anime__membres_angle_max_y__get(const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__BODY(membres_angle_max_y,membres_nb,membre_i); 
+const char * anime__membres_nom__get        (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__CSTR(membres_nom,membres_nb,membre_i); 
+const char * anime__membres_image__get      (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__CSTR(membres_image,membres_nb,membre_i); 
+float        anime__membres_largeur__get    (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__NUM(membres_largeur,membres_nb,membre_i); 
+float        anime__membres_hauteur__get    (const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__NUM(membres_hauteur,membres_nb,membre_i); 
+float        anime__membres_angle_max_y__get(const anime_t * this, const int8_t membre_i) ANIME__ARRAY_GET__NUM(membres_angle_max_y,membres_nb,membre_i); 
 
 int8_t       anime__racines_nb__get     (const anime_t * this) { return this -> racines_nb; }; 
-const char * anime__racines_qui__get    (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_qui,racines_nb,racine_i); 
-const char * anime__racines_x__get      (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_x,racines_nb,racine_i); 
-const char * anime__racines_y__get      (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_y,racines_nb,racine_i); 
-const char * anime__racines_z__get      (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_z,racines_nb,racine_i); 
-const char * anime__racines_angle_y__get(const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__BODY(racines_angle_y,racines_nb,racine_i); 
+const char * anime__racines_qui__get    (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__CSTR(racines_qui,racines_nb,racine_i); 
+float        anime__racines_x__get      (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__NUM(racines_x,racines_nb,racine_i); 
+float        anime__racines_y__get      (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__NUM(racines_y,racines_nb,racine_i); 
+float        anime__racines_z__get      (const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__NUM(racines_z,racines_nb,racine_i); 
+float        anime__racines_angle_y__get(const anime_t * this, const int8_t racine_i) ANIME__ARRAY_GET__NUM(racines_angle_y,racines_nb,racine_i); 
 
-#undef ANIME__EVENTARRAY_GET__BODY
+#undef ANIME__EVENTARRAY_GET__CSTR
+#undef ANIME__EVENTARRAY_GET__NUM
 
 
 

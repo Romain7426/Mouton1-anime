@@ -216,6 +216,24 @@ int main(const int argc, const char * argv[]) {
     // ENG: This should have been caught beforehand. 
     assert(program_options__plain__nb > 0); 
     
+#if 0
+    {
+      char data[INT16_MAX];
+      //const int fd = open("dinotore.anime", O_RDONLY);
+      const int fd = open("chaman.anime", O_RDONLY);
+      if (fd < 0) return 0;
+      const int16_t read_nb = read(fd, data, sizeof(data));
+      close(fd);
+      if (read_nb <= 0) return 0;
+      data[read_nb] = '\0';
+
+      char a_anime_buffer[ANIME_BYTESIZE]; 
+      a_anime = anime__make_b(a_anime_buffer, (sizeof(a_anime_buffer)), /*anime_buffer_bytesize_used_r*/NULL, stdlog_d); 
+      const int_anime_error_t error_id = anime__fill_from_buffer(a_anime, "input_name", data, read_nb+1, 2);
+      return 0;
+    };
+#endif 
+
     // FRA: Analyse des arguments. 
     // FRA: Le premier argument est le nom du fichier à lire, les suivants sont les champs à afficher. 
     // ENG: PLAIN ARGUMENTS - FIRST PLAIN ARG IS INPUT FILE 
