@@ -345,7 +345,8 @@ static void buffer_to_fd__handler(const int signal_id) {
     sigset_t sigset[1]; 
     sigemptyset(sigset);
     sigaddset(sigset, SIGIO);
-    signal(SIGIO, buffer_to_fd__former_handler); 
+    //signal(SIGIO, buffer_to_fd__former_handler); 
+    signal(SIGIO, SIG_DFL); 
     sigprocmask(SIG_UNBLOCK, sigset, NULL); 
   }; 
   goto label__body;

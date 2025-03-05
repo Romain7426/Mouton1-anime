@@ -317,7 +317,8 @@ static void buffered_outstream__handler(const int signal_id) {
     sigset_t sigset[1]; 
     sigemptyset(sigset);
     sigaddset(sigset, SIGIO);
-    signal(SIGIO, buffered_outstream__former_handler); 
+    //signal(SIGIO, buffered_outstream__former_handler); 
+    signal(SIGIO, SIG_DFL); 
     sigprocmask(SIG_UNBLOCK, sigset, NULL); 
   }; 
   goto label__body;
