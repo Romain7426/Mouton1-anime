@@ -1,0 +1,10 @@
+#handle SIGUSR1 nostop
+#handle SIGUSR1 noprint
+#set history save on
+#run
+target create "build/mouton1.exe"
+#process handle 
+#handle SIGUSR1 nostop
+#target handle SIGUSR1 nostop
+#run
+
