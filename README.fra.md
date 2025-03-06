@@ -20,6 +20,8 @@ Ici, il s'agit d'un commentaire en complément de la description ci-dessous (dat
    Quelque chose qui compilait l'année dernière ne compilera plus cette année.
  - Quand on écrit une erreur, le compilateur essaye de trouver une semantique puis continue. 
    Pour corriger un tel comportement, il faut activer moult options du compilateur. 
+   (Par exemple, dans Mouton2, il y avait une faute de frappe dans un nom d'une fonction, 
+   et ça n'a pas empêché le compilateur de compiler. Magie noire.) 
  - On a beau lui dire de désactiver les optimisations, le compilateur optimise quand même.
    Et quand on se retrouve dans le débuggueur, celui-ci ne sait pas où on est.
    Et quand on lui demande d'afficher une variable, il répond que il ne la trouve pas. 
@@ -29,6 +31,7 @@ Ici, il s'agit d'un commentaire en complément de la description ci-dessous (dat
  - De fait, les compilateurs C sont des programmes bloated, qui doivent savoir faire le café.
  - Les préprocesseur bizarre. 
  - L'absence de modules!!!!! (collision des noms) (et portée des nom)
+ - La gestion des dépendances (entre modules) est infecte. 
  - une libc bizarre
  - libkernelcall (unistd.h) et la libc devrait être séparées. On voudrait pouvoir ne pas utiliser la libc. 
    En revanche, on ne veut pas savoir comment techniquement réalisé un kernel call (int 80? syscall? On s'en fout.) 
