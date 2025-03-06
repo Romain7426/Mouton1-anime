@@ -2,6 +2,73 @@
 FRANCAIS: [README.fra.md](README.fra.md)
 GLOBISH: [README.eng.md](README.eng.md)
 
+---------------------------------------------------------------------------
+
+COMMENTAIRE de mars 2025
+
+Ici, il s'agit d'un commentaire en complément de la description ci-dessous (datant de mars 2024).
+ - Tout d'abord, j'en ai marre du globish. Je suis français et vous me saoulez. 
+ - Ensuite, j'en ai marre du langage [*C*](https://en.wikipedia.org/wiki/C_(programming_language)). 
+   À mon avis, le principe du langage C est bon: faire abstraction du processeur sous-jacent, 
+   et opérer sur la mémoire. Opérant sur la mémoire, le langage C est appelé le langage de pointeurs.
+   De ce fait, le langage C serait un bon intermédiaire entre un langage processeur et un 
+   langage utilisateur. D'ailleurs, d'aucuns le considère comme un méta-assembleur.
+ - Cependant, l'implémentation actuelle est infâme. (Moins pire que le C++ cependant.) 
+ - À propos du C++, rappelons ces propos de son créateur, Bjarne Stroustrup: ["I did it for you all"]([*C*](http://harmful.cat-v.org/software/c++/I_did_it_for_you_all)
+ - Un programme ne compile jamais de la même facon. Ca dépend du systeme et de l'année.
+   Quelque chose qui compile sur un systeme ne compilera pas sur le voisin.
+   Quelque chose qui compilait l'année dernière ne compilera plus cette année.
+ - Quand on écrit une erreur, le compilateur essaye de trouver une semantique puis continue. 
+   Pour corriger un tel comportement, il faut activer moult options du compilateur. 
+ - On a beau lui dire de désactiver les optimisations, le compilateur optimise quand même.
+   Et quand on se retrouve dans le débuggueur, celui-ci ne sait pas où on est.
+   Et quand on lui demande d'afficher une variable, il répond que il ne la trouve pas. 
+ - Et ceci, quand gdb fonctionne. La plupart du temps, gdb plante.
+   Et quand il ne plante pas, il n'affiche que des points d'interrogation dans la backtrace. 
+   Donc on se retrouve à débugguer en mettant des printf partout. 
+ - De fait, les compilateurs C sont des programmes bloated, qui doivent savoir faire le café.
+ - Les préprocesseur bizarre. 
+ - L'absence de modules!!!!! (collision des noms) (et portée des nom)
+ - une libc bizarre
+ - libkernelcall (unistd.h) et la libc devrait être séparées. On voudrait pouvoir ne pas utiliser la libc. 
+   En revanche, on ne veut pas savoir comment techniquement réalisé un kernel call (int 80? syscall? On s'en fout.) 
+   On devrait pouvoir utiliser la libC qui nous plait. 
+ - De fait, il existe un concours du code le plus obscur en C. 
+ - Les bibliothèques tierces qui ne compilent jamais ("Tient! Cette bibliothèque a l'air de résoudre notre problème." Puis make échoue.). 
+ - GitHub est pénible. (Le côté réseau social pour geek est néanmoins sympa.)
+ - Dans les faits, je suis improductif en C. Je perds la quasi-totalité de mon temps 
+   en futilités et en points techniques qui n'ont aucun intérêt. Vraiment en putain de conneries. 
+   Alors que je devrais programmer le jeu sur un plan projectif! 
+   J'en ai putain de marre. Ca me saoule. 
+   Tout ça est une perte de temps. 
+   Donc j'arrête. Terminé. Je ne veux plus en entendre parler. 
+   J'ai le jeu. Il possède une beauté. Mais je ne retouche plus au C.
+   Pour ma part, par le passé, le langage où je fus productif fut le Pascal (Turbo/Delphi). 
+   J'arrête. 
+   Il n'y aura aucune amélioration à l'avenir. Ni aucun correctif.
+   J'arrête. 
+
+
+À toute cette instabilité et ce chaos, je préfère les consoles de jeux:
+ - le matériel ne change jamais 
+ - le compilateur ne change jamais
+
+Sept ans plus tard, le même programme compile et fonctionne de la même facon!
+
+
+Ceci étant dit, je suis admiratif de [Fabrice Bellard](http://fr.wikipedia.org/Fabrice_Bellard) qui, lui, arrive à coder C et produire de puissants logiciels: [FFmpag](http://fr.wikipedia.org/FFmpeg), [QEmu](http://fr.wikipedia.org/QEmu), et [TinyCC](http://fr.wikipedia.org/TinyCC). 
+ 
+Nous sommes tous différents.
+
+J'arrete.   
+
+
+---------------------------------------------------------------------------
+
+VERSION de mars 2024
+
+---------------------------------------------------------------------------
+
 # Mouton1-anime
  
 *Mouton1-anime* est un sous-projet du jeu [*Mouton1*](https://github.com/Romain7426/Mouton1). 
@@ -24,54 +91,43 @@ $ make
 $ make install 
 </pre>
  
-Customizations 
- - [Compiler](https://en.wikipedia.org/wiki/Compiler) — The default used [compiler](https://en.wikipedia.org/wiki/Compiler) is 'cc'. In order to use your favorite [compiler](https://en.wikipedia.org/wiki/Compiler), you have to specify it in the file ['./CC'](CC). 
+Personnalisations
+ - [Compilateur](https://fr.wikipedia.org/wiki/Compilateur) — Le compilateur utilisé par défaut est 'cc'. Vous pouvez utiliser votre compilateur préféré à travers le fichier ['./CC'](CC). 
     - $ echo "cc" > ./CC 
     - $ echo "clang" > ./CC 
     - $ echo "/usr/local/bin/x86_64-unknown-openbsd7.0-gcc-11.2.0" > ./CC 
     - $ echo "pcc -L /usr/lib " > ./CC 
     - $ echo "tcc" > ./CC 
- - Installation directory — The default installation directory is './destroot'. To use your favorite location, please edit the generated [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), or even edit the generating ['./Makefile-gen.mkf'](Makefile-gen.mkf). (Another way is to symbolic-link the wanted destination as './destroot'; or to copy files from './destroot' to the wanted location). 
- - No other customization is available. (However, you can still edit the file ['./Makefile-gen.mkf'](Makefile-gen.mkf) as much as you like.) 
+ - Le répertoire d'installation — Par défaut, l'installation se fait dans le sous-répertoire './destroot'. Ensuite, il suffit de copier ce répertoire où vous voulez. 
+ - Aucune autre personnalisation. 
  
-Configuration architecture 
- - Configuration is not based on [GNU Autohell](https://en.wikipedia.org/wiki/Autohell). 
- - Instead, we devised something home-made. We based it is on [GNU Make](https://en.wikipedia.org/wiki/GNU_make). Why [GNU Make](https://en.wikipedia.org/wiki/GNU_make)? Because [GNU Make](https://en.wikipedia.org/wiki/GNU_make) language is way simpler & friendlier than [shell](https://en.wikipedia.org/wiki/Bourne_shell) language. 
- - Our idea is to generate a standard [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), predictable & boring (example: [Makefile](Makefile)), so that it could be read by any exotic version of [Make](https://en.wikipedia.org/wiki/Make_(software)). Such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) is way more readable, debuggable, understandable, and prevent the [Make](https://en.wikipedia.org/wiki/Make_(software)) software to take «smart» initiatives (by infering who knows which esoteric rule). (On top of that, theoretically speaking, such a [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) would be distributable — however, it is not so due to each [compiler](https://en.wikipedia.org/wiki/Compiler) personality, and each [OS](https://en.wikipedia.org/wiki/Operating_system) personality, etc., which has therefore to be beforehand detected.) 
- - To generate this boring [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile), we use the file ['./Makefile-gen.mkf'](Makefile-gen.mkf), which is, as earlier explained, a [GNU Make](https://en.wikipedia.org/wiki/GNU_make) script. 
- - This script, ['./Makefile-gen.mkf'](Makefile-gen.mkf), requires external tools which are located in the sub-directory ['./tools'](tools). Thus, before running the script ['./Makefile-gen.mkf'](Makefile-gen.mkf), these have to be first generated. This is achieved by the [shell](https://en.wikipedia.org/wiki/Bourne_shell) script named ['./tools-compile.sh'](tools-compile.sh). (Theoretically, all these tools should compile & run issuelessly: «sh ./tools-compile.sh».) 
- - And that's all folks! All that is automagically dealt by the [shell](https://en.wikipedia.org/wiki/Bourne_shell) script named ['./configure.sh'](configure.sh). 
+Configuration
+ - La système de onfiguration n'est pas basé sur [GNU Autohell](https://en.wikipedia.org/wiki/Autohell). 
+ - À la place, nous avons conçu notre propre système. Celui-ci est basé sur [GNU Make](https://en.wikipedia.org/wiki/GNU_make). 
+ - Le [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) est générer par GMake à partir du fichier ['./Makefile-gen.mkf'](Makefile-gen.mkf). 
+ - Le script ['./Makefile-gen.mkf'](Makefile-gen.mkf) nécessite des outils qui doivent être compilés en amont. Ceux-ci sont localisés dans le sous-répertoire ['./tools'](tools). Pour les compiler, il faut lancer le script sell ['./tools-compile.sh'](tools-compile.sh): «sh ./tools-compile.sh» 
+ - Et c'est fini. 
+ - En une seule étape, il est possible d'utiliser le script [shell](https://en.wikipedia.org/wiki/Bourne_shell) ['./configure.sh'](configure.sh): «sh ./congigure.sh» 
+ - Le script shell ['./configure.sh'](configure.sh) aura besoin de savoir comment invoquer GMake: 
+    - $ echo "gmake" > GMAKE
  
-Complaints 
- - For maximum compatibility, [shell](https://en.wikipedia.org/wiki/Bourne_shell) scripts should be run in using 'sh':
-    - $ sh ./configure.sh
-    - $ sh ./tools-compile.sh 
- - If the script named ['./configure.sh'](configure.sh) complains about not finding [GNU Make](https://en.wikipedia.org/wiki/GNU_make), please help it in editing the file ['./configure.sh'](configure.sh) and tell it where to find [GNU Make](https://en.wikipedia.org/wiki/GNU_make) on your system. 
- - The source code is compliant with [C99](https://en.wikipedia.org/wiki/C99); therefore, a [C99](https://en.wikipedia.org/wiki/C99)-compatible [compiler](https://en.wikipedia.org/wiki/Compiler) is required. 
- - For any other complaints, well, from here & now, I do not know. 
- 
-Tested [Compilers](https://en.wikipedia.org/wiki/Compiler): 
- - [clang](https://en.wikipedia.org/wiki/Clang): 900k (lib) and 350k (exe) 
- - [gcc11](https://en.wikipedia.org/wiki/GNU_Compiler_Collection): 3000k (lib) and 720k (exe) 
- - [tcc](https://en.wikipedia.org/wiki/Tiny_C_Compiler): FAILS: Generated executable segfaults: 5000k (lib) and 3000k (exe) 
- - [pcc](https://en.wikipedia.org/wiki/Portable_C_Compiler): FAILS: Cannot compile («identifier exceeds C99 5.2.4.1») 
- - Others? 
+Testé avec les [compilateurs](https://fr.wikipedia.org/wiki/Compilateur): 
+ - [clang](https://fr.wikipedia.org/wiki/Clang)
+ - [gcc11](https://fr.wikipedia.org/wiki/GNU_Compiler_Collection)
+ - [tcc](https://fr.wikipedia.org/wiki/Tiny_C_Compiler)
+ - [pcc](https://fr.wikipedia.org/wiki/Portable_C_Compiler) - Echoue. Son préprocesseur meurt. 
 
-Tested [Operating Systems](https://en.wikipedia.org/wiki/Operating_system): 
+Testé sur les systèmes suivants: 
  - [OpenBSD](https://en.wikipedia.org/wiki/OpenBSD) 
- - Other [BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) should work flawlessly. 
- - Should be working on [MacOSX](https://en.wikipedia.org/wiki/MacOS). 
- - [Unix](https://en.wikipedia.org/wiki/Unix)-compatible systems should work. 
- - For [Windows](https://en.wikipedia.org/wiki/Microsoft_Windows), we do not know, we do not have that system. Supposedly, the software should be able to work using [Cygwin](https://en.wikipedia.org/wiki/Cygwin), [MinGW](https://en.wikipedia.org/wiki/MinGW), etc. 
+ - Les autres [BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) - Pas testé mais ne devrait pas poser de problèmes. 
+ - [MacOSX](https://en.wikipedia.org/wiki/MacOS) - Pas testé mais ne devrait pas poser de problèmes. 
+ - [Unix](https://en.wikipedia.org/wiki/Unix)-compatible - Pas testé mais ne devrait pas poser de problèmes. 
+ - [Windows](https://en.wikipedia.org/wiki/Microsoft_Windows) - Il y a vingt ans, il y fonctionnait. Hui, je ne sais pas. ([Cygwin](https://en.wikipedia.org/wiki/Cygwin)? [MinGW](https://en.wikipedia.org/wiki/MinGW)? Autre?)
  
-Dependencies: 
- - A [C99](https://en.wikipedia.org/wiki/C99)-[compiler](https://en.wikipedia.org/wiki/Compiler). 
- - [GNU Make](https://en.wikipedia.org/wiki/GNU_make). 
+Dépendances: 
+ - Le code source est écrit en [C99](https://en.wikipedia.org/wiki/C99). 
+ - [GNU Make](https://fr.wikipedia.org/wiki/GNU_make). 
  
-Nota bene: 
- - If compiling tools is too long, it can be skipped, and the [Makefile](https://en.wikipedia.org/wiki/Make_(software)#Makefile) could be directly generated: <br>
-    $ gmake -r -R -S -j 1 --warn-undefined-variables -f ./Makefile-gen.mkf  
-
 
 ## DSL Example
 
@@ -117,7 +173,7 @@ graphique {
 </pre>
 
 
-## Lib Example
+## Lib exemple
 
 <pre>
 #include "anime.h"
@@ -135,7 +191,7 @@ if (error_id != ANIME__OK) {
 </pre>
 
 
-## Executable Example 
+## Executable example 
 
 <pre>
 $ ./destroot/bin/anime.exe
@@ -175,65 +231,47 @@ physique.masse = 240.000000
 
 
 
-## Technical insights 
+## Notes techniques
 
-In order to parse an *anime* data file, *Mouton1-anime* does not use [*Lex*](https://en.wikipedia.org/wiki/Lex_programming_tool) nor [*Yacc*](https://en.wikipedia.org/wiki/Yacc). Instead, it implements its own lexer and parser. Admittedly, this latter approach takes a little longer to be implemented, but, unlike the former one, it is accurate, makes sense, easier to maintain, and prints understandable errors. 
+[*Lex*](https://fr.wikipedia.org/wiki/Lex_programming_tool) et [*Yacc*](https://fr.wikipedia.org/wiki/Yacc) donnant des messages d'erreurs abscons, voire étant inintuitifs, nous avons écrit notre propre analyseur. Quand nous avions des erreurs de syntaxe ou d'analyse lexicale, personne ne comprenait quelle était l'erreur. 
 
-Also, it does not build any tree. Building and maintaining a tree structure in [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) is a pain. As the language is [*LL(1)*](https://en.wikipedia.org/wiki/LL1), it reads directly the tokens, and fills the [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) struct accordingly. However, as an extension, it can read expressions. Thus, there's an engine between the tokens and the data generation, which reorders expressions as postfix expressions, which ones can be directly computed on a stack. 
+Notre analyseur regroupe les caractères en lexèmes (unités lexicales, tokens). Et, stricto sensu, l'analyseur syntaxique n'en ai pas un. Il vérifie la syntaxe. Car, si la syntaxe est correcte, alors on peut directement interprétées et générées les données. De ce fait, notre analyseur ne produit pas d'arbre de syntaxe. L'analyseur se contente donc de vérifier la correction de la syntaxe. Toutefois, pour vérifier la syntaxe d'une expression infixe, un analyseur LALR(0) possèdant deux états a été implémenté pour les sous-expressions (pour analyser les sous-expressions, on est obligé de se souvenir du chemin, et du point où on en était dans l'analyse quand on remonte). 
 
-Architecture: 
- - buffering (to provide back-tracking, which is required by lexical analysis) 
- - tokenization 
- - syntax filtering engine (reorders infix expressions to postfix expressions; check parenthesis; provides a «move to ending parenthesis» procedure) 
- - data generation 
- - consistency check 
- 
 Nota bene: 
- - [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) multi-lines comments aren't handled. They are handled as inline comments (unlike hash comments & double-slash comments which  are end-of-line comments). <br> 
-   This is due to the line discipline: we read one line by one line, and no token can expand over two lines (and a comment is a token). <br>
-   [*C*](https://en.wikipedia.org/wiki/C_(programming_language))-[compilers](https://en.wikipedia.org/wiki/Compiler) deal with that thanks to the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor). That's the main reason why the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor) is a separated software: the lexical analyzer of the [*C*](https://en.wikipedia.org/wiki/C_(programming_language))-[compiler](https://en.wikipedia.org/wiki/Compiler) is constrained by a line discipline, while the [preprocessor](https://en.wikipedia.org/wiki/C_preprocessor) is not so. 
-   
+ - Les commentaires multi-lignes du [*C*](https://en.wikipedia.org/wiki/C_(programming_language)) ne sont pas reconnus. 
+   Mais les commentaires intra-lignes sont reconnus: /* .... */ <br> 
 
-About DSL («data specific language»), you can watch these [*Naughty Dog*](https://en.wikipedia.org/wiki/Naughty_Dog) videos: 
+À propos des DSL («data specific language»), vous pouvez visionner ces vidéos de [*Naughty Dog*](https://en.wikipedia.org/wiki/Naughty_Dog): 
  - https://www.youtube.com/watch?v=Z8Xamkb-J2k
  - https://www.youtube.com/watch?v=oSmqbnhHp1c 
  
-About lexical & syntaxic analysis, you can check out this website & book (in french): 
+À propos de l'analyse lexicale et syntaxique, il y a ce site: 
  - http://compilation.irisa.fr 
  
  
-## Authors  
+## Auteurs 
  
-Authors: 
+Auteurs: 
  - [Romain: https://github.com/Romain7426](https://github.com/Romain7426)
 
 
-## [Intellectual Property](https://en.wikipedia.org/wiki/Intellectual_property) 
+## [Propriété intellectuelle](https://fr.wikipedia.org/wiki/Propriete_intellectuelle) 
+
+On s'en fout. Faites-en ce que vous en voulez. 
  
-Basically, we do not care about [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) (except that we think that [intellectual property](https://en.wikipedia.org/wiki/Intellectual_property) is bad, counter-productive, designed by cupid & greedy stock-pilers & gold-worshippers). You can do whatever you like with anything in that project. 
- 
-However, as it seems that backward copyrighting could exist, we therefore did not release it in [public domain](https://en.wikipedia.org/wiki/Public_domain). Instead we have a license to prevent that degenerated case. For uninteresting law related stuffs, please see [COPYING](COPYING) (it's like an [ISC license](https://en.wikipedia.org/wiki/ISC_license), but slightly more liberal: do whatever you like with it, as long as you do not prevent ourselves or others to use it). (The [ISC license](https://en.wikipedia.org/wiki/ISC_license) was the most liberal license we found out.)  
- 
-In a nutshell, please feel free to do whatever you like with this software and its code, as long as you do not prevent anyone to use it (including ourselves). 
+Ce travail aurait pu être publié dans le [domaine publique](https://en.wikipedia.org/wiki/Public_domain). Cependant, il semblerait que il existe des moyens s'approprier respectivement des droits. Et donc nous désapproprier ce travail. Pour empêcher ce cas, ce travail est publiée sous une version allégée de la [licence ISC](https://en.wikipedia.org/wiki/ISC_license). Vous pouvez consulter [COPYING](COPYING)
  
  
-##  TODO 
+##  AGENDA 
  
- - A [FLTK](https://en.wikipedia.org/wiki/FLTK) [GUI](https://en.wikipedia.org/wiki/GUI). 
- - A [curses](https://en.wikipedia.org/wiki/Curses)/[PDcurses](https://en.wikipedia.org/wiki/PDcurses) [GUI](https://en.wikipedia.org/wiki/GUI). 
- - A [Lazarus](https://en.wikipedia.org/wiki/Lazarus_(software)) [GUI](https://en.wikipedia.org/wiki/GUI). (But [Lazarus](https://en.wikipedia.org/wiki/Lazarus_(software)) does not work anylonger on [OpenBSD](https://en.wikipedia.org/wiki/OpenBSD) ☹). 
+ - Un [GUI](https://en.wikipedia.org/wiki/GUI) en [FLTK](https://en.wikipedia.org/wiki/FLTK) 
+ - Un [GUI](https://en.wikipedia.org/wiki/GUI) en [curses](https://en.wikipedia.org/wiki/Curses)/[PDcurses](https://en.wikipedia.org/wiki/PDcurses) 
+ - Un [GUI](https://en.wikipedia.org/wiki/GUI) en [Lazarus](https://en.wikipedia.org/wiki/Lazarus_(software))
+ - Nettoyer le code
 
 
 ## Merci 
 
 Merci!! :smile: 
 
-And we love you all. :kissing_heart: 
-
-
- 
-
-
-
-
-
+Nous vous aimons. :kissing_heart: 

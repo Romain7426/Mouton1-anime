@@ -2,6 +2,12 @@
 FRANCAIS: [README.fra.md](README.fra.md)
 GLOBISH: [README.eng.md](README.eng.md)
 
+---------------------------------------------------------------------------
+
+VERSION de mars 2024
+
+---------------------------------------------------------------------------
+
 # Mouton1-anime
  
 *Mouton1-anime* is a sub-project of [*Mouton1*](https://github.com/Romain7426/Mouton1). 
